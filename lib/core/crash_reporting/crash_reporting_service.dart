@@ -42,7 +42,9 @@ class CrashReportingService {
 
   Future<void> setUserIdentifier(String userId) async {
     await _crashlytics.setUserIdentifier(userId);
-    await Sentry.configureScope((scope) => scope.setUser(SentryUser(id: userId)));
+    await Sentry.configureScope(
+      (scope) => scope.setUser(SentryUser(id: userId)),
+    );
   }
 }
 

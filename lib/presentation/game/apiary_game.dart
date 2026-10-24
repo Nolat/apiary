@@ -7,9 +7,9 @@ import 'package:flame/game.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/core/theme/app_colors.dart';
+import 'package:apiary/presentation/game/game_viewport.dart';
 import 'package:apiary/presentation/game/layout_debug_overlay.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
-import 'package:apiary/presentation/game/game_viewport.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
 
 class ApiaryGame extends FlameGame {

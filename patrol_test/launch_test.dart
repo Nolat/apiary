@@ -6,6 +6,7 @@ import 'package:patrol/patrol.dart';
 import 'package:apiary/core/auth/auth_service.dart';
 import 'package:apiary/core/di/injection.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
+
 import 'common.dart';
 
 void main() {
