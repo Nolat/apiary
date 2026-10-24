@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/presentation/game/apiary_game.dart';
+import 'package:apiary/presentation/game/game_viewport.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
 
 void main() {
@@ -25,7 +26,12 @@ void main() {
       'renders at the pixel-art reference resolution',
       ApiaryGame.new,
       (game) async {
-        expect(game.camera.viewport.virtualSize, ApiaryGame.referenceResolution);
+        final viewport = game.camera.viewport;
+        expect(viewport, isA<GameViewport>());
+        expect(
+          (viewport as GameViewport).minimumSize,
+          ApiaryGame.minimumSize,
+        );
         expect(game.camera.viewfinder.anchor, Anchor.topLeft);
       },
     );

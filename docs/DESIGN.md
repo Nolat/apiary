@@ -86,7 +86,7 @@ Ordres de grandeur (hypothèse : 1 énergie par larve et par ressource, durée d
 
 ## Plateau persistant et encombrement
 
-Le plateau (grille 8×9, 72 cases) est conservé d'une journée à l'autre : on peut anticiper. Il reste jouable grâce aux commandes disponibles, à la place limitée et à un bouton de suppression d'une abeille ou d'une ressource.
+Le plateau (grille 7×9, 63 cases) est conservé d'une journée à l'autre : on peut anticiper. Il reste jouable grâce aux commandes disponibles, à la place limitée et à un bouton de suppression d'une abeille ou d'une ressource.
 
 ## Progression
 
@@ -97,8 +97,9 @@ Le plateau (grille 8×9, 72 cases) est conservé d'une journée à l'autre : on 
 ## Direction artistique
 
 - **Pixel art**, confirmée (2026-10-24).
-- **Résolution de référence : 240×480** (portrait), avec des assets fournis à ×2 (**480×960**) pour l'affichage sur écrans à forte densité, en conservant un rendu pixel-perfect (scaling entier uniquement, pas d'interpolation floue).
-- Conséquence directe sur le plateau : la grille 8×9 tient en largeur avec des cases de **30×30 px** en résolution de référence (8 × 30 = 240), soit 270 px de haut pour la grille et 210 px restants pour les commandes et le HUD (énergie, Apidex…).
+- **Largeur de jeu : 224 px** (7 cases de 32), hauteur variable (portrait), avec des assets fournis à ×2 pour l'affichage sur écrans à forte densité, sans interpolation floue (rendu « nearest »). Sur tous les iPhone, l'écran fait exactement 224 px de jeu de large, bord à bord, au prix d'une échelle fractionnaire (quelques pixels de jeu 1 pixel physique plus larges que les autres) ; la hauteur sûre varie de ~398 px (iPhone SE) à ~470 px. **Minimum garanti : 224×398 px de zone sûre** ; sur iPad et pliables, l'écran s'élargit (jusqu'à ~310 px) — voir `docs/STACK.md`.
+- **Plateau : grille 7×9, cases de 32×32 px** (sprites 32×32, 64×64 en ×2), soit 224×288 px. Il **remplit toujours la largeur sur iPhone** (la taille des cases à l'écran s'adapte : ~172 pixels physiques sur un iPhone 18 Pro, ~107 sur un SE) ; sur iPad et pliables, il est aussi grand que la hauteur le permet, centré, décor sur les côtés.
+- **Mise en page en bandes, à la Flambé** : HUD (16 px) et commandes (56 px) accrochés en haut de la zone sûre, barre du bas (32 px) en bas, plateau juste au-dessus, et un espace libre (≥ 6 px) qui absorbe la différence de hauteur entre appareils. Il reste ~110 px au minimum (iPhone SE) pour le HUD, les commandes et la barre du bas. Le décor couvre tout l'écran, y compris sous la Dynamic Island. Les hauteurs des bandes autres que le plateau sont provisoires, en attendant le design du HUD et des commandes.
 - Cette DA réoriente le choix du moteur de rendu vers **Flame** plutôt que des widgets Flutter classiques — voir `CLAUDE.md` et `docs/STACK.md`. Le pixel art tire nativement parti d'un moteur à sprites/tilesets (scaling entier, tilesets pour la grille du plateau, gestion de caméra/viewport, animations frame par frame des abeilles et des ruches).
 - Univers visuel précis, palette, ton, références : encore à définir.
 

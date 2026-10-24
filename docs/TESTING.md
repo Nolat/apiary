@@ -188,7 +188,7 @@ testWithGame<ApiaryGame>('opens on the board scene', ApiaryGame.new, (game) asyn
 
 ### Goldens pixel-perfect : `testGameGolden`
 
-Le pixel art à 240×480 se prête très bien aux goldens : images petites, aucune police système, différences lisibles à l'œil. Le helper `testGameGolden` (`test/helpers/game_golden.dart`) rend l'`ApiaryGame` complet **exactement à la résolution de référence, avec un device pixel ratio de 1** : **un pixel du PNG = un pixel du jeu**.
+Le pixel art se prête très bien aux goldens : images petites, aucune police système, différences lisibles à l'œil. Le helper `testGameGolden` (`test/helpers/game_golden.dart`) rend l'`ApiaryGame` complet **à sa taille minimale, 224×398 (la mise en page la plus serrée, celle de l'iPhone SE), avec un device pixel ratio de 1** : **un pixel du PNG = un pixel du jeu**. Les autres tailles d'écran sont couvertes par les tests de `ScreenLayout` (les 7 appareils et un balayage de tailles) et par `tool/screenshots/ios.sh`.
 
 ```dart
 testGameGolden(
@@ -207,6 +207,17 @@ Règles :
 - En cas d'échec, Flutter écrit `failures/*_masterImage.png`, `*_testImage.png` et `*_isolatedDiff.png` à côté du test (ignorés par git ; en CI, publiés en artefact `golden-failures`).
 - Un golden par **état visuel significatif** (plateau vide, plateau plein, abeille sélectionnée, commande remplie…), pas un par test.
 - Les animations : figer le temps avec `game.update(dt)` à un instant précis avant la capture.
+
+### Mise en page multi-écrans : `tool/screenshots/ios.sh`
+
+Les goldens tournent à 224×398 / DPR 1, où le viewport est trivial (×1). Pour vérifier le `GameViewport` et `ScreenLayout` sur de vrais écrans, `tool/screenshots/ios.sh` compile l'app pour simulateur avec `--dart-define=APIARY_LAYOUT_DEBUG=true`, qui affiche une mire par-dessus les scènes (`LayoutDebugOverlay` : contour de chaque bande, miel pour le plateau, damier de pixels de jeu dessiné comme un sprite, échelle). Le script la lance sur des simulateurs extrêmes (iPhone SE 16:9 à DPR 2, mini, Pro, Pro Max, pliable, iPad mini, iPad Pro 13"), qu'il crée et démarre au besoin. Puis `tool/screenshots/check_layout.py` mesure chaque capture, pour une échelle s : plateau de 224s×288s pixels physiques, bord à bord sur iPhone, centré sur les écrans marqués `centered` (iPad, pliable) ; contours des bandes rencontrés dans l'ordre (HUD, commandes, plateau, barre du bas) sans chevauchement ; damier à ⌊s⌋ ou ⌈s⌉ px par pixel de jeu (rendu « nearest », sans flou) ; aucune bande de la couleur de fond du jeu sur les côtés.
+
+```bash
+tool/screenshots/ios.sh                                # tous les appareils (~10 min)
+tool/screenshots/ios.sh "iPhone SE (3rd generation)"   # seulement ceux nommés
+```
+
+Captures dans `build/screenshots/ios/` ; code de sortie 1 si une vérification échoue. Deux cas ne sont que des avertissements (⚠) : un plateau décentré sur un écran `centered` (la zone sûre le décale quand la zone sûre l'exige, ce qu'une capture ne dit pas — la règle est couverte par les tests du viewport) et le damier des écrans **réduits par iOS** (marqués `downsampled` dans le script : iPhone mini, modèles « Plus »), que la réduction brouille. À relancer après tout changement du viewport ou de la mise en page des scènes.
 
 ### Shell Flutter
 

@@ -13,9 +13,9 @@ import 'package:apiary/presentation/game/apiary_game.dart';
 /// docs/TESTING.md.
 const goldenTag = 'golden';
 
-/// Renders a full [ApiaryGame] at exactly the pixel-art reference resolution
-/// (240×480, device pixel ratio 1) and compares it to [goldenFile], so one
-/// golden pixel is one game pixel.
+/// Renders a full [ApiaryGame] at its minimum size (224×398, device pixel
+/// ratio 1: the tightest layout, the iPhone SE's) and compares it to
+/// [goldenFile], so one golden pixel is one game pixel.
 ///
 /// [arrange] runs once the game is loaded on its initial scene: navigate
 /// (`game.router.pushNamed(...)`), add components, advance time
@@ -31,8 +31,8 @@ void testGameGolden(
   testWidgets(description, tags: goldenTag, (tester) async {
     tester.view
       ..physicalSize = Size(
-        ApiaryGame.referenceResolution.x,
-        ApiaryGame.referenceResolution.y,
+        ApiaryGame.minimumSize.x,
+        ApiaryGame.minimumSize.y,
       )
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
