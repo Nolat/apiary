@@ -1,0 +1,6 @@
+# Configuration for `flutter test` / `dart test` — see docs/TESTING.md.
+tags:
+  # Pixel-exact renders compared to PNGs in `goldens/` folders. Only stable on
+  # the reference platform (macOS): Linux CI excludes them with
+  # `--exclude-tags golden`, a macOS CI job runs them.
+  golden:

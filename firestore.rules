@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Deny-all par défaut : pas de collection définie tant qu'aucune feature
+    // ne persiste de données (voir docs/STACK.md — sécurité Firestore).
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

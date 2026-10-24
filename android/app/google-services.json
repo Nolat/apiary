@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "156962738710",
+    "project_id": "fr-nolat-apiary",
+    "storage_bucket": "fr-nolat-apiary.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156962738710:android:1a3282a554770c2db75b37",
+        "android_client_info": {
+          "package_name": "fr.nolat.apiary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKet-9V8WHnsFrFkjjPurFpw3WIjXyRlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

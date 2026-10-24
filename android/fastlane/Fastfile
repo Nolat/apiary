@@ -1,0 +1,38 @@
+# Release build + debug symbol upload to Sentry and Crashlytics.
+#
+#   cd android && bundle exec fastlane release    # flutter build appbundle
+#
+# --split-debug-info strips Dart symbols from the binary, so release stack
+# traces are only readable once build/debug-info is uploaded — to both Sentry
+# (sentry_dart_plugin) and Crashlytics (firebase crashlytics:symbols:upload).
+#
+# Needs SENTRY_AUTH_TOKEN (a Sentry organization auth token), either exported
+# or in the gitignored .env.sentry at the repo root, and a logged-in Firebase
+# CLI.
+
+require 'dotenv'
+
+default_platform(:android)
+
+ROOT = File.expand_path('../..', __dir__)
+FIREBASE_APP_ID = '1:156962738710:android:1a3282a554770c2db75b37'
+
+platform :android do
+  desc 'Build the release app bundle and upload debug symbols to Sentry and Crashlytics'
+  lane :release do
+    Dotenv.load(File.join(ROOT, '.env.sentry'))
+
+    # Fail before the build rather than shipping a release with unreadable traces.
+    if ENV['SENTRY_AUTH_TOKEN'].to_s.empty?
+      UI.user_error!('SENTRY_AUTH_TOKEN is not set (export it or add it to .env.sentry).')
+    end
+
+    Dir.chdir(ROOT) do
+      # Don't clear build/debug-info beforehand: Gradle can skip the Dart compile
+      # step as up to date and would then not rewrite the symbols.
+      sh('fvm', 'flutter', 'build', 'appbundle', '--release', '--split-debug-info=build/debug-info')
+      sh('fvm', 'dart', 'run', 'sentry_dart_plugin')
+      sh('firebase', 'crashlytics:symbols:upload', "--app=#{FIREBASE_APP_ID}", 'build/debug-info')
+    end
+  end
+end

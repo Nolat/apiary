@@ -1,0 +1,37 @@
+# Release build + debug symbol upload to Sentry and Crashlytics.
+#
+#   cd ios && bundle exec fastlane release    # flutter build ipa
+#
+# --split-debug-info strips Dart symbols from the binary, so release stack
+# traces are only readable once build/debug-info is uploaded — to both Sentry
+# (sentry_dart_plugin, which also uploads the iOS dSYMs from the archive) and
+# Crashlytics (firebase crashlytics:symbols:upload).
+#
+# Needs SENTRY_AUTH_TOKEN (a Sentry organization auth token), either exported
+# or in the gitignored .env.sentry at the repo root, and a logged-in Firebase
+# CLI.
+
+require 'dotenv'
+
+default_platform(:ios)
+
+ROOT = File.expand_path('../..', __dir__)
+FIREBASE_APP_ID = '1:156962738710:ios:14ccf1a80784fe91b75b37'
+
+platform :ios do
+  desc 'Build the release IPA and upload debug symbols to Sentry and Crashlytics'
+  lane :release do
+    Dotenv.load(File.join(ROOT, '.env.sentry'))
+
+    # Fail before the build rather than shipping a release with unreadable traces.
+    if ENV['SENTRY_AUTH_TOKEN'].to_s.empty?
+      UI.user_error!('SENTRY_AUTH_TOKEN is not set (export it or add it to .env.sentry).')
+    end
+
+    Dir.chdir(ROOT) do
+      sh('fvm', 'flutter', 'build', 'ipa', '--release', '--split-debug-info=build/debug-info')
+      sh('fvm', 'dart', 'run', 'sentry_dart_plugin')
+      sh('firebase', 'crashlytics:symbols:upload', "--app=#{FIREBASE_APP_ID}", 'build/debug-info')
+    end
+  end
+end
