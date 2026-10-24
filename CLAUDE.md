@@ -98,6 +98,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:apiary/app.dart';
 ```
 
+### System UI
+
+The app is full-screen and portrait-only: `configureSystemUi()` (`lib/core/platform/system_ui.dart`, called early in `bootstrap()`) locks `portraitUp` and enables `SystemUiMode.immersiveSticky` (status and navigation bars hidden, revealed briefly by an edge swipe). The native launch config mirrors it so the splash screen has no bars either: `ios/Runner/Info.plist` (`UIStatusBarHidden`, portrait only, `UIRequiresFullScreen` on iPad), Android `styles.xml` (`windowFullscreen`, cutout mode `shortEdges`, both `values/` and `values-night/`) and `screenOrientation="portrait"` in `AndroidManifest.xml`.
+
 ### Entry point flow
 
 `main.dart` → `bootstrap()` (`lib/bootstrap.dart`): initializes `WidgetsFlutterBinding` and `EasyLocalization`, then wraps `ApiaryApp` (`lib/app.dart`) in `EasyLocalization` + Riverpod's `ProviderScope`. New app-wide setup (DI registration, error handling, etc.) belongs in `bootstrap()`.

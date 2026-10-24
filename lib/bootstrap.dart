@@ -16,6 +16,7 @@ import 'package:apiary/core/auth/auth_service.dart';
 import 'package:apiary/core/crash_reporting/crash_reporting_service.dart';
 import 'package:apiary/core/crash_reporting/sentry_config.dart';
 import 'package:apiary/core/di/injection.dart';
+import 'package:apiary/core/platform/system_ui.dart';
 import 'package:apiary/firebase_options.dart';
 
 Future<void> bootstrap() async {
@@ -24,6 +25,8 @@ Future<void> bootstrap() async {
 
   // Initialized first so errors during the rest of startup are captured.
   await SentryFlutter.init(configureSentry);
+
+  await configureSystemUi();
 
   await EasyLocalization.ensureInitialized();
 
