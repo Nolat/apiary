@@ -8,6 +8,11 @@ Apiary is a relaxing mobile merge game (Flutter): the player raises bees, crosse
 
 The codebase is a bare scaffold: the app shell (routing, DI, theming, i18n, auth, crash reporting) is wired up, but no gameplay feature is implemented yet beyond an empty board screen. Work is tracked in **Linear** (workspace Nolat, team Apiary, key `APY`) as a prioritized product backlog: one project per epic, one issue per user story — managed with the `/backlog` skill.
 
+Two sources of truth, no duplication between them:
+
+- **`docs/DESIGN.md` owns the design**: vision and pillars, game rules, economy (coins, gems), numbers and open design questions. A design decision taken while framing a story is written there first.
+- **Linear owns the backlog**: what gets built, in which order, its scope and acceptance criteria, and its status. Stories link to the DESIGN.md section they implement instead of restating its rules.
+
 ## Commands
 
 The Flutter SDK is pinned via FVM (`.fvmrc` → Flutter 3.47.8). Prefix Flutter/Dart commands with `fvm` (i.e. `fvm flutter ...`, `fvm dart ...`) so the pinned SDK is used.
