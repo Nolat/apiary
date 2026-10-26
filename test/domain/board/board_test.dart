@@ -7,6 +7,7 @@ import 'package:glados/glados.dart';
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
+import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
@@ -615,5 +616,49 @@ void main() {
         }
       },
     );
+  });
+
+  group('Board.drop', () {
+    const larva = BoardItem.larva(family: Family.common);
+    const bee = BoardItem.bee(family: Family.common);
+    const a = BoardPosition(column: 1, row: 1);
+    const b = BoardPosition(column: 2, row: 1);
+    const empty = BoardPosition(column: 5, row: 6);
+    const queen = Board.startingQueenPosition;
+
+    Board boardWith(BoardItem x, BoardItem y) => Board.initial().copyWith(
+      items: {...Board.initial().items, a: x, b: y},
+    );
+
+    test('moves onto an empty cell', () {
+      final drop = boardWith(larva, bee).drop(a, empty);
+
+      expect(drop, isA<ItemMoved>());
+      expect(drop!.board.itemAt(empty), larva);
+    });
+
+    test('merges identical larvae and bees', () {
+      expect(boardWith(larva, larva).drop(a, b), isA<ItemsMerged>());
+      expect(boardWith(bee, bee).drop(a, b), isA<ItemsMerged>());
+    });
+
+    test('swaps different items, and bees of the last level', () {
+      expect(boardWith(larva, bee).drop(a, b), isA<ItemsSwapped>());
+      expect(boardWith(larva, bee).drop(a, queen), isA<ItemsSwapped>());
+      final last = BoardItem.bee(
+        family: Family.common,
+        level: Family.common.maxLevel,
+      );
+      expect(boardWith(last, last).drop(a, b), isA<ItemsSwapped>());
+    });
+
+    test('does nothing from an empty cell, onto itself or off the grid', () {
+      final board = boardWith(larva, bee);
+
+      expect(board.drop(empty, a), isNull);
+      expect(board.drop(a, a), isNull);
+      expect(board.drop(a, const BoardPosition(column: -1, row: 0)), isNull);
+      expect(board.drop(a, const BoardPosition(column: 7, row: 0)), isNull);
+    });
   });
 }

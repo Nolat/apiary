@@ -1,3 +1,6 @@
+// 🐦 Flutter imports:
+import 'package:flutter/services.dart';
+
 // 📦 Package imports:
 import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
@@ -13,7 +16,6 @@ import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../../helpers/board_tap.dart';
 import '../../../helpers/game_text.dart';
 
@@ -466,6 +468,139 @@ void main() {
         // Same items either way: the bees trade places.
         expect(board.board.items, before.items);
         expect(board.children.whereType<BeeComponent>(), hasLength(2));
+      },
+    );
+  });
+
+  group('A gesture that goes wrong', () {
+    const queen = Board.startingQueenPosition;
+    const first = BoardPosition(column: 3, row: 3);
+    const second = BoardPosition(column: 4, row: 3);
+
+    Future<BoardComponent> twoLarvae(ApiaryGame game) async {
+      final board = await boardOf(game);
+      for (var i = 0; i < 3; i++) {
+        tapCell(game, board, queen);
+      }
+      await game.ready();
+      return board;
+    }
+
+    testWithGame<ApiaryGame>(
+      'puts the item back when cancelled over an identical one',
+      ApiaryGame.new,
+      (game) async {
+        final board = await twoLarvae(game);
+        final before = board.board;
+
+        CellDrag(game, board)
+          ..start(first)
+          ..moveTo(second.column, second.row)
+          ..cancel();
+        await game.ready();
+
+        expect(board.board, before);
+        expect(
+          board.children.whereType<LarvaComponent>().map((c) => c.position),
+          containsAll([
+            BoardComponent.itemPosition(first),
+            BoardComponent.itemPosition(second),
+          ]),
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'ignores a second finger while an item is dragged',
+      ApiaryGame.new,
+      (game) async {
+        final board = await twoLarvae(game);
+
+        final held = CellDrag(game, board)..start(first);
+        CellDrag(game, board, pointerId: 2)
+          ..start(second)
+          ..moveTo(5, 5)
+          ..end();
+        held
+          ..moveTo(second.column, second.row)
+          ..end();
+        await game.ready();
+
+        expect(board.board.itemAt(first), isNull);
+        expect(
+          board.board.itemAt(second),
+          const BoardItem.bee(family: Family.common),
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'stops a shaking queen when she is grabbed',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        board.board = board.board.copyWith(
+          items: {
+            for (var c = 0; c < Board.columns; c++)
+              for (var r = 0; r < Board.rows; r++)
+                BoardPosition(column: c, row: r):
+                    board.board.itemAt(BoardPosition(column: c, row: r)) ??
+                    const BoardItem.larva(family: Family.common),
+          },
+        );
+        tapCell(game, board, queen);
+        tapCell(game, board, queen);
+        game.update(BoardComponent.shakeStep);
+
+        CellDrag(game, board).start(queen);
+        game.update(BoardComponent.shakeStep);
+        await game.ready();
+
+        expect(
+          board.children.whereType<QueenComponent>().single.position,
+          BoardComponent.itemPosition(queen),
+        );
+      },
+    );
+  });
+
+  group('Haptic feedback', () {
+    const queen = Board.startingQueenPosition;
+    final impacts = <Object?>[];
+
+    setUp(() {
+      impacts.clear();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'HapticFeedback.vibrate') {
+              impacts.add(call.arguments);
+            }
+            return null;
+          });
+    });
+
+    testWithGame<ApiaryGame>(
+      'is light when the queen makes a larva, medium on a merge',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        for (var i = 0; i < 3; i++) {
+          tapCell(game, board, queen);
+        }
+        await game.ready();
+        // The first tap only selects her; the next two make a larva each.
+        expect(impacts, [
+          'HapticFeedbackType.lightImpact',
+          'HapticFeedbackType.lightImpact',
+        ]);
+
+        impacts.clear();
+        CellDrag(game, board)
+          ..start(const BoardPosition(column: 3, row: 3))
+          ..moveTo(4, 3)
+          ..end();
+        await game.ready();
+        expect(impacts, ['HapticFeedbackType.mediumImpact']);
       },
     );
   });

@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import 'game_text.dart';
 
 /// Tag of every golden test, declared in `dart_test.yaml`. Goldens only match

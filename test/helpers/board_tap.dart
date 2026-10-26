@@ -55,7 +55,9 @@ void tapCell(ApiaryGame game, BoardComponent board, BoardPosition cell) {
 /// dispatcher. [start] puts it down on the middle of a cell; [moveTo] slides
 /// it to the middle of another one (or beyond the grid); [end] lifts it.
 class CellDrag {
-  CellDrag(this.game, this.board);
+  CellDrag(this.game, this.board, {this.pointerId = 1});
+
+  final int pointerId;
 
   final ApiaryGame game;
   final BoardComponent board;
@@ -75,7 +77,7 @@ class CellDrag {
     final at = _at = _screenOf(cell.column, cell.row);
     _dispatcher.onDragStart(
       DragStartEvent(
-        1,
+        pointerId,
         game,
         DragStartDetails(globalPosition: at, localPosition: at),
       ),
@@ -88,7 +90,7 @@ class CellDrag {
     final to = _screenOf(column, row);
     _dispatcher.onDragUpdate(
       DragUpdateEvent(
-        1,
+        pointerId,
         game,
         DragUpdateDetails(
           // Flame reads the end of a move as the position plus the delta.
@@ -101,5 +103,9 @@ class CellDrag {
     _at = to;
   }
 
-  void end() => _dispatcher.onDragEnd(DragEndEvent(1, DragEndDetails()));
+  void end() =>
+      _dispatcher.onDragEnd(DragEndEvent(pointerId, DragEndDetails()));
+
+  /// The system takes the gesture away, as when a call comes in.
+  void cancel() => _dispatcher.onDragCancel(DragCancelEvent(pointerId));
 }

@@ -6,6 +6,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/family.dart';
+import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
@@ -119,6 +120,26 @@ abstract class Board with _$Board {
       ),
       position: cell,
     );
+  }
+
+  /// What dropping the item on [from] onto [onto] does, whatever [onto] holds:
+  /// it moves to an empty cell, merges with the item it interacts with, or
+  /// trades places with any other; `null` when nothing happens (no item on
+  /// [from], the same cell, a cell off the board) and the board stays as it
+  /// is. The single entry point of a drop: the outcome never depends on the
+  /// order the rules are tried in.
+  BoardDrop? drop(BoardPosition from, BoardPosition onto) {
+    if (itemAt(from) == null || from == onto || !contains(onto)) {
+      return null;
+    }
+    if (itemAt(onto) == null) {
+      return BoardDrop.moved(board: move(from, onto)!);
+    }
+    if (interacts(from, onto)) {
+      final merged = mergeLarvae(from, onto) ?? mergeBees(from, onto);
+      return merged == null ? null : BoardDrop.merged(board: merged);
+    }
+    return BoardDrop.swapped(board: swap(from, onto)!);
   }
 
   /// What dropping the item on [from] onto [onto] does when [onto] is an

@@ -4,6 +4,7 @@ import 'dart:ui';
 
 // 🐦 Flutter imports:
 import 'package:flutter/foundation.dart' show ValueNotifier;
+import 'package:flutter/services.dart' show HapticFeedback;
 
 // 📦 Package imports:
 import 'package:flame/components.dart';
@@ -12,6 +13,7 @@ import 'package:flame/events.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/board/board.dart';
+import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
@@ -34,6 +36,8 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// the bee of the next level; dropped on an empty cell, an item moves there;
 /// dropped on a different item, the two swap places; otherwise it goes back to
 /// its cell.
+///
+/// A larva born and a merge are felt as a light and a medium haptic impact.
 ///
 /// The look follows the visual universe in `docs/DESIGN.md` ("Univers
 /// visuel").
@@ -71,6 +75,7 @@ class BoardComponent extends PositionComponent
   // component's coordinates; `null` when no item is being dragged.
   BoardPosition? _dragged;
   Vector2? _finger;
+  int? _dragPointer;
 
   /// Priority of a dragged item: above the selection frame and the items.
   static const draggedPriority = 2;
@@ -176,22 +181,32 @@ class BoardComponent extends PositionComponent
     super.onDragStart(event);
     // Whatever the tap recognizer reports next, this gesture is a drag.
     _tappedQueen = null;
+    // One item at a time: another finger cannot take over the drag.
+    if (_dragged != null) {
+      return;
+    }
     final cell = cellAt(event.localPosition);
-    if (board.itemAt(cell) == null) {
+    final item = _itemComponents[cell];
+    if (item == null) {
       return;
     }
     _dragged = cell;
+    _dragPointer = event.pointerId;
     _finger = event.localPosition.clone();
+    // A queen grabbed while shaking would carry the swing along.
+    _stopShake(item);
+    item
+      ..position.setFrom(itemPosition(cell))
+      ..priority = draggedPriority;
     selection.value = cell;
     // The notifier stays silent when the cell was already selected.
     _updateSelectionFrame();
-    _itemComponents[cell]!.priority = draggedPriority;
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
     final dragged = _dragged;
-    if (dragged == null) {
+    if (dragged == null || event.pointerId != _dragPointer) {
       return;
     }
     // Follow the finger by its displacement: it keeps working past the edge
@@ -204,64 +219,80 @@ class BoardComponent extends PositionComponent
   @override
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
-    unawaited(_drop());
+    if (event.pointerId == _dragPointer) {
+      unawaited(_drop());
+    }
   }
 
+  // A cancelled gesture is not a release: the item goes back to its cell.
   @override
+  // Flame's default turns a cancel into an end, hence no call to super.
+  // ignore: must_call_super
   void onDragCancel(DragCancelEvent event) {
-    super.onDragCancel(event);
-    unawaited(_drop());
+    if (event.pointerId == _dragPointer) {
+      if (_release() case (final from, final item)) {
+        item.position.setFrom(itemPosition(from));
+      }
+    }
   }
 
-  Future<void> _drop() async {
+  // Ends the drag in progress; gives the cell and the component that were held.
+  (BoardPosition, PositionComponent)? _release() {
     final from = _dragged;
-    final finger = _finger;
     _dragged = null;
+    _dragPointer = null;
     _finger = null;
-    if (from == null || finger == null) {
-      return;
+    if (from == null) {
+      return null;
     }
     final item = _itemComponents[from]!..priority = 0;
     _stopShake(item);
     // Shown again before the selection moves on, in the same frame.
     _updateSelectionFrame();
+    return (from, item);
+  }
+
+  Future<void> _drop() async {
+    final finger = _finger;
+    final released = _release();
+    if (released == null || finger == null) {
+      return;
+    }
+    final (from, item) = released;
     final onto = cellAt(finger);
-    final moved = board.move(from, onto);
-    if (moved != null) {
-      board = moved;
-      _itemComponents
-        ..remove(from)
-        ..[onto] = item;
-      item.position.setFrom(itemPosition(onto));
-      selection.value = onto;
-      return;
-    }
-    final swapped = board.swap(from, onto);
-    if (swapped != null) {
-      board = swapped;
-      final other = _itemComponents[onto]!;
-      _stopShake(other);
-      _itemComponents
-        ..[from] = other
-        ..[onto] = item;
-      other.position.setFrom(itemPosition(from));
-      item.position.setFrom(itemPosition(onto));
-      selection.value = onto;
-      return;
-    }
-    final merged = board.contains(onto)
-        ? board.mergeLarvae(from, onto) ?? board.mergeBees(from, onto)
-        : null;
-    if (merged == null) {
+    final result = board.drop(from, onto);
+    if (result == null) {
       item.position.setFrom(itemPosition(from));
       return;
     }
-    board = merged;
-    item.removeFromParent();
-    _itemComponents.remove(from);
-    _itemComponents.remove(onto)?.removeFromParent();
-    selection.value = onto;
-    await add(_componentFor(onto, board.itemAt(onto)!));
+    board = result.board;
+    switch (result) {
+      case ItemMoved():
+        _itemComponents
+          ..remove(from)
+          ..[onto] = item;
+        item.position.setFrom(itemPosition(onto));
+        selection.value = onto;
+      case ItemsSwapped():
+        final other = _itemComponents[onto]!;
+        _stopShake(other);
+        _itemComponents
+          ..[from] = other
+          ..[onto] = item;
+        other.position.setFrom(itemPosition(from));
+        item.position.setFrom(itemPosition(onto));
+        selection.value = onto;
+      case ItemsMerged():
+        item.removeFromParent();
+        _itemComponents
+          ..remove(from)
+          ..remove(onto)?.removeFromParent();
+        unawaited(HapticFeedback.mediumImpact());
+        // Mounted before the selection moves, so the frame never marks a
+        // cell without its item.
+        await add(_componentFor(onto, board.itemAt(onto)!));
+        selection.value = onto;
+    }
   }
 
   PositionComponent _componentFor(BoardPosition position, BoardItem item) {
@@ -287,6 +318,7 @@ class BoardComponent extends PositionComponent
     switch (board.spawnLarva(queen)) {
       case LarvaCreated(board: final updated, :final position):
         board = updated;
+        unawaited(HapticFeedback.lightImpact());
         await add(_componentFor(position, board.itemAt(position)!));
       case BoardFull():
         await _shake(queen);
