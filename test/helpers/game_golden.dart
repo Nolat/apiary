@@ -13,7 +13,7 @@ import 'package:apiary/presentation/game/apiary_game.dart';
 /// docs/TESTING.md.
 const goldenTag = 'golden';
 
-/// Renders a full [ApiaryGame] at its minimum size (224×398, device pixel
+/// Renders a full [ApiaryGame] at its minimum size (140×246, device pixel
 /// ratio 1: the tightest layout, the iPhone SE's) and compares it to
 /// [goldenFile], so one golden pixel is one game pixel.
 ///

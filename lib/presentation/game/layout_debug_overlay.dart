@@ -20,8 +20,8 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// - a 1-game-pixel outline inside each [ScreenLayout] band, 1 pixel in from
 ///   its edges so adjacent bands stay apart: [AppColors.honey] for the
 ///   board, [AppColors.accent] for the others (the spacer has none);
-/// - a checkerboard of 1-game-pixel [AppColors.accent] squares in the board's
-///   corner, each ⌊s⌋ or ⌈s⌉ physical pixels wide for a scale s. It is a
+/// - a checkerboard of 1-game-pixel [AppColors.accent] squares centered in the
+///   board's first cell, each ⌊s⌋ or ⌈s⌉ physical pixels wide for a scale s. It is a
 ///   16×16 image drawn like a sprite (nearest-neighbor), so it shows how
 ///   pixel art renders: shapes, like the outlines, get soft edges at a
 ///   fractional scale (Impeller always anti-aliases geometry), image pixels
@@ -29,12 +29,14 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// - the scale and screen size, as text, in the board under the
 ///   checkerboard.
 class LayoutDebugOverlay extends Component with HasGameReference<ApiaryGame> {
-  static const enabled = bool.fromEnvironment('APIARY_LAYOUT_DEBUG');
+  // static const enabled = bool.fromEnvironment('APIARY_LAYOUT_DEBUG');
+  static const enabled = true;
 
-  /// Offset from the board's corner and size of the checkerboard, in game
-  /// pixels.
-  static const checkerboardOffset = 8.0;
+  /// Size of the checkerboard, in game pixels, and its offset from the
+  /// board's corner: centered in the board's first cell.
   static const checkerboardSize = 16;
+  static const double checkerboardOffset =
+      (ScreenLayout.cellSize - checkerboardSize) / 2;
 
   final _boardPaint = Paint()..color = AppColors.honey;
   final _bandPaint = Paint()..color = AppColors.accent;
@@ -113,7 +115,10 @@ class LayoutDebugOverlay extends Component with HasGameReference<ApiaryGame> {
       checkerboardSize.toDouble(),
     );
     _label
-      ..position.setValues(layout.board.left + 8, layout.board.top + 30)
+      ..position.setValues(
+        layout.board.left + checkerboardOffset,
+        layout.board.top + 30,
+      )
       ..text =
           '×${game.gameViewport.pixelScale.toStringAsFixed(3)} · '
           '${layout.screen.width.toStringAsFixed(1)}×'

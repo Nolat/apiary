@@ -136,8 +136,8 @@ void main() {
     }
 
     test('fits every safe area from the minimum size up', () {
-      for (var width = 224.0; width <= 330; width += 7.3) {
-        for (var height = 398.0; height <= 600; height += 13.7) {
+      for (var width = 140.0; width <= 330; width += 7.3) {
+        for (var height = 246.0; height <= 600; height += 13.7) {
           final safeArea = Rect.fromLTWH(0.4, 9.1, width, height);
           final layout = ScreenLayout.compute(
             screen: Rect.fromLTWH(0, 0, width + 1, height + 20),
@@ -150,16 +150,16 @@ void main() {
     });
 
     test('spans the whole width of an iPhone with its board', () {
-      // iPhone 18 Pro: 224×487 game pixels, safe from 34.5 to 468.1.
+      // iPhone 18 Pro: 140×304.4 game pixels, safe from 21.6 to 292.5.
       final layout = ScreenLayout.compute(
-        screen: const Rect.fromLTWH(0, 0, 224, 487),
-        safeArea: const Rect.fromLTRB(0, 34.55, 224, 468.06),
+        screen: const Rect.fromLTWH(0, 0, 140, 304.4),
+        safeArea: const Rect.fromLTRB(0, 21.59, 140, 292.54),
       );
 
-      expect(layout.board, const Rect.fromLTWH(0, 468 - 32 - 288, 224, 288));
-      expect(layout.hud.top, 35);
-      expect(layout.bottomBar.bottom, 468);
-      expect(layout.spacer.height, 468 - 35 - 392);
+      expect(layout.board, const Rect.fromLTWH(0, 293 - 16 - 180, 140, 180));
+      expect(layout.hud.top, 22);
+      expect(layout.bottomBar.bottom, 293);
+      expect(layout.spacer.height, (293 - 16 - 180) - (22 + 12 + 32));
     });
   });
 }

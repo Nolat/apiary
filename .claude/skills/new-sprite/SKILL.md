@@ -6,7 +6,7 @@ argument-hint: <name> <path to x1 png> [path to x2 png]
 
 Add this pixel-art asset to Apiary: $ARGUMENTS
 
-Art direction (`docs/DESIGN.md`, "Direction artistique"; `CLAUDE.md`, "Rendering"; `docs/STACK.md`): pixel art, the screen is **224 game pixels wide** (minimum safe area 224×398, taller on most phones, wider on tablets), assets also supplied at ×2. The board is a 7×9 grid of **32×32 px** cells at x1 (**64×64** at ×2) — `ScreenLayout.cellSize` (`lib/presentation/game/screen_layout.dart`). The viewport scale is **fractional** (screen width ÷ 224 on iPhone), so pixel art is drawn **nearest-neighbor** (`FilterQuality.none`), never smoothed; and since Impeller anti-aliases drawn shapes at fractional scales, pixel art must be images (sprites), not `drawRect`/`Path` shapes.
+Art direction (`docs/DESIGN.md`, "Direction artistique"; `CLAUDE.md`, "Rendering"; `docs/STACK.md`): pixel art, the screen is **140 game pixels wide** (minimum safe area 140×246, taller on most phones, wider on tablets), assets also supplied at ×2. The board is a 7×9 grid of **20×20 px** cells at x1 (**40×40** at ×2), holding **16×16 px** items at x1 (**32×32** at ×2, centered) — `ScreenLayout.cellSize` (`lib/presentation/game/screen_layout.dart`). The viewport scale is **fractional** (screen width ÷ 140 on iPhone), so pixel art is drawn **nearest-neighbor** (`FilterQuality.none`), never smoothed; and since Impeller anti-aliases drawn shapes at fractional scales, pixel art must be images (sprites), not `drawRect`/`Path` shapes.
 
 ## 1. Validate the files
 
@@ -14,7 +14,7 @@ Art direction (`docs/DESIGN.md`, "Direction artistique"; `CLAUDE.md`, "Rendering
 python3 "${CLAUDE_SKILL_DIR}/check_sprite.py" <x1.png> [<x2.png>] [--size 32x32]
 ```
 
-Pass `--size` when the expected size is known (32x32 — `ScreenLayout.cellSize` — for anything that sits in a board cell; for a sprite sheet, the full sheet size). Any `ERROR` blocks the import: report it to the user rather than "fixing" the art yourself (resampling or re-thresholding alpha changes the artist's pixels). Mention the `INFO` lines too.
+Pass `--size` when the expected size is known (16x16 for an item that sits in a board cell — `ScreenLayout.cellSize` (20) minus 2 px of margin per side — or 20x20 for the cell itself; for a sprite sheet, the full sheet size). Any `ERROR` blocks the import: report it to the user rather than "fixing" the art yourself (resampling or re-thresholding alpha changes the artist's pixels). Mention the `INFO` lines too.
 
 For a **sprite sheet**, also ask (or read from the file name) the frame size and frame count, and check the sheet size is an exact multiple of the frame size.
 
@@ -34,7 +34,7 @@ For a **sprite sheet**, also ask (or read from the file name) the frame size and
 
 ## 4. Golden
 
-Add or extend a golden (`testGameGolden`, see `docs/TESTING.md`) showing the sprite in context — e.g. on the board — at x1, one pixel per game pixel (`testGameGolden` renders at the 224×398 minimum, DPR 1). Generate it on macOS with `fvm flutter test --update-goldens --tags golden <file>`, open the PNG, and check the sprite's pixels are crisp (no blending at the edges).
+Add or extend a golden (`testGameGolden`, see `docs/TESTING.md`) showing the sprite in context — e.g. on the board — at x1, one pixel per game pixel (`testGameGolden` renders at the 140×246 minimum, DPR 1). Generate it on macOS with `fvm flutter test --update-goldens --tags golden <file>`, open the PNG, and check the sprite's pixels are crisp (no blending at the edges).
 
 ## 5. Check
 

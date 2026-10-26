@@ -42,27 +42,27 @@ void main() {
       'maps one game pixel to one pixel at the minimum size',
       gameWith(devicePixelRatio: 1),
       (game) async {
-        game.onGameResize(Vector2(224, 398));
+        game.onGameResize(Vector2(140, 246));
         final viewport = viewportFor(game);
 
         expect(viewport.pixelScale, 1);
-        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 224, 398));
-        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 224, 398));
+        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 246));
+        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 246));
       },
     );
 
     testWithGame<FlameGame>(
-      'is exactly 224 game pixels wide on an iPhone, its height varying',
+      'is exactly 140 game pixels wide on an iPhone, its height varying',
       iPhonePro,
       (game) async {
         game.onGameResize(iPhoneProSize);
         final viewport = viewportFor(game);
 
-        // min(1206 / 224, 2334 / 398): the width limits, ×5.384.
-        const scale = 1206 / 224;
+        // min(1206 / 140, 2334 / 246): the width limits, ×8.614.
+        const scale = 1206 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.scale.x, closeTo(scale / 3, 1e-6));
-        expect(viewport.visibleArea.width, closeTo(224, 1e-4));
+        expect(viewport.visibleArea.width, closeTo(140, 1e-4));
         expect(viewport.visibleArea.height, closeTo(2622 / scale, 1e-4));
         expect(viewport.safeArea.top, closeTo(186 / scale, 1e-4));
         expect(viewport.safeArea.bottom, closeTo(2520 / scale, 1e-4));
@@ -77,10 +77,10 @@ void main() {
         game.onGameResize(Vector2(375, 667));
         final viewport = viewportFor(game);
 
-        // min(750 / 224, 1334 / 398): still the width, 224×398.4.
-        expect(viewport.pixelScale, closeTo(750 / 224, 1e-6));
-        expect(viewport.visibleArea.width, closeTo(224, 1e-4));
-        expect(viewport.visibleArea.height, greaterThanOrEqualTo(398));
+        // min(750 / 140, 1334 / 246): still the width, 140×249.
+        expect(viewport.pixelScale, closeTo(750 / 140, 1e-6));
+        expect(viewport.visibleArea.width, closeTo(140, 1e-4));
+        expect(viewport.visibleArea.height, greaterThanOrEqualTo(246));
       },
     );
 
@@ -96,10 +96,10 @@ void main() {
         game.onGameResize(Vector2(1032, 1376));
         final viewport = viewportFor(game);
 
-        // min(2064 / 224, 2664 / 398) = 6.693: 308 game pixels wide.
-        const scale = 2664 / 398;
+        // min(2064 / 140, 2664 / 246) = 10.83: 191 game pixels wide.
+        const scale = 2664 / 246;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
-        expect(viewport.safeArea.height, closeTo(398, 1e-4));
+        expect(viewport.safeArea.height, closeTo(246, 1e-4));
         expect(viewport.visibleArea.width, closeTo(2064 / scale, 1e-4));
       },
     );
@@ -115,12 +115,12 @@ void main() {
         game.onGameResize(Vector2(466, 678));
         final viewport = viewportFor(game);
 
-        // min(1146 / 224, 2034 / 398): the height limits, just.
-        const scale = 2034 / 398;
+        // min(1146 / 140, 2034 / 246): the width limits, just.
+        const scale = 1146 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.safeArea.left, 0);
-        expect(viewport.safeArea.width, closeTo(1146 / scale, 1e-4));
-        expect(viewport.safeArea.width, greaterThanOrEqualTo(224));
+        expect(viewport.safeArea.width, closeTo(140, 1e-4));
+        expect(viewport.safeArea.height, greaterThanOrEqualTo(246));
       },
     );
 
@@ -133,8 +133,8 @@ void main() {
 
         final screenPoint = game.camera.localToGlobal(worldPoint);
 
-        // 30 × 5.384 / 3 and 270 × 5.384 / 3 logical pixels.
-        const scale = 1206 / 224;
+        // 30 × 8.614 / 3 and 270 × 8.614 / 3 logical pixels.
+        const scale = 1206 / 140;
         expect(screenPoint.x, closeTo(30 * scale / 3, 1e-3));
         expect(screenPoint.y, closeTo(270 * scale / 3, 1e-3));
         final back = game.camera.globalToLocal(screenPoint);

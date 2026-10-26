@@ -22,7 +22,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         await game.ready();
-        // Wider than 224×398: the screen is more than 224 game pixels wide.
+        // Wider than 140×246: the screen is more than 140 game pixels wide.
         game.onGameResize(Vector2(600, 800));
 
         final decor = game.world
@@ -30,7 +30,7 @@ void main() {
             .whereType<DecorComponent>()
             .single;
         final visibleArea = game.visibleArea;
-        expect(visibleArea.width, greaterThan(224));
+        expect(visibleArea.width, greaterThan(140));
         expect(decor.position.x, closeTo(visibleArea.left, 1e-4));
         expect(decor.position.y, closeTo(visibleArea.top, 1e-4));
         expect(decor.size.x, closeTo(visibleArea.width, 1e-4));
@@ -39,7 +39,7 @@ void main() {
     );
 
     for (final (name, screenSize) in [
-      ('the minimum screen', Vector2(224, 398)),
+      ('the minimum screen', Vector2(140, 246)),
       ('a tall phone', Vector2(393, 852)),
       ('a tablet', Vector2(1024, 1366)),
     ]) {

@@ -39,7 +39,7 @@ Title: `<Titre à l'infinitif>` (no `US-NNN`, the Linear ID replaces it). Descri
 
 ## Assets
 
-- <Sprite, bouton, police… que la story introduit, avec sa taille en pixels de jeu (ex. « Larve de la famille Commune, 32×32 »)>
+- <Sprite, bouton, police… que la story introduit, avec sa taille en pixels de jeu (ex. « Larve de la famille Commune, 16×16 »)>
   (ou « - Aucun. »)
 
 ## Dépendances

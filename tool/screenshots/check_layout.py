@@ -3,7 +3,7 @@
 Measures the LayoutDebugOverlay test card (lib/presentation/game/
 layout_debug_overlay.dart) on each screenshot, for a scale s (physical
 pixels per game pixel, usually fractional), and checks that:
-- the board is 224s x 288s physical pixels;
+- the board is 140s x 180s physical pixels;
 - on an iPhone it spans the full width, edge to edge; on the screens given
   with --centered=shot.png (tablets, foldables: the height limits) it is
   centered instead — off center is only a warning there, the safe area may
@@ -28,7 +28,7 @@ import sys
 
 from PIL import Image, ImageChops
 
-BOARD = (224, 288)  # game pixels, see ScreenLayout
+BOARD = (140, 180)  # game pixels, see ScreenLayout
 CHECKERBOARD_OFFSET = 8  # game pixels from the board's corner
 CHECKERBOARD_SIZE = 16
 HONEY = (0xF2, 0xC1, 0x4E)  # AppColors.honey: board outline
@@ -95,7 +95,7 @@ def check(path, downsampled=False, centered=False):
     failures, warnings = [], []
 
     if abs(board_height - BOARD[1] * scale) > 2:
-        failures.append(f"board is {board_width}x{board_height}, not 224s x 288s")
+        failures.append(f"board is {board_width}x{board_height}, not 140s x 180s")
 
     if centered:
         # The board's left edge is rounded to a whole game pixel.

@@ -27,7 +27,7 @@ void main() {
     }
 
     testWithGame<ApiaryGame>(
-      'is a 224×288 grid of 7×9 cells of 32×32',
+      'is a 140×180 grid of 7×9 cells of 20×20',
       ApiaryGame.new,
       (game) async {
         final cells = await cellsOf(game);
@@ -36,15 +36,15 @@ void main() {
             .whereType<BoardComponent>()
             .single;
 
-        expect(board.size, Vector2(224, 288));
+        expect(board.size, Vector2(140, 180));
         expect(cells, hasLength(63));
         for (final cell in cells) {
-          expect(cell.size, Vector2.all(32));
+          expect(cell.size, Vector2.all(20));
         }
         final columns = cells.map((cell) => cell.position.x).toSet();
         final rows = cells.map((cell) => cell.position.y).toSet();
-        expect(columns, {for (var i = 0; i < 7; i++) i * 32.0});
-        expect(rows, {for (var i = 0; i < 9; i++) i * 32.0});
+        expect(columns, {for (var i = 0; i < 7; i++) i * 20.0});
+        expect(rows, {for (var i = 0; i < 9; i++) i * 20.0});
         expect(
           cells.map((cell) => (cell.position.x, cell.position.y)).toSet(),
           hasLength(63),
@@ -58,7 +58,7 @@ void main() {
       (game) async {
         final cells = {
           for (final cell in await cellsOf(game))
-            (cell.position.x ~/ 32, cell.position.y ~/ 32): cell,
+            (cell.position.x ~/ 20, cell.position.y ~/ 20): cell,
         };
 
         for (final MapEntry(key: (column, row), value: cell) in cells.entries) {

@@ -13,7 +13,7 @@ void main() {
 
   group('DecorComponent', () {
     for (final (name, screenSize) in [
-      ('the minimum screen', Vector2(224, 398)),
+      ('the minimum screen', Vector2(140, 246)),
       ('a tablet', Vector2(1024, 1366)),
     ]) {
       testWithGame<ApiaryGame>(
@@ -30,8 +30,8 @@ void main() {
           final board = game.layout.board;
           final offset = decor.tileOffset;
           // A tile starts on the board's corner, in the decor's coordinates.
-          expect((board.left - decor.position.x - offset.dx) % 32, 0);
-          expect((board.top - decor.position.y - offset.dy) % 32, 0);
+          expect((board.left - decor.position.x - offset.dx) % 20, 0);
+          expect((board.top - decor.position.y - offset.dy) % 20, 0);
           expect(offset.dx, inInclusiveRange(0, 31));
           expect(offset.dy, inInclusiveRange(0, 31));
         },

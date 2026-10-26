@@ -20,7 +20,7 @@ class ApiaryGame extends FlameGame {
         ),
       );
 
-  /// The smallest safe area the game lays out in, in game pixels: 224 wide
+  /// The smallest safe area the game lays out in, in game pixels: 140 wide
   /// (the board's width, see `docs/DESIGN.md`), the height varying above.
   static final Vector2 minimumSize = Vector2(
     ScreenLayout.minimumSafeSize.width,

@@ -10,11 +10,11 @@ import 'package:flutter/foundation.dart' show immutable;
 ///
 /// ```text
 /// ┌─ safe area ─────────────┐  decor ([screen]) extends under the system UI
-/// │ hud           16 fixed  │  ← pinned to the top
-/// │ orders        56 fixed  │
-/// │ spacer       ≥ 6 flex   │  ← 6 (iPhone SE) to ~70 (iPhone Pro Max)
-/// │ board    224×288 fixed  │  ← 7×9 cells of 32, centered
-/// │ bottomBar     32 fixed  │  ← pinned to the bottom
+/// │ hud           12 fixed  │  ← pinned to the top
+/// │ orders        32 fixed  │
+/// │ spacer       ≥ 6 flex   │  ← 9 (iPhone SE) to ~50 (iPhone Pro Max)
+/// │ board    140×180 fixed  │  ← 7×9 cells of 20, centered
+/// │ bottomBar     16 fixed  │  ← pinned to the bottom
 /// └─────────────────────────┘
 /// ```
 ///
@@ -22,7 +22,7 @@ import 'package:flutter/foundation.dart' show immutable;
 /// the screen is exactly that wide — it fills the width, edge to edge; on
 /// tablets and foldables, where the height limits the scale, it is as large
 /// as the height allows, centered. The other bands span the safe area's width
-/// (224 on iPhones, up to ~310 on iPads, where panels widen through
+/// (140 on iPhones, up to ~190 on iPads, where panels widen through
 /// 9-slices). Edges are whole pixels. Pure: a scene recomputes it from
 /// `ApiaryGame.layout` in `onGameResize`. Band heights other than the
 /// board's are placeholders until the HUD and orders are designed.
@@ -44,8 +44,8 @@ class ScreenLayout {
     required Rect safeArea,
   }) {
     // Whole pixels, rounded to the nearest: the bands overflow the safe
-    // area by less than half a game pixel at most, but a 240-wide safe area
-    // always holds the 240-wide board.
+    // area by less than half a game pixel at most, but a 140-wide safe area
+    // always holds the 140-wide board.
     final left = safeArea.left.roundToDouble();
     final top = safeArea.top.roundToDouble();
     final right = safeArea.right.roundToDouble();
@@ -80,15 +80,15 @@ class ScreenLayout {
     );
   }
 
-  static const hudHeight = 16.0;
-  static const ordersHeight = 56.0;
-  static const bottomBarHeight = 32.0;
+  static const hudHeight = 12.0;
+  static const ordersHeight = 32.0;
+  static const bottomBarHeight = 16.0;
 
   static const boardColumns = 7;
   static const boardRows = 9;
 
-  /// A cell's size, and its sprites' (×1 assets; ×2 ones are 64×64).
-  static const cellSize = 32.0;
+  /// A cell's size, and its sprites' (×1 assets; ×2 ones are 40×40).
+  static const cellSize = 20.0;
   static const boardSize = Size(boardColumns * cellSize, boardRows * cellSize);
 
   /// Height of the fixed bands, stacked.
@@ -98,8 +98,8 @@ class ScreenLayout {
   static const minimumSpacerHeight = 6.0;
 
   /// The smallest safe area the layout fits: the board's width, and the
-  /// fixed bands' height plus the minimum spacer — 398, which the iPhone SE,
-  /// the tightest screen, just meets (398.4).
+  /// fixed bands' height plus the minimum spacer — 246, which the iPhone SE,
+  /// the tightest screen, just meets (249.0).
   static const minimumSafeSize = Size(
     boardColumns * cellSize,
     fixedHeight + minimumSpacerHeight,
