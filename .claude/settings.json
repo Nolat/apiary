@@ -2,7 +2,12 @@
   "permissions": {
     "deny": [
       "Read(./.env.sentry)",
-      "Edit(./.env.sentry)"
+      "Edit(./.env.sentry)",
+      "Read(./build/**)",
+      "Read(./.dart_tool/**)",
+      "Read(./ios/Pods/**)",
+      "Read(./**/*.g.dart)",
+      "Read(./**/*.freezed.dart)"
     ]
   },
   "hooks": {

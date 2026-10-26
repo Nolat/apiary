@@ -1,5 +1,6 @@
 ---
 name: test-writer
+model: sonnet
 description: Writes tests for Apiary code following docs/TESTING.md — glados property tests for lib/domain, in-memory Drift and Firebase mocks for lib/data, testWithGame and pixel-perfect goldens for Flame scenes. Use when new code needs tests or when asked to raise coverage of a file or feature.
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---

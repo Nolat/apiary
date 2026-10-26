@@ -1,5 +1,6 @@
 ---
 name: firestore-security-reviewer
+model: sonnet
 description: Audits Apiary's Firestore security — firestore.rules, the data-layer repositories and any Cloud Functions — for cross-user access, client-writable economic values, missing write validation and costly access patterns. Use whenever firestore.rules, a Firestore repository or a Cloud Function changes, and before deploying rules.
 tools: Read, Grep, Glob, Bash
 ---

@@ -1,5 +1,6 @@
 ---
 name: architecture-reviewer
+model: sonnet
 description: Reviews uncommitted changes (or a given set of files) against Apiary's code conventions — layering, determinism, Flame component rules, logging, i18n, generated code. Use after implementing a feature or before the user commits, and whenever a change touches several layers of lib/.
 tools: Read, Grep, Glob, Bash
 ---

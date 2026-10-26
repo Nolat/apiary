@@ -68,9 +68,9 @@ Title: `<Titre à l'infinitif>` (no `US-NNN`, the Linear ID replaces it). Descri
 **`init`** (or team APY has no projects): read DESIGN.md (all sections, including "À trancher", "Risque connu", "Chantiers à part") and the code (what is already implemented). Propose to the user a list of epics in priority order, core loop first (plateau → fusion larves/abeilles → ruches/ressources → commandes → fin de journée → énergie → incubateur/mutations → Apidex), and get it validated. Create one project per epic (numeric prefix, framing sentence in `summary`) and the "À définir" document filled from DESIGN.md's open questions. Then frame the first story as with `add`.
 
 **`add <besoin>`** — frame one story:
-1. Locate the need in DESIGN.md and in the existing issues of team APY (which epic, what it extends, what it depends on). If it is really two behaviours, propose the split.
+1. Locate the need in DESIGN.md (grep the section, don't read the whole file) and in the existing issues of its epic only (which epic, what it extends, what it depends on) — see "Token economy". If it is really two behaviours, propose the split.
 2. Ask the user the questions the docs don't answer (exact behaviour, edge cases, values, scope boundary) — with `AskUserQuestion` when there are clear options. Don't invent game rules: anything undecided becomes "à définir".
-3. Show the drafted story in full, adjust it with the user, then create the issue in its epic's project, with its `blockedBy` relations. Update the stories it extends (a mention in their Contexte, e.g. "précisée par APY-N") and the "À définir" document.
+3. Show the drafted story in full, adjust it with the user, then create the issue in its epic's project, with its `blockedBy` relations, without re-printing the story afterwards. Update the stories it extends (a mention in their Contexte, e.g. "précisée par APY-N") and the "À définir" document only when something actually changed there.
 4. Say where it went and why (with the issue's URL), and suggest the next story to frame (update the "Prochaine story à cadrer" section).
 
 **`done <APY-N>`**: check the work is really there (code, tests covering the acceptance criteria) before closing it. Then set the issue's status to `Done` and add a comment listing what covers each criterion. If only some criteria are met, say which, and propose splitting off the remainder as a new story instead of closing it.
@@ -78,5 +78,17 @@ Title: `<Titre à l'infinitif>` (no `US-NNN`, the Linear ID replaces it). Descri
 **`prioritize`**: re-read DESIGN.md, the backlog and the code, propose a new order (of epics, and of stories within an epic) with a one-line reason per move, and apply it after the user agrees: rename projects to change their prefix, adjust `blockedBy` relations, and tell the user which issues to drag in the Linear view. Moving stories never changes their IDs; check that no story now comes before one it depends on.
 
 **A question** ("qu'est-ce qui vient ensuite ?"): answer from Linear — the first story of the highest-priority epic that is not done and whose dependencies are all done; don't edit anything unless asked.
+
+## Token economy
+
+The Linear tools return full issue descriptions and every call re-sends the whole conversation, so keep reads and writes small:
+
+- **Never list the whole team.** `list_issues` always with `project` (the epic), a small `limit` (≤ 15) and no description needed when only titles/IDs matter; `get_issue` only for the few stories actually extended or depended on. `list_projects` once per session, reuse the result.
+- **Read DESIGN.md by section** (grep the heading, read that range), except for `init`.
+- **Fetch the "À définir" document once per session**, and when updating it, do it once at the end of a batch of stories, not after each one.
+- **Don't re-display** a story already shown and validated: create it, then report only the identifier and URL.
+- **Batch**: when the user validates several stories in a session, create them back to back; one `save_comment` or one Contexte edit per extended story, not several.
+- **Keep sessions short**: after about 3–4 stories, or when changing epic, suggest the user run `/clear` (the state lives in Linear, the next session rebuilds it from the epic's issues). This skill needs no memory of earlier stories.
+- The skill needs no big model: suggest `/model sonnet` for backlog sessions.
 
 Never commit; end with a summary in French of what changed in Linear, with the URLs of the issues, projects or documents touched.

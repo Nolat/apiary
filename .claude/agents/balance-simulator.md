@@ -1,5 +1,6 @@
 ---
 name: balance-simulator
+model: sonnet
 description: Runs headless simulations of Apiary's game rules (lib/domain) to check balancing — energy per day, board crowding, order feasibility, mutation pacing — against the orders of magnitude in docs/DESIGN.md. Use when balancing values or order generation change, or when the user asks whether a day or the progression curve is well tuned.
 tools: Read, Grep, Glob, Edit, Write, Bash
 ---
