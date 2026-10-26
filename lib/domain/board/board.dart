@@ -121,6 +121,27 @@ abstract class Board with _$Board {
     );
   }
 
+  /// What dropping the item on [from] onto [onto] does when [onto] is an
+  /// empty cell of the grid: the item moves there and [from] is freed; `null`
+  /// otherwise (no item on [from], an occupied or off-board [onto], the same
+  /// cell) and the board stays as it is.
+  Board? move(BoardPosition from, BoardPosition onto) {
+    final dragged = itemAt(from);
+    if (from == onto || dragged == null || !contains(onto)) {
+      return null;
+    }
+    if (itemAt(onto) != null) {
+      return null;
+    }
+    return copyWith(
+      items: {
+        for (final MapEntry(:key, :value) in items.entries)
+          if (key != from) key: value,
+        onto: dragged,
+      },
+    );
+  }
+
   /// What dropping the larva on [from] onto [onto] does: the two larvae
   /// disappear and a bee of their family appears on [onto]; `null` when the
   /// drop is not a merge (a different or no item, another family's larva, the

@@ -324,4 +324,63 @@ void main() {
       );
     });
   });
+
+  group('Board.move', () {
+    const larva = BoardItem.larva(family: Family.common);
+    const from = BoardPosition(column: 1, row: 1);
+    const empty = BoardPosition(column: 5, row: 6);
+    final board = Board.initial().copyWith(
+      items: {...Board.initial().items, from: larva},
+    );
+
+    test('moves an item to an empty cell and frees its origin', () {
+      final moved = board.move(from, empty)!;
+
+      expect(moved.itemAt(from), isNull);
+      expect(moved.itemAt(empty), larva);
+      expect(moved.items, hasLength(board.items.length));
+    });
+
+    test('moves the queen too', () {
+      const queen = Board.startingQueenPosition;
+      final moved = board.move(queen, empty)!;
+
+      expect(moved.itemAt(queen), isNull);
+      expect(moved.itemAt(empty), board.itemAt(queen));
+    });
+
+    test('leaves the original board untouched', () {
+      board.move(from, empty);
+
+      expect(board.itemAt(from), larva);
+      expect(board.itemAt(empty), isNull);
+    });
+
+    test('does nothing on its own cell, an occupied or off-board cell', () {
+      for (final target in [
+        from,
+        Board.startingQueenPosition,
+        const BoardPosition(column: -1, row: 0),
+        const BoardPosition(column: 0, row: Board.rows),
+      ]) {
+        expect(board.move(from, target), isNull);
+      }
+    });
+
+    test('does nothing when there is no item to move', () {
+      expect(board.move(empty, const BoardPosition(column: 0, row: 0)), isNull);
+    });
+
+    Glados2(any.boardPosition, any.boardPosition).test(
+      'keeps the number of items and fills only the target',
+      (a, b) {
+        final moved = board.move(a, b);
+        if (moved != null) {
+          expect(moved.items, hasLength(board.items.length));
+          expect(moved.itemAt(b), board.itemAt(a));
+          expect(moved.itemAt(a), isNull);
+        }
+      },
+    );
+  });
 }

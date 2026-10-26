@@ -26,10 +26,12 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// [ScreenLayout.board].
 ///
 /// Tapping an item selects it ([selection]), marked by a frame on its cell.
-/// Tapping a selected queen creates a larva next to her; when the board is
-/// full, the queen shakes instead. A larva can be dragged: it follows the
-/// finger, merges into a bee when dropped on a larva of the same family, and
-/// otherwise goes back to its cell.
+/// Lifting the finger from a selected queen creates a larva next to her; when
+/// the board is full, the queen shakes instead. A drag never does: it cancels
+/// the tap. Any item can be dragged: it follows the finger and is selected.
+/// Dropped on a larva of the same family, a larva merges into a bee; dropped
+/// on an empty cell, an item moves there; otherwise it goes back to its
+/// cell.
 ///
 /// The look follows the visual universe in `docs/DESIGN.md` ("Univers
 /// visuel").
@@ -59,8 +61,12 @@ class BoardComponent extends PositionComponent
   late final SpriteComponent _selectionFrame;
   final _itemComponents = <BoardPosition, PositionComponent>{};
 
-  // The cell of the larva being dragged, and where the finger is, in this
-  // component's coordinates; `null` when no larva is being dragged.
+  // The queen the current tap started on while she was already selected: she
+  // makes a larva when the tap ends, unless it turns into a drag.
+  BoardPosition? _tappedQueen;
+
+  // The cell of the item being dragged, and where the finger is, in this
+  // component's coordinates; `null` when no item is being dragged.
   BoardPosition? _dragged;
   Vector2? _finger;
 
@@ -147,24 +153,36 @@ class BoardComponent extends PositionComponent
       return;
     }
     final item = board.itemAt(tapped);
-    if (item is Queen && selection.value == tapped) {
-      unawaited(_spawnLarva(tapped));
-      return;
-    }
+    _tappedQueen = item is Queen && selection.value == tapped ? tapped : null;
     selection.value = board.selectionAfterTap(selection.value, tapped);
   }
 
   @override
+  void onTapUp(TapUpEvent event) {
+    final queen = _tappedQueen;
+    _tappedQueen = null;
+    if (queen != null) {
+      unawaited(_spawnLarva(queen));
+    }
+  }
+
+  @override
+  void onTapCancel(TapCancelEvent event) => _tappedQueen = null;
+
+  @override
   void onDragStart(DragStartEvent event) {
     super.onDragStart(event);
+    // Whatever the tap recognizer reports next, this gesture is a drag.
+    _tappedQueen = null;
     final cell = cellAt(event.localPosition);
-    // The queen cannot be dragged yet.
-    if (board.itemAt(cell) is! Larva) {
+    if (board.itemAt(cell) == null) {
       return;
     }
     _dragged = cell;
     _finger = event.localPosition.clone();
     selection.value = cell;
+    // The notifier stays silent when the cell was already selected.
+    _updateSelectionFrame();
     _itemComponents[cell]!.priority = draggedPriority;
   }
 
@@ -201,15 +219,27 @@ class BoardComponent extends PositionComponent
     if (from == null || finger == null) {
       return;
     }
-    final larva = _itemComponents[from]!..priority = 0;
+    final item = _itemComponents[from]!..priority = 0;
+    // Shown again before the selection moves on, in the same frame.
+    _updateSelectionFrame();
     final onto = cellAt(finger);
+    final moved = board.move(from, onto);
+    if (moved != null) {
+      board = moved;
+      _itemComponents
+        ..remove(from)
+        ..[onto] = item;
+      item.position.setFrom(itemPosition(onto));
+      selection.value = onto;
+      return;
+    }
     final merged = board.contains(onto) ? board.mergeLarvae(from, onto) : null;
     if (merged == null) {
-      larva.position.setFrom(itemPosition(from));
+      item.position.setFrom(itemPosition(from));
       return;
     }
     board = merged;
-    larva.removeFromParent();
+    item.removeFromParent();
     _itemComponents.remove(from);
     _itemComponents.remove(onto)?.removeFromParent();
     selection.value = onto;
@@ -268,7 +298,8 @@ class BoardComponent extends PositionComponent
 
   void _updateSelectionFrame() {
     final selected = selection.value;
-    _selectionFrame.opacity = selected == null ? 0 : 1;
+    // Hidden while an item is dragged: the item itself shows it is held.
+    _selectionFrame.opacity = selected == null || _dragged != null ? 0 : 1;
     if (selected != null) {
       _selectionFrame.position.setValues(
         selected.column * ScreenLayout.cellSize,

@@ -17,18 +17,38 @@ Future<BoardComponent> boardOf(ApiaryGame game) async {
   return game.world.descendants().whereType<BoardComponent>().single;
 }
 
-/// Taps the middle of [cell] as the player would, through Flame's tap
-/// dispatcher.
-void tapCell(ApiaryGame game, BoardComponent board, BoardPosition cell) {
-  final inBoard = Vector2((cell.column + 0.5) * 20, (cell.row + 0.5) * 20);
+Offset _screenOfCell(ApiaryGame game, BoardComponent board, BoardPosition c) {
+  final inBoard = Vector2((c.column + 0.5) * 20, (c.row + 0.5) * 20);
   final screen = game.camera.localToGlobal(board.absolutePositionOf(inBoard));
-  (game.findByKey(const MultiTapDispatcherKey())! as MultiTapDispatcher)
-      .onTapDown(
-        createTapDownEvents(
-          game: game,
-          globalPosition: Offset(screen.x, screen.y),
-        ),
-      );
+  return Offset(screen.x, screen.y);
+}
+
+MultiTapDispatcher _tapDispatcher(ApiaryGame game) =>
+    game.findByKey(const MultiTapDispatcherKey())! as MultiTapDispatcher;
+
+/// Puts a finger down on the middle of [cell], through Flame's tap
+/// dispatcher; [releaseCell] lifts it.
+void pressCell(ApiaryGame game, BoardComponent board, BoardPosition cell) =>
+    _tapDispatcher(game).onTapDown(
+      createTapDownEvents(
+        game: game,
+        globalPosition: _screenOfCell(game, board, cell),
+      ),
+    );
+
+/// Lifts the finger put down by [pressCell] on the middle of [cell].
+void releaseCell(ApiaryGame game, BoardComponent board, BoardPosition cell) =>
+    _tapDispatcher(game).onTapUp(
+      createTapUpEvents(
+        game: game,
+        globalPosition: _screenOfCell(game, board, cell),
+      ),
+    );
+
+/// Taps the middle of [cell] as the player would (finger down, then up).
+void tapCell(ApiaryGame game, BoardComponent board, BoardPosition cell) {
+  pressCell(game, board, cell);
+  releaseCell(game, board, cell);
 }
 
 /// A finger dragging on the board of [game], through Flame's drag

@@ -23,6 +23,10 @@ void main() {
   setUpAll(loadGameText);
 
   group('Dragging a larva', () {
+    SpriteComponent selectionFrame(BoardComponent board) => board.children
+        .whereType<SpriteComponent>()
+        .firstWhere((c) => c.priority == 1);
+
     const queen = Board.startingQueenPosition;
     const first = BoardPosition(column: 3, row: 3);
     const second = BoardPosition(column: 4, row: 3);
@@ -77,24 +81,24 @@ void main() {
           ..moveTo(0, 0);
 
         expect(board.selection.value, first);
+        expect(selectionFrame(board).opacity, 0);
         expect(
           component.position,
           BoardComponent.itemPosition(first) - Vector2(60, 60),
         );
         drag.end();
+        expect(selectionFrame(board).opacity, 1);
       },
     );
 
     testWithGame<ApiaryGame>(
-      'goes back to its cell when dropped anywhere but on a twin',
+      'goes back to its cell when dropped on the queen, itself or off the board',
       ApiaryGame.new,
       (game) async {
         final board = await twoLarvae(game);
         final before = board.board;
 
-        // Empty cell, queen, own cell, off the board.
         for (final (column, row) in [
-          (0, 0),
           (queen.column, queen.row),
           (first.column, first.row),
           (-3, 20),
@@ -120,22 +124,126 @@ void main() {
     );
 
     testWithGame<ApiaryGame>(
-      'is not possible for the queen',
+      'moves to an empty cell, freeing its origin and keeping the count',
       ApiaryGame.new,
       (game) async {
         final board = await twoLarvae(game);
-        final before = board.board;
+        const target = BoardPosition(column: 0, row: 0);
 
         CellDrag(game, board)
-          ..start(queen)
-          ..moveTo(0, 0)
+          ..start(first)
+          ..moveTo(target.column, target.row)
           ..end();
         await game.ready();
 
-        expect(board.board, before);
+        expect(board.board.itemAt(first), isNull);
+        expect(board.board.itemAt(target), larva);
+        expect(board.board.items, hasLength(3));
+        expect(board.selection.value, target);
+        expect(
+          board.children.whereType<LarvaComponent>().map((c) => c.position),
+          containsAll([
+            BoardComponent.itemPosition(target),
+            BoardComponent.itemPosition(second),
+          ]),
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'can be merged after having been moved',
+      ApiaryGame.new,
+      (game) async {
+        final board = await twoLarvae(game);
+        const target = BoardPosition(column: 0, row: 0);
+
+        CellDrag(game, board)
+          ..start(first)
+          ..moveTo(target.column, target.row)
+          ..end();
+        CellDrag(game, board)
+          ..start(target)
+          ..moveTo(second.column, second.row)
+          ..end();
+        await game.ready();
+
+        expect(
+          board.board.itemAt(second),
+          const BoardItem.bee(family: Family.common),
+        );
+        expect(board.board.items, hasLength(2));
+      },
+    );
+  });
+
+  group('Dragging the queen', () {
+    const queen = Board.startingQueenPosition;
+    const target = BoardPosition(column: 1, row: 1);
+    const larva = BoardItem.larva(family: Family.common);
+
+    testWithGame<ApiaryGame>(
+      'moves her, selects her and creates no larva',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        tapCell(game, board, queen);
+
+        CellDrag(game, board)
+          ..start(queen)
+          ..moveTo(target.column, target.row)
+          ..end();
+        await game.ready();
+
+        expect(board.board.items, hasLength(1));
+        expect(
+          board.board.itemAt(target),
+          const BoardItem.queen(family: Family.common),
+        );
+        expect(board.selection.value, target);
         expect(
           board.children.whereType<QueenComponent>().single.position,
-          BoardComponent.itemPosition(queen),
+          BoardComponent.itemPosition(target),
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'does not create a larva when a tap on the selected queen becomes a drag',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        tapCell(game, board, queen);
+        // Finger down on the already selected queen, then a drag takes over
+        // without the tap recognizer ever reporting a cancel.
+        pressCell(game, board, queen);
+        CellDrag(game, board)
+          ..start(queen)
+          ..moveTo(target.column, target.row)
+          ..end();
+        releaseCell(game, board, queen);
+        await game.ready();
+
+        expect(board.board.items.values.where((i) => i == larva), isEmpty);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'makes the new larvae appear around her new cell',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        CellDrag(game, board)
+          ..start(queen)
+          ..moveTo(target.column, target.row)
+          ..end();
+        await game.ready();
+
+        tapCell(game, board, target);
+        await game.ready();
+
+        expect(
+          board.board.itemAt(const BoardPosition(column: 1, row: 0)),
+          larva,
         );
       },
     );
