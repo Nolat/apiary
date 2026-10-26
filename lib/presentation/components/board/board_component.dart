@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:ui';
 
 // 🐦 Flutter imports:
+import 'package:flutter/animation.dart' show Curves;
 import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'package:flutter/services.dart' show HapticFeedback;
 
@@ -18,6 +19,8 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
 import 'package:apiary/presentation/components/board/bee_component.dart';
+import 'package:apiary/presentation/components/board/bounce_effect.dart';
+import 'package:apiary/presentation/components/board/centered_scale_effect.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
@@ -74,6 +77,9 @@ class BoardComponent extends PositionComponent
   // The cell of the item being dragged, and where the finger is, in this
   // component's coordinates; `null` when no item is being dragged.
   BoardPosition? _dragged;
+
+  // The cell whose new item already pops in: it is not bounced as well.
+  BoardPosition? _bouncedAlready;
   Vector2? _finger;
   int? _dragPointer;
 
@@ -88,6 +94,30 @@ class BoardComponent extends PositionComponent
   /// is full, and how long each swing takes. Whole pixels, to stay sharp.
   static const shakeDistance = 2.0;
   static const shakeStep = 0.05;
+
+  /// How long the bounce of an item, when it gets selected or its queen makes
+  /// a larva, and of the selection frame, takes: a quick scale up and back.
+  static const bounceDuration = 0.16;
+
+  /// How much bigger an item gets while the finger holds it, and how long it
+  /// takes to be lifted.
+  static const liftScale = 1.15;
+  static const liftDuration = 0.08;
+
+  /// How long the held item takes to land on the one it merges with, and
+  /// the result to pop in, overshooting, once both are gone.
+  static const landDuration = 0.1;
+  static const popDuration = 0.22;
+  static const popStartScale = 0.6;
+
+  /// How long the selection frame takes to grow to the cell it lands on,
+  /// from [frameStartScale], overshooting.
+  static const frameDuration = 0.18;
+  static const frameStartScale = 0.5;
+
+  /// How long the item swapped out of its cell takes to reach its new cell,
+  /// with a slight overshoot that makes it bounce.
+  static const slideDuration = 0.18;
 
   /// Where an item sits in this component for the cell [position]: centered
   /// in it, with a margin around.
@@ -142,13 +172,16 @@ class BoardComponent extends PositionComponent
       size: Vector2.all(ScreenLayout.cellSize),
     )..opacity = 0;
     await add(_selectionFrame);
-    selection.addListener(_updateSelectionFrame);
+    selection
+      ..addListener(_updateSelectionFrame)
+      ..addListener(_bounceSelected);
   }
 
   @override
   void onRemove() {
     selection
       ..removeListener(_updateSelectionFrame)
+      ..removeListener(_bounceSelected)
       ..dispose();
     super.onRemove();
   }
@@ -194,10 +227,21 @@ class BoardComponent extends PositionComponent
     _dragPointer = event.pointerId;
     _finger = event.localPosition.clone();
     // A queen grabbed while shaking would carry the swing along.
-    _stopShake(item);
+    _stopEffects(item);
     item
       ..position.setFrom(itemPosition(cell))
       ..priority = draggedPriority;
+    unawaited(
+      _play(
+        item,
+        CenteredScaleEffect(
+          from: 1,
+          to: liftScale,
+          duration: liftDuration,
+          curve: Curves.easeOut,
+        ),
+      ),
+    );
     selection.value = cell;
     // The notifier stays silent when the cell was already selected.
     _updateSelectionFrame();
@@ -246,7 +290,7 @@ class BoardComponent extends PositionComponent
       return null;
     }
     final item = _itemComponents[from]!..priority = 0;
-    _stopShake(item);
+    _stopEffects(item);
     // Shown again before the selection moves on, in the same frame.
     _updateSelectionFrame();
     return (from, item);
@@ -275,22 +319,38 @@ class BoardComponent extends PositionComponent
         selection.value = onto;
       case ItemsSwapped():
         final other = _itemComponents[onto]!;
-        _stopShake(other);
+        _stopEffects(other);
         _itemComponents
           ..[from] = other
           ..[onto] = item;
-        other.position.setFrom(itemPosition(from));
+        // The item that was not dragged slides to the cell left free.
+        other.position.setFrom(itemPosition(onto));
+        unawaited(_slide(other, itemPosition(from)));
         item.position.setFrom(itemPosition(onto));
         selection.value = onto;
       case ItemsMerged():
-        item.removeFromParent();
-        _itemComponents
-          ..remove(from)
-          ..remove(onto)?.removeFromParent();
+        _itemComponents.remove(from);
+        // The held item lands on the other one, which is still there; only
+        // then do both give way to the result, which pops in.
+        await _land(item, itemPosition(onto));
         unawaited(HapticFeedback.mediumImpact());
-        // Mounted before the selection moves, so the frame never marks a
-        // cell without its item.
-        await add(_componentFor(onto, board.itemAt(onto)!));
+        item.removeFromParent();
+        _itemComponents[onto]?.removeFromParent();
+        final merged = _componentFor(onto, board.itemAt(onto)!);
+        await add(merged);
+        unawaited(
+          _play(
+            merged,
+            CenteredScaleEffect(
+              from: popStartScale,
+              to: 1,
+              duration: popDuration,
+              curve: Curves.easeOutBack,
+            ),
+          ),
+        );
+        // The frame grows on its own; the item has just popped in.
+        _bouncedAlready = onto;
         selection.value = onto;
     }
   }
@@ -319,6 +379,7 @@ class BoardComponent extends PositionComponent
       case LarvaCreated(board: final updated, :final position):
         board = updated;
         unawaited(HapticFeedback.lightImpact());
+        unawaited(_bounce(_itemComponents[queen]!, itemPosition(queen)));
         await add(_componentFor(position, board.itemAt(position)!));
       case BoardFull():
         await _shake(queen);
@@ -330,7 +391,7 @@ class BoardComponent extends PositionComponent
   // the item drift.
   Future<void> _shake(BoardPosition position) async {
     final item = _itemComponents[position]!;
-    _stopShake(item);
+    _stopEffects(item);
     item.position.setFrom(itemPosition(position));
     Effect swing(double dx) => MoveByEffect(
       Vector2(dx, 0),
@@ -346,10 +407,82 @@ class BoardComponent extends PositionComponent
   }
 
   // A shake still under way would keep moving the item from its new cell.
-  void _stopShake(PositionComponent item) {
+  void _stopEffects(PositionComponent item) {
     for (final effect in item.children.whereType<Effect>().toList()) {
-      effect.removeFromParent();
+      // Removal waits for the next update, which it must not take part in.
+      effect
+        ..pause()
+        ..removeFromParent();
     }
+    item.scale.setAll(1);
+  }
+
+  // Bounces the selection frame and the newly selected item, unless it is the
+  // one being dragged: that one is already held up by the finger.
+  void _bounceSelected() {
+    final selected = selection.value;
+    if (selected == null || _dragged != null) {
+      return;
+    }
+    unawaited(_growFrame());
+    final item = _itemComponents[selected];
+    final popping = _bouncedAlready == selected;
+    _bouncedAlready = null;
+    if (item != null && !popping) {
+      unawaited(_bounce(item, itemPosition(selected)));
+    }
+  }
+
+  // The selection frame lands on its cell small and grows into it.
+  Future<void> _growFrame() async {
+    _stopEffects(_selectionFrame);
+    await _selectionFrame.add(
+      CenteredScaleEffect(
+        from: frameStartScale,
+        to: 1,
+        duration: frameDuration,
+        curve: Curves.easeOutBack,
+      ),
+    );
+  }
+
+  // [home] is where [component] rests: a bounce in progress is cut short.
+  Future<void> _bounce(PositionComponent component, Vector2 home) async {
+    _stopEffects(component);
+    component.position.setFrom(home);
+    await component.add(BounceEffect(duration: bounceDuration));
+  }
+
+  Future<void> _play(PositionComponent component, Effect effect) async {
+    await component.add(effect);
+  }
+
+  // Slides [item], held up, onto [to] and sets it down; completes once it has.
+  Future<void> _land(PositionComponent item, Vector2 to) async {
+    item.priority = 0;
+    final landed = Completer<void>();
+    await item.add(
+      CenteredScaleEffect(
+        from: liftScale,
+        to: 1,
+        duration: landDuration,
+        curve: Curves.easeIn,
+        slideTo: to,
+        onComplete: landed.complete,
+      ),
+    );
+    await landed.future;
+  }
+
+  // Brings [component] to [to] with a bounce, from where it is.
+  Future<void> _slide(PositionComponent component, Vector2 to) async {
+    _stopEffects(component);
+    await component.add(
+      MoveToEffect(
+        to,
+        EffectController(duration: slideDuration, curve: Curves.easeOutBack),
+      ),
+    );
   }
 
   void _updateSelectionFrame() {
@@ -357,6 +490,7 @@ class BoardComponent extends PositionComponent
     // Hidden while an item is dragged: the item itself shows it is held.
     _selectionFrame.opacity = selected == null || _dragged != null ? 0 : 1;
     if (selected != null) {
+      _stopEffects(_selectionFrame);
       _selectionFrame.position.setValues(
         selected.column * ScreenLayout.cellSize,
         selected.row * ScreenLayout.cellSize,

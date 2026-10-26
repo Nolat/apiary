@@ -9,6 +9,7 @@ import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
+
 import '../../helpers/board_tap.dart';
 import '../../helpers/game_golden.dart';
 
@@ -28,6 +29,11 @@ void main() {
             .whereType<BoardComponent>()
             .single;
         board.selection.value = Board.startingQueenPosition;
+        // Past the bounce of the newly selected queen.
+        game
+          ..update(0)
+          ..update(1)
+          ..update(0);
       },
     );
 
@@ -45,6 +51,16 @@ void main() {
           ..moveTo(4, 3)
           ..end();
         await game.ready();
+        // Past the landing of the held larva, then the pop of the bee.
+        game
+          ..update(0)
+          ..update(1)
+          ..update(0);
+        await game.ready();
+        game
+          ..update(0)
+          ..update(1)
+          ..update(0);
       },
     );
 

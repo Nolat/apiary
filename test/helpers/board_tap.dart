@@ -82,6 +82,8 @@ class CellDrag {
         DragStartDetails(globalPosition: at, localPosition: at),
       ),
     );
+    // A frame goes by before the finger moves, as on a device.
+    game.update(0);
   }
 
   /// Moves in a single step to the middle of the cell at [column], [row],
