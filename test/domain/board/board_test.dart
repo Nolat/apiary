@@ -383,4 +383,150 @@ void main() {
       },
     );
   });
+
+  group('Board.interacts', () {
+    const larva = BoardItem.larva(family: Family.common);
+    const bee = BoardItem.bee(family: Family.common);
+    const queen = Board.startingQueenPosition;
+    const larvaCell = BoardPosition(column: 1, row: 1);
+    const otherLarvaCell = BoardPosition(column: 0, row: 8);
+    const beeCell = BoardPosition(column: 5, row: 6);
+    const otherBeeCell = BoardPosition(column: 6, row: 6);
+    final board = Board.initial().copyWith(
+      items: {
+        ...Board.initial().items,
+        larvaCell: larva,
+        otherLarvaCell: larva,
+        beeCell: bee,
+        otherBeeCell: bee,
+      },
+    );
+
+    test('holds between identical larvae', () {
+      expect(board.interacts(larvaCell, otherLarvaCell), isTrue);
+    });
+
+    test('does not hold between other pairs, bees and queens included', () {
+      // Bees cannot merge yet: see APY-7.
+      expect(board.interacts(beeCell, otherBeeCell), isFalse);
+      expect(board.interacts(larvaCell, beeCell), isFalse);
+      expect(board.interacts(larvaCell, queen), isFalse);
+      expect(board.interacts(queen, beeCell), isFalse);
+    });
+
+    test('does not hold when a cell is empty', () {
+      const empty = BoardPosition(column: 6, row: 0);
+
+      expect(board.interacts(larvaCell, empty), isFalse);
+      expect(board.interacts(empty, larvaCell), isFalse);
+    });
+  });
+
+  group('Board.swap', () {
+    const larva = BoardItem.larva(family: Family.common);
+    const bee = BoardItem.bee(family: Family.common);
+    const queen = Board.startingQueenPosition;
+    const larvaCell = BoardPosition(column: 1, row: 1);
+    const beeCell = BoardPosition(column: 5, row: 6);
+    const otherLarvaCell = BoardPosition(column: 0, row: 8);
+    final board = Board.initial().copyWith(
+      items: {
+        ...Board.initial().items,
+        larvaCell: larva,
+        beeCell: bee,
+        otherLarvaCell: larva,
+      },
+    );
+
+    test('exchanges a larva and a bee, in both directions', () {
+      final swapped = board.swap(larvaCell, beeCell)!;
+      final back = board.swap(beeCell, larvaCell)!;
+
+      expect(swapped.itemAt(larvaCell), bee);
+      expect(swapped.itemAt(beeCell), larva);
+      expect(back, swapped);
+    });
+
+    test('exchanges a larva or a bee with the queen, and moves her', () {
+      final withLarva = board.swap(larvaCell, queen)!;
+      final withBee = board.swap(queen, beeCell)!;
+
+      expect(withLarva.itemAt(queen), larva);
+      expect(withLarva.itemAt(larvaCell), board.itemAt(queen));
+      expect(withBee.itemAt(beeCell), board.itemAt(queen));
+      expect(withBee.itemAt(queen), bee);
+    });
+
+    test('exchanges two identical bees, which cannot merge yet', () {
+      const otherBeeCell = BoardPosition(column: 6, row: 6);
+      final twoBees = board.copyWith(
+        items: {...board.items, otherBeeCell: bee},
+      );
+
+      expect(twoBees.swap(beeCell, otherBeeCell), isNotNull);
+    });
+
+    test('creates and removes nothing', () {
+      final swapped = board.swap(larvaCell, beeCell)!;
+
+      expect(swapped.items.keys, board.items.keys);
+      expect(
+        swapped.items.values,
+        unorderedEquals(board.items.values),
+      );
+    });
+
+    test('leaves the original board untouched', () {
+      board.swap(larvaCell, beeCell);
+
+      expect(board.itemAt(larvaCell), larva);
+      expect(board.itemAt(beeCell), bee);
+    });
+
+    test('does nothing with an identical item, an empty or off-board cell', () {
+      for (final target in [
+        larvaCell,
+        otherLarvaCell,
+        const BoardPosition(column: 6, row: 0),
+        const BoardPosition(column: -1, row: 0),
+        const BoardPosition(column: 0, row: Board.rows),
+      ]) {
+        expect(board.swap(larvaCell, target), isNull);
+      }
+    });
+
+    test('exchanges two queens, identical or not', () {
+      const otherQueenCell = BoardPosition(column: 2, row: 7);
+      final twoQueens = board.copyWith(
+        items: {
+          ...board.items,
+          otherQueenCell: const BoardItem.queen(family: Family.common),
+        },
+      );
+
+      final swapped = twoQueens.swap(queen, otherQueenCell)!;
+
+      expect(swapped.items, twoQueens.items);
+      expect(swapped.items, hasLength(twoQueens.items.length));
+    });
+
+    test('does nothing when there is no item to swap', () {
+      expect(
+        board.swap(const BoardPosition(column: 6, row: 0), beeCell),
+        isNull,
+      );
+    });
+
+    Glados2(any.boardPosition, any.boardPosition).test(
+      'keeps the occupied cells and the items, only exchanging two',
+      (a, b) {
+        final swapped = board.swap(a, b);
+        if (swapped != null) {
+          expect(swapped.items.keys, board.items.keys);
+          expect(swapped.itemAt(a), board.itemAt(b));
+          expect(swapped.itemAt(b), board.itemAt(a));
+        }
+      },
+    );
+  });
 }

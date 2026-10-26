@@ -30,8 +30,8 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// the board is full, the queen shakes instead. A drag never does: it cancels
 /// the tap. Any item can be dragged: it follows the finger and is selected.
 /// Dropped on a larva of the same family, a larva merges into a bee; dropped
-/// on an empty cell, an item moves there; otherwise it goes back to its
-/// cell.
+/// on an empty cell, an item moves there; dropped on a different item, the
+/// two swap places; otherwise it goes back to its cell.
 ///
 /// The look follows the visual universe in `docs/DESIGN.md` ("Univers
 /// visuel").
@@ -220,6 +220,7 @@ class BoardComponent extends PositionComponent
       return;
     }
     final item = _itemComponents[from]!..priority = 0;
+    _stopShake(item);
     // Shown again before the selection moves on, in the same frame.
     _updateSelectionFrame();
     final onto = cellAt(finger);
@@ -229,6 +230,19 @@ class BoardComponent extends PositionComponent
       _itemComponents
         ..remove(from)
         ..[onto] = item;
+      item.position.setFrom(itemPosition(onto));
+      selection.value = onto;
+      return;
+    }
+    final swapped = board.swap(from, onto);
+    if (swapped != null) {
+      board = swapped;
+      final other = _itemComponents[onto]!;
+      _stopShake(other);
+      _itemComponents
+        ..[from] = other
+        ..[onto] = item;
+      other.position.setFrom(itemPosition(from));
       item.position.setFrom(itemPosition(onto));
       selection.value = onto;
       return;
@@ -279,9 +293,7 @@ class BoardComponent extends PositionComponent
   // the item drift.
   Future<void> _shake(BoardPosition position) async {
     final item = _itemComponents[position]!;
-    for (final effect in item.children.whereType<Effect>().toList()) {
-      effect.removeFromParent();
-    }
+    _stopShake(item);
     item.position.setFrom(itemPosition(position));
     Effect swing(double dx) => MoveByEffect(
       Vector2(dx, 0),
@@ -294,6 +306,13 @@ class BoardComponent extends PositionComponent
         swing(shakeDistance),
       ]),
     );
+  }
+
+  // A shake still under way would keep moving the item from its new cell.
+  void _stopShake(PositionComponent item) {
+    for (final effect in item.children.whereType<Effect>().toList()) {
+      effect.removeFromParent();
+    }
   }
 
   void _updateSelectionFrame() {

@@ -163,4 +163,32 @@ abstract class Board with _$Board {
       },
     );
   }
+
+  /// Whether dropping the item on [from] onto the one on [onto] makes them
+  /// interact (a merge today; a hive or an incubator taking a bee will join
+  /// here) rather than trade places. `false` when either cell is empty.
+  bool interacts(BoardPosition from, BoardPosition onto) =>
+      switch ((itemAt(from), itemAt(onto))) {
+        (Larva(family: final a), Larva(family: final b)) => a == b,
+        // Bees will join with APY-7, only while they can merge: two identical
+        // bees of the maximum level trade places.
+        _ => false,
+      };
+
+  /// What dropping the item on [from] onto [onto] does when both cells hold
+  /// an item and the two do not [interacts]: they exchange their cells,
+  /// nothing is created or removed; `null` otherwise (an empty or off-board
+  /// [onto], the same cell, items that interact) and the board stays as it
+  /// is.
+  Board? swap(BoardPosition from, BoardPosition onto) {
+    final dragged = itemAt(from);
+    final target = itemAt(onto);
+    if (from == onto ||
+        dragged == null ||
+        target == null ||
+        interacts(from, onto)) {
+      return null;
+    }
+    return copyWith(items: {...items, from: target, onto: dragged});
+  }
 }

@@ -92,14 +92,13 @@ void main() {
     );
 
     testWithGame<ApiaryGame>(
-      'goes back to its cell when dropped on the queen, itself or off the board',
+      'goes back to its cell when dropped on itself or off the board',
       ApiaryGame.new,
       (game) async {
         final board = await twoLarvae(game);
         final before = board.board;
 
         for (final (column, row) in [
-          (queen.column, queen.row),
           (first.column, first.row),
           (-3, 20),
         ]) {
@@ -244,6 +243,151 @@ void main() {
         expect(
           board.board.itemAt(const BoardPosition(column: 1, row: 0)),
           larva,
+        );
+      },
+    );
+  });
+
+  group('Dragging onto a different item', () {
+    const queen = Board.startingQueenPosition;
+    const first = BoardPosition(column: 3, row: 3);
+    const second = BoardPosition(column: 4, row: 3);
+    const larva = BoardItem.larva(family: Family.common);
+    const bee = BoardItem.bee(family: Family.common);
+
+    // The board of the merge test, with one bee left on `second` and one
+    // larva on `first`.
+    Future<BoardComponent> larvaAndBee(ApiaryGame game) async {
+      final board = await boardOf(game);
+      for (var i = 0; i < 3; i++) {
+        tapCell(game, board, queen);
+      }
+      await game.ready();
+      // Merges the larvae on `first` and `second`, then makes another larva.
+      CellDrag(game, board)
+        ..start(first)
+        ..moveTo(second.column, second.row)
+        ..end();
+      // The first tap selects the queen again, the second creates the larva.
+      tapCell(game, board, queen);
+      tapCell(game, board, queen);
+      await game.ready();
+      expect(board.board.itemAt(second), bee);
+      expect(board.board.itemAt(first), larva);
+      return board;
+    }
+
+    testWithGame<ApiaryGame>(
+      'exchanges the two items and selects the dragged one',
+      ApiaryGame.new,
+      (game) async {
+        final board = await larvaAndBee(game);
+
+        CellDrag(game, board)
+          ..start(first)
+          ..moveTo(second.column, second.row)
+          ..end();
+        await game.ready();
+
+        expect(board.board.itemAt(first), bee);
+        expect(board.board.itemAt(second), larva);
+        expect(board.board.items, hasLength(3));
+        expect(board.selection.value, second);
+        expect(
+          board.children.whereType<LarvaComponent>().single.position,
+          BoardComponent.itemPosition(second),
+        );
+        expect(
+          board.children.whereType<BeeComponent>().single.position,
+          BoardComponent.itemPosition(first),
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'exchanges with the queen, whose larvae then appear around her new cell',
+      ApiaryGame.new,
+      (game) async {
+        final board = await larvaAndBee(game);
+
+        CellDrag(game, board)
+          ..start(queen)
+          ..moveTo(first.column, first.row)
+          ..end();
+        await game.ready();
+
+        expect(
+          board.board.itemAt(first),
+          const BoardItem.queen(family: Family.common),
+        );
+        expect(board.board.itemAt(queen), larva);
+        expect(
+          board.children.whereType<QueenComponent>().single.position,
+          BoardComponent.itemPosition(first),
+        );
+
+        tapCell(game, board, first);
+        await game.ready();
+
+        expect(board.board.items, hasLength(4));
+        expect(
+          board.board.itemAt(const BoardPosition(column: 3, row: 2)),
+          larva,
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'can be dragged again after the exchange',
+      ApiaryGame.new,
+      (game) async {
+        final board = await larvaAndBee(game);
+        const free = BoardPosition(column: 0, row: 0);
+
+        CellDrag(game, board)
+          ..start(first)
+          ..moveTo(second.column, second.row)
+          ..end();
+        CellDrag(game, board)
+          ..start(first)
+          ..moveTo(free.column, free.row)
+          ..end();
+        await game.ready();
+
+        expect(board.board.itemAt(free), bee);
+        expect(board.board.itemAt(first), isNull);
+        expect(board.board.itemAt(second), larva);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'ends a shake of the queen on her new cell',
+      ApiaryGame.new,
+      (game) async {
+        final board = await larvaAndBee(game);
+        // Fills the board so that the next tap on the queen shakes her.
+        board.board = board.board.copyWith(
+          items: {
+            for (var c = 0; c < Board.columns; c++)
+              for (var r = 0; r < Board.rows; r++)
+                BoardPosition(column: c, row: r):
+                    board.board.itemAt(BoardPosition(column: c, row: r)) ??
+                    larva,
+          },
+        );
+        tapCell(game, board, queen);
+        await game.ready();
+
+        CellDrag(game, board)
+          ..start(first)
+          ..moveTo(queen.column, queen.row)
+          ..end();
+        game.update(BoardComponent.shakeStep);
+        await game.ready();
+
+        expect(
+          board.children.whereType<QueenComponent>().single.position,
+          BoardComponent.itemPosition(first),
         );
       },
     );
