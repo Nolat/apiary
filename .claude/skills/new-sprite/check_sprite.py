@@ -38,7 +38,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("x1")
     parser.add_argument("x2", nargs="?")
-    parser.add_argument("--size", help="expected x1 size, e.g. 30x30")
+    parser.add_argument("--size", help="expected x1 size, e.g. 32x32 for a board cell")
     args = parser.parse_args()
 
     ok = True
