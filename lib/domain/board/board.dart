@@ -120,4 +120,26 @@ abstract class Board with _$Board {
       position: cell,
     );
   }
+
+  /// What dropping the larva on [from] onto [onto] does: the two larvae
+  /// disappear and a bee of their family appears on [onto]; `null` when the
+  /// drop is not a merge (a different or no item, another family's larva, the
+  /// same cell, or a cell off the board) and the board stays as it is.
+  Board? mergeLarvae(BoardPosition from, BoardPosition onto) {
+    final dragged = itemAt(from);
+    final target = itemAt(onto);
+    if (from == onto ||
+        dragged is! Larva ||
+        target is! Larva ||
+        dragged.family != target.family) {
+      return null;
+    }
+    return copyWith(
+      items: {
+        for (final MapEntry(:key, :value) in items.entries)
+          if (key != from) key: value,
+        onto: BoardItem.bee(family: target.family),
+      },
+    );
+  }
 }

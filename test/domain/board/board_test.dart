@@ -260,4 +260,68 @@ void main() {
       expect(board.spawnLarva(queen), const LarvaSpawn.boardFull());
     });
   });
+
+  group('Board.mergeLarvae', () {
+    const larva = BoardItem.larva(family: Family.common);
+    const from = BoardPosition(column: 1, row: 1);
+    const onto = BoardPosition(column: 2, row: 1);
+    final board = Board.initial().copyWith(
+      items: {
+        ...Board.initial().items,
+        from: larva,
+        onto: larva,
+      },
+    );
+
+    test('replaces two identical larvae by a bee on the target cell', () {
+      final merged = board.mergeLarvae(from, onto)!;
+
+      expect(merged.itemAt(from), isNull);
+      expect(merged.itemAt(onto), const BoardItem.bee(family: Family.common));
+      expect(merged.items, hasLength(board.items.length - 1));
+      expect(
+        merged.itemAt(Board.startingQueenPosition),
+        board.itemAt(Board.startingQueenPosition),
+      );
+    });
+
+    test('leaves the original board untouched', () {
+      board.mergeLarvae(from, onto);
+
+      expect(board.itemAt(from), larva);
+      expect(board.itemAt(onto), larva);
+    });
+
+    test('does not merge a larva with itself', () {
+      expect(board.mergeLarvae(from, from), isNull);
+    });
+
+    test('does not merge onto an empty cell, a queen or a bee', () {
+      final withBee = board.copyWith(
+        items: {
+          ...board.items,
+          const BoardPosition(column: 5, row: 5): const BoardItem.bee(
+            family: Family.common,
+          ),
+        },
+      );
+
+      for (final target in [
+        const BoardPosition(column: 0, row: 0),
+        const BoardPosition(column: 9, row: 9),
+        Board.startingQueenPosition,
+        const BoardPosition(column: 5, row: 5),
+      ]) {
+        expect(withBee.mergeLarvae(from, target), isNull);
+      }
+    });
+
+    test('does not merge something that is not a larva', () {
+      expect(board.mergeLarvae(Board.startingQueenPosition, onto), isNull);
+      expect(
+        board.mergeLarvae(const BoardPosition(column: 0, row: 0), onto),
+        isNull,
+      );
+    });
+  });
 }

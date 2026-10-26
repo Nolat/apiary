@@ -5,10 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/board/board.dart';
+import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
+import '../../helpers/board_tap.dart';
 import '../../helpers/game_golden.dart';
 
 void main() {
@@ -27,6 +28,23 @@ void main() {
             .whereType<BoardComponent>()
             .single;
         board.selection.value = Board.startingQueenPosition;
+      },
+    );
+
+    testGameGolden(
+      'renders the bee born from two merged larvae, selected',
+      goldenFile: 'goldens/board_scene_bee.png',
+      arrange: (game, tester) async {
+        final board = await boardOf(game);
+        for (var i = 0; i < 3; i++) {
+          tapCell(game, board, Board.startingQueenPosition);
+        }
+        await game.ready();
+        CellDrag(game, board)
+          ..start(const BoardPosition(column: 3, row: 3))
+          ..moveTo(4, 3)
+          ..end();
+        await game.ready();
       },
     );
 

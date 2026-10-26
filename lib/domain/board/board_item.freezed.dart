@@ -92,12 +92,13 @@ extension BoardItemPatterns on BoardItem {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,TResult Function( Bee value)?  bee,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that);case Larva() when larva != null:
-return larva(_that);case _:
+return larva(_that);case Bee() when bee != null:
+return bee(_that);case _:
   return orElse();
 
 }
@@ -115,12 +116,13 @@ return larva(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,required TResult Function( Bee value)  bee,}){
 final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that);case Larva():
-return larva(_that);}
+return larva(_that);case Bee():
+return bee(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -134,12 +136,13 @@ return larva(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,TResult? Function( Bee value)?  bee,}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that);case Larva() when larva != null:
-return larva(_that);case _:
+return larva(_that);case Bee() when bee != null:
+return bee(_that);case _:
   return null;
 
 }
@@ -156,11 +159,12 @@ return larva(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family)?  bee,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
-return larva(_that.family);case _:
+return larva(_that.family);case Bee() when bee != null:
+return bee(_that.family);case _:
   return orElse();
 
 }
@@ -178,11 +182,12 @@ return larva(_that.family);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family)  bee,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
-return larva(_that.family);}
+return larva(_that.family);case Bee():
+return bee(_that.family);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -196,11 +201,12 @@ return larva(_that.family);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family)?  bee,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
-return larva(_that.family);case _:
+return larva(_that.family);case Bee() when bee != null:
+return bee(_that.family);case _:
   return null;
 
 }
@@ -336,6 +342,74 @@ class _$LarvaCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
   return _then(Larva(
+family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
+as Family,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class Bee implements BoardItem {
+  const Bee({required this.family});
+  
+
+@override final  Family family;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BeeCopyWith<Bee> get copyWith => _$BeeCopyWithImpl<Bee>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Bee&&(identical(other.family, family) || other.family == family));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,family);
+}
+
+@override
+String toString() {
+    return 'BoardItem.bee(family: $family)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BeeCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
+  factory $BeeCopyWith(Bee value, $Res Function(Bee) _then) = _$BeeCopyWithImpl;
+@override @useResult
+$Res call({
+ Family family
+});
+
+
+
+
+}
+/// @nodoc
+class _$BeeCopyWithImpl<$Res>
+    implements $BeeCopyWith<$Res> {
+  _$BeeCopyWithImpl(this._self, this._then);
+
+  final Bee _self;
+  final $Res Function(Bee) _then;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
+  return _then(Bee(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
   ));

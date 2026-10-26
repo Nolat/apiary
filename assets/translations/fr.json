@@ -17,6 +17,10 @@
       "name": "Reine {family}",
       "tip": "TOUCHEZ pour produire des abeilles"
     },
+    "bee": {
+      "name": "Abeille {family}",
+      "tip": "FUSIONNEZ avec une autre abeille identique pour monter de niveau"
+    },
     "larva": {
       "name": "Larve {family}",
       "tip": "FUSIONNEZ avec une autre larve pour obtenir une abeille"

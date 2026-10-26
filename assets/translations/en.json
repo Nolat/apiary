@@ -17,6 +17,10 @@
       "name": "{family} queen",
       "tip": "TAP to produce bees"
     },
+    "bee": {
+      "name": "{family} bee",
+      "tip": "MERGE with an identical bee to level up"
+    },
     "larva": {
       "name": "{family} larva",
       "tip": "MERGE with another larva to get a bee"

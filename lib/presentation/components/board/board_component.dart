@@ -15,6 +15,7 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
+import 'package:apiary/presentation/components/board/bee_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
@@ -26,12 +27,14 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 ///
 /// Tapping an item selects it ([selection]), marked by a frame on its cell.
 /// Tapping a selected queen creates a larva next to her; when the board is
-/// full, the queen shakes instead.
+/// full, the queen shakes instead. A larva can be dragged: it follows the
+/// finger, merges into a bee when dropped on a larva of the same family, and
+/// otherwise goes back to its cell.
 ///
 /// The look follows the visual universe in `docs/DESIGN.md` ("Univers
 /// visuel").
 class BoardComponent extends PositionComponent
-    with HasGameReference, TapCallbacks {
+    with HasGameReference, TapCallbacks, DragCallbacks {
   BoardComponent({required this.board})
     : super(
         size: Vector2(
@@ -55,6 +58,14 @@ class BoardComponent extends PositionComponent
 
   late final SpriteComponent _selectionFrame;
   final _itemComponents = <BoardPosition, PositionComponent>{};
+
+  // The cell of the larva being dragged, and where the finger is, in this
+  // component's coordinates; `null` when no larva is being dragged.
+  BoardPosition? _dragged;
+  Vector2? _finger;
+
+  /// Priority of a dragged item: above the selection frame and the items.
+  static const draggedPriority = 2;
 
   static const selectionImage = 'board/selection.png';
   static const lightCellImage = 'board/cell_light.png';
@@ -143,6 +154,68 @@ class BoardComponent extends PositionComponent
     selection.value = board.selectionAfterTap(selection.value, tapped);
   }
 
+  @override
+  void onDragStart(DragStartEvent event) {
+    super.onDragStart(event);
+    final cell = cellAt(event.localPosition);
+    // The queen cannot be dragged yet.
+    if (board.itemAt(cell) is! Larva) {
+      return;
+    }
+    _dragged = cell;
+    _finger = event.localPosition.clone();
+    selection.value = cell;
+    _itemComponents[cell]!.priority = draggedPriority;
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    final dragged = _dragged;
+    if (dragged == null) {
+      return;
+    }
+    // Follow the finger by its displacement: it keeps working past the edge
+    // of the board, where the finger's own position is not delivered.
+    final delta = event.localDelta;
+    _finger!.add(delta);
+    _itemComponents[dragged]!.position.add(delta);
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
+    unawaited(_drop());
+  }
+
+  @override
+  void onDragCancel(DragCancelEvent event) {
+    super.onDragCancel(event);
+    unawaited(_drop());
+  }
+
+  Future<void> _drop() async {
+    final from = _dragged;
+    final finger = _finger;
+    _dragged = null;
+    _finger = null;
+    if (from == null || finger == null) {
+      return;
+    }
+    final larva = _itemComponents[from]!..priority = 0;
+    final onto = cellAt(finger);
+    final merged = board.contains(onto) ? board.mergeLarvae(from, onto) : null;
+    if (merged == null) {
+      larva.position.setFrom(itemPosition(from));
+      return;
+    }
+    board = merged;
+    larva.removeFromParent();
+    _itemComponents.remove(from);
+    _itemComponents.remove(onto)?.removeFromParent();
+    selection.value = onto;
+    await add(_componentFor(onto, board.itemAt(onto)!));
+  }
+
   PositionComponent _componentFor(BoardPosition position, BoardItem item) {
     final component = switch (item) {
       Queen(:final family) => QueenComponent(
@@ -150,6 +223,10 @@ class BoardComponent extends PositionComponent
         position: itemPosition(position),
       ),
       Larva(:final family) => LarvaComponent(
+        family: family,
+        position: itemPosition(position),
+      ),
+      Bee(:final family) => BeeComponent(
         family: family,
         position: itemPosition(position),
       ),
