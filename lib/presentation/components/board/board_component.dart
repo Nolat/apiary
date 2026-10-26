@@ -8,11 +8,11 @@ import 'package:flame/components.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// The 7×9 grid of [ScreenLayout.cellSize] cells, all empty for now: a
-/// checkerboard of light and dark cell sprites, so each cell stands apart
-/// from its neighbours. Its parent places it on [ScreenLayout.board].
+/// checkerboard of light and dark wooden cell sprites, so each cell stands
+/// apart from its neighbours. Its parent places it on [ScreenLayout.board].
 ///
-/// The cell sprites are placeholders until the visual universe is set (see
-/// `docs/DESIGN.md`, "Direction artistique").
+/// The look follows the visual universe in `docs/DESIGN.md` ("Univers
+/// visuel").
 class BoardComponent extends PositionComponent with HasGameReference {
   BoardComponent()
     : super(
