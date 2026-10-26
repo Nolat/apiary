@@ -46,7 +46,7 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// visuel").
 class BoardComponent extends PositionComponent
     with HasGameReference, TapCallbacks, DragCallbacks {
-  BoardComponent({required this.board})
+  BoardComponent({required this.board, this.onChanged})
     : super(
         size: Vector2(
           ScreenLayout.boardSize.width,
@@ -57,6 +57,11 @@ class BoardComponent extends PositionComponent
   /// What to draw on the grid. The component replaces it as the player acts;
   /// nothing else observes it yet.
   Board board;
+
+  /// Told of the new [board] each time an action changes it (a larva born, a
+  /// move, a swap, a merge), as soon as it is done and not when its animation
+  /// ends, so that a sudden close right after it loses nothing.
+  final void Function(Board board)? onChanged;
 
   /// The selected cell, or `null` when nothing is selected, as at launch.
   final selection = ValueNotifier<BoardPosition?>(null);
@@ -310,6 +315,7 @@ class BoardComponent extends PositionComponent
       return;
     }
     board = result.board;
+    onChanged?.call(board);
     switch (result) {
       case ItemMoved():
         _itemComponents
@@ -378,6 +384,7 @@ class BoardComponent extends PositionComponent
     switch (board.spawnLarva(queen)) {
       case LarvaCreated(board: final updated, :final position):
         board = updated;
+        onChanged?.call(board);
         unawaited(HapticFeedback.lightImpact());
         unawaited(_bounce(_itemComponents[queen]!, itemPosition(queen)));
         await add(_componentFor(position, board.itemAt(position)!));

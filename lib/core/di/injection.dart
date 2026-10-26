@@ -9,7 +9,9 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:apiary/core/auth/auth_service.dart';
 import 'package:apiary/core/crash_reporting/crash_reporting_service.dart';
 import 'package:apiary/core/logging/talker_service.dart';
+import 'package:apiary/data/board/drift_board_repository.dart';
 import 'package:apiary/data/local/app_database.dart';
+import 'package:apiary/domain/board/board_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -17,6 +19,10 @@ void configureDependencies() {
   getIt.registerLazySingleton<Talker>(() => talker);
 
   getIt.registerLazySingleton<AppDatabase>(AppDatabase.new);
+
+  getIt.registerLazySingleton<BoardRepository>(
+    () => DriftBoardRepository(getIt<AppDatabase>(), getIt<Talker>()),
+  );
 
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,

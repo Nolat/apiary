@@ -19,6 +19,19 @@ void main() {
     final result = await database.customSelect('SELECT 1 AS one').getSingle();
 
     expect(result.read<int>('one'), 1);
-    expect(database.schemaVersion, 1);
+    expect(database.schemaVersion, 2);
+  });
+
+  test('upgrades a version 1 database with the board table', () async {
+    final upgraded = AppDatabase(
+      NativeDatabase.memory(
+        setup: (db) => db.execute('PRAGMA user_version = 1'),
+      ),
+    );
+    addTearDown(upgraded.close);
+
+    final rows = await upgraded.select(upgraded.boardCells).get();
+
+    expect(rows, isEmpty);
   });
 }

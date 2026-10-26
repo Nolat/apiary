@@ -17,6 +17,7 @@ import 'package:apiary/core/crash_reporting/crash_reporting_service.dart';
 import 'package:apiary/core/crash_reporting/sentry_config.dart';
 import 'package:apiary/core/di/injection.dart';
 import 'package:apiary/core/platform/system_ui.dart';
+import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/firebase_options.dart';
 
 Future<void> bootstrap() async {
@@ -50,8 +51,8 @@ Future<void> bootstrap() async {
         supportedLocales: const [Locale('fr'), Locale('en')],
         path: 'assets/translations',
         fallbackLocale: const Locale('fr'),
-        child: const ProviderScope(
-          child: ApiaryApp(),
+        child: ProviderScope(
+          child: ApiaryApp(boardRepository: getIt<BoardRepository>()),
         ),
       ),
     ),

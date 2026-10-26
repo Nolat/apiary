@@ -1,11 +1,14 @@
 // 🎯 Dart imports:
+import 'dart:async';
 import 'dart:ui';
 
 // 📦 Package imports:
 import 'package:flame/components.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/core/logging/talker_service.dart';
 import 'package:apiary/domain/board/board.dart';
+import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
@@ -13,10 +16,18 @@ import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 class BoardScene extends Component with HasGameReference<ApiaryGame> {
+  BoardScene({required Board board, BoardRepository? repository})
+    : _board = BoardComponent(
+        board: board,
+        onChanged: repository == null
+            ? null
+            : (board) => _save(repository, board),
+      );
+
   static const routeName = 'board';
 
   final _decor = DecorComponent();
-  final _board = BoardComponent(board: Board.initial());
+  final BoardComponent _board;
   final _info = ItemInfoComponent();
 
   @override
@@ -30,6 +41,17 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
     _board.selection.removeListener(_showSelectedItem);
     super.onRemove();
   }
+
+  // Saves follow one another in the order of the actions (the database runs
+  // its transactions in turn); a failure is logged and the game goes on.
+  static void _save(BoardRepository repository, Board board) => unawaited(
+    repository
+        .save(board)
+        .catchError(
+          (Object error, StackTrace stackTrace) =>
+              talker.handle(error, stackTrace, 'Saving the board failed'),
+        ),
+  );
 
   void _showSelectedItem() => _info.show(_board.selectedItem);
 
