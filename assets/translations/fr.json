@@ -15,11 +15,11 @@
   "item": {
     "queen": {
       "name": "Reine {family}",
-      "tip": "Touchez pour produire des abeilles"
+      "tip": "TOUCHEZ pour produire des abeilles"
     },
     "larva": {
       "name": "Larve {family}",
-      "tip": "Fusionnez deux larves identiques"
+      "tip": "FUSIONNEZ avec une autre larve pour obtenir une abeille"
     }
   }
 }

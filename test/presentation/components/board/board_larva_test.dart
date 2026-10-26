@@ -244,7 +244,10 @@ void main() {
             .whereType<ItemInfoComponent>()
             .single;
         expect(info.titleText, 'Larve Commune');
-        expect(info.tipText, 'Fusionnez deux larves identiques');
+        expect(
+          info.tipText,
+          'FUSIONNEZ avec une autre larve pour obtenir une abeille',
+        );
       },
     );
   });

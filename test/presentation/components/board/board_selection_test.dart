@@ -137,12 +137,12 @@ void main() {
 
         expect(info.titleText, isNot(invitation));
         expect(info.titleText, 'Reine Commune · Niv. 1');
-        expect(info.tipText, 'Touchez pour produire des abeilles');
+        expect(info.tipText, 'TOUCHEZ pour produire des abeilles');
       },
     );
 
     testWithGame<ApiaryGame>(
-      'wraps the invitation on two lines on the narrowest screen',
+      'wraps the invitation on the narrowest screen',
       ApiaryGame.new,
       (game) async {
         await game.ready();
@@ -159,7 +159,7 @@ void main() {
     );
 
     test(
-      'fits the texts of every item on the two lines of the narrowest panel',
+      'fits the texts of every item on the four lines of the narrowest panel',
       () {
         // The narrowest screen's bottom bar, less its padding on both sides.
         final panelWidth =
@@ -167,7 +167,7 @@ void main() {
 
         expect(
           ItemInfoComponent.lineCount(null, panelWidth),
-          lessThanOrEqualTo(2),
+          lessThanOrEqualTo(4),
         );
         for (final family in Family.values) {
           expect(
@@ -175,7 +175,7 @@ void main() {
               BoardItem.queen(family: family),
               panelWidth,
             ),
-            lessThanOrEqualTo(2),
+            lessThanOrEqualTo(4),
             reason: 'the $family queen',
           );
         }
@@ -228,7 +228,7 @@ void main() {
         // Inside the padding that keeps it off the board and the screen's
         // rounded corners.
         expect(info.position, Vector2(band.left + 2, band.top + 2));
-        expect(info.size, Vector2(band.width - 4, 22));
+        expect(info.size, Vector2(band.width - 4, 38));
         expect(info.position.y, greaterThan(game.layout.board.bottom));
       },
     );

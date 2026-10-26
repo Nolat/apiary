@@ -14,10 +14,10 @@ import 'package:apiary/domain/board/board.dart';
 /// ```text
 /// ┌─ safe area ─────────────┐  decor ([screen]) extends under the system UI
 /// │ hud           12 fixed  │  ← pinned to the top
-/// │ orders        32 fixed  │
+/// │ orders        16 fixed  │
 /// │ spacer       ≥ 0 flex   │  ← 1 (iPhone SE) to ~42 (iPhone Pro Max)
 /// │ board    140×180 fixed  │  ← 7×9 cells of 20, centered
-/// │ bottomBar     24 fixed  │  ← pinned to the bottom (panel 22, padded 2)
+/// │ bottomBar     40 fixed  │  ← pinned to the bottom (panel 38, padded 2)
 /// └─────────────────────────┘
 /// ```
 ///
@@ -85,13 +85,13 @@ class ScreenLayout {
   }
 
   static const hudHeight = 12.0;
-  static const ordersHeight = 32.0;
+  static const ordersHeight = 16.0;
 
   /// The bottom bar holds the panels, [bottomBarPanelHeight] tall, with
   /// [bottomBarPadding] of room above them, which keeps them off the board,
   /// and on each side, which keeps them clear of the rounded screen corners.
   static const bottomBarPadding = 2.0;
-  static const bottomBarPanelHeight = 22.0;
+  static const bottomBarPanelHeight = 38.0;
   static const double bottomBarHeight = bottomBarPadding + bottomBarPanelHeight;
 
   /// A cell's size, and its sprites' (×1 assets only).

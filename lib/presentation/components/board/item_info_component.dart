@@ -15,11 +15,11 @@ import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/domain/board/board_item.dart';
 
 /// The panel of the bottom bar that tells what the selected item is: its name
-/// and level on a first line, a tip on what to do with it on a second. Without
-/// a selected item, it invites the player to touch one. Its parent places it
-/// on the bottom bar of the screen layout with [place].
+/// and level on a first line, a tip on what to do with it on the next three.
+/// Without a selected item, it invites the player to touch one. Its parent
+/// places it on the bottom bar of the screen layout with [place].
 ///
-/// Texts are in the pixel font: two lines fill the panel. The title is
+/// Texts are in the pixel font: four lines fill the panel. The title is
 /// honey-colored, the invitation and tip off-white.
 class ItemInfoComponent extends PositionComponent with HasGameReference {
   static const fontFamily = 'BoldPixels';
@@ -29,8 +29,11 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   /// The 9-slice stretches the flat middle.
   static const _panelTileSize = 3;
   static const _textLeft = 4.0;
-  static const _titleTop = 3.0;
-  static const _tipTop = 11.0;
+  static const _firstLineTop = 3.0;
+  static const _lineHeight = 8.0;
+
+  /// The title and up to three lines of tip.
+  static const _maxLines = 4;
 
   /// The font's native size: one font pixel is one game pixel.
   static const _fontSize = 8.0;
@@ -38,16 +41,14 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   static final TextPaint _titleText = _renderer(AppColors.honey);
   static final TextPaint _bodyText = _renderer(AppColors.paper);
 
-  final TextComponent _title = TextComponent(
-    position: Vector2(_textLeft, _titleTop),
-    textRenderer: _titleText,
-  );
-  final TextComponent _tip = TextComponent(
-    position: Vector2(_textLeft, _tipTop),
-    textRenderer: _bodyText,
-  );
   late final NineTileBoxComponent _panel;
-  late final List<TextComponent> _lineLabels = [_title, _tip];
+  final List<TextComponent> _lineLabels = [
+    for (var i = 0; i < _maxLines; i++)
+      TextComponent(
+        position: Vector2(_textLeft, _firstLineTop + i * _lineHeight),
+        textRenderer: _bodyText,
+      ),
+  ];
   BoardItem? _item;
 
   static TextPaint _renderer(Color color) => TextPaint(
@@ -89,11 +90,15 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
 
   /// First line of the panel: the item's name and level, or the invitation to
   /// select one.
-  String get titleText => _title.text;
+  String get titleText => _lineLabels[0].text;
 
   /// Second line: what the selected item does, or the rest of a text that
   /// wraps.
-  String get tipText => _tip.text;
+  String get tipText => _lineLabels
+      .skip(1)
+      .map((label) => label.text)
+      .where((text) => text.isNotEmpty)
+      .join(' ');
 
   /// Describes [item], or invites to select one when it is `null`.
   void show(BoardItem? item) {
@@ -107,7 +112,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   static int lineCount(BoardItem? item, double panelWidth) =>
       _linesOf(item, panelWidth).length;
 
-  // The panel holds two lines. Each text breaks at the panel's width, which
+  // The panel holds four lines. Each text breaks at the panel's width, which
   // depends on the screen, so a text takes as many lines as it needs: the
   // invitation fills both, an item's name and tip take one each when they fit.
   static List<(String, TextPaint)> _linesOf(
@@ -193,6 +198,6 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       size: size,
     );
     show(null);
-    await addAll([_panel, _title, _tip]);
+    await addAll([_panel, ..._lineLabels]);
   }
 }

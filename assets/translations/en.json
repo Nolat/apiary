@@ -15,11 +15,11 @@
   "item": {
     "queen": {
       "name": "{family} queen",
-      "tip": "Tap to produce bees"
+      "tip": "TAP to produce bees"
     },
     "larva": {
       "name": "{family} larva",
-      "tip": "Merge two identical larvae"
+      "tip": "MERGE with another larva to get a bee"
     }
   }
 }

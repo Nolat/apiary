@@ -159,10 +159,10 @@ void main() {
 
       // The bottom is floored (292.54 → 292): the bar stays above the home
       // indicator.
-      expect(layout.board, const Rect.fromLTWH(0, 292 - 24 - 180, 140, 180));
+      expect(layout.board, const Rect.fromLTWH(0, 292 - 40 - 180, 140, 180));
       expect(layout.hud.top, 22);
       expect(layout.bottomBar.bottom, 292);
-      expect(layout.spacer.height, (292 - 24 - 180) - (22 + 12 + 32));
+      expect(layout.spacer.height, (292 - 40 - 180) - (22 + 12 + 16));
     });
   });
 }
