@@ -159,12 +159,12 @@ return bee(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family)?  bee,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
-return bee(_that.family);case _:
+return bee(_that.family,_that.level);case _:
   return orElse();
 
 }
@@ -182,12 +182,12 @@ return bee(_that.family);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family)  bee,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
 return larva(_that.family);case Bee():
-return bee(_that.family);}
+return bee(_that.family,_that.level);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -201,12 +201,12 @@ return bee(_that.family);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family)?  bee,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
-return bee(_that.family);case _:
+return bee(_that.family,_that.level);case _:
   return null;
 
 }
@@ -354,10 +354,11 @@ as Family,
 
 
 class Bee implements BoardItem {
-  const Bee({required this.family});
+  const Bee({required this.family, this.level = 1}): assert(level >= 1, 'level must be at least 1');
   
 
 @override final  Family family;
+@JsonKey() final  int level;
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
@@ -369,18 +370,18 @@ $BeeCopyWith<Bee> get copyWith => _$BeeCopyWithImpl<Bee>(this, _$identity);
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is Bee&&(identical(other.family, family) || other.family == family));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Bee&&(identical(other.family, family) || other.family == family)&&(identical(other.level, level) || other.level == level));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,family);
+    return Object.hash(runtimeType,family,level);
 }
 
 @override
 String toString() {
-    return 'BoardItem.bee(family: $family)';
+    return 'BoardItem.bee(family: $family, level: $level)';
 }
 
 
@@ -391,7 +392,7 @@ abstract mixin class $BeeCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
   factory $BeeCopyWith(Bee value, $Res Function(Bee) _then) = _$BeeCopyWithImpl;
 @override @useResult
 $Res call({
- Family family
+ Family family, int level
 });
 
 
@@ -408,10 +409,11 @@ class _$BeeCopyWithImpl<$Res>
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? family = null,Object? level = null,}) {
   return _then(Bee(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
-as Family,
+as Family,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

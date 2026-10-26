@@ -136,7 +136,7 @@ void main() {
         tapCell(game, board, queen);
 
         expect(info.titleText, isNot(invitation));
-        expect(info.titleText, 'Reine Commune · Niv. 1');
+        expect(info.titleText, 'Reine commune · Niv. 1');
         expect(info.tipText, 'TOUCHEZ pour produire des abeilles');
       },
     );
@@ -178,7 +178,57 @@ void main() {
             lessThanOrEqualTo(4),
             reason: 'the $family queen',
           );
+          for (final level in [1, family.maxLevel]) {
+            expect(
+              ItemInfoComponent.lineCount(
+                BoardItem.bee(family: family, level: level),
+                panelWidth,
+              ),
+              lessThanOrEqualTo(4),
+              reason: 'the $family bee of level $level',
+            );
+          }
         }
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'titles a bee with the name of its species, one per level',
+      ApiaryGame.new,
+      (game) async {
+        await game.ready();
+        final info = infoOf(game);
+        final titles = <String>{};
+
+        for (final family in Family.values) {
+          for (var level = 1; level <= family.maxLevel; level++) {
+            info.show(BoardItem.bee(family: family, level: level));
+            titles.add(info.titleText);
+            expect(info.titleText, isNot(contains('species.')));
+          }
+        }
+
+        expect(titles, hasLength(Family.common.maxLevel));
+        info.show(const BoardItem.bee(family: Family.common));
+        expect(info.titleText, 'Abeille commune · Niv. 1');
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'tells a bee of the last level from one that can still merge',
+      ApiaryGame.new,
+      (game) async {
+        await game.ready();
+        final info = infoOf(game)
+          ..show(const BoardItem.bee(family: Family.common));
+        final mergeable = info.tipText;
+
+        info.show(
+          const BoardItem.bee(family: Family.common, level: 5),
+        );
+
+        expect(info.tipText, isNotEmpty);
+        expect(info.tipText, isNot(mergeable));
       },
     );
 

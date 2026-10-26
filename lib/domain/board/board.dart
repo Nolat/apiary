@@ -164,14 +164,40 @@ abstract class Board with _$Board {
     );
   }
 
+  /// What dropping the bee on [from] onto [onto] does: the two bees
+  /// disappear and a bee of the next level of their family appears on [onto];
+  /// `null` when the drop is not a merge (a different or no item, bees of
+  /// another family or level, bees of the family's last level, the same cell,
+  /// or a cell off the board) and the board stays as it is.
+  Board? mergeBees(BoardPosition from, BoardPosition onto) {
+    final dragged = itemAt(from);
+    final target = itemAt(onto);
+    if (from == onto ||
+        dragged is! Bee ||
+        target is! Bee ||
+        !_beesMerge(dragged, target)) {
+      return null;
+    }
+    return copyWith(
+      items: {
+        for (final MapEntry(:key, :value) in items.entries)
+          if (key != from) key: value,
+        onto: BoardItem.bee(family: target.family, level: target.level + 1),
+      },
+    );
+  }
+
+  static bool _beesMerge(Bee a, Bee b) =>
+      a.family == b.family && a.level == b.level && a.level < a.family.maxLevel;
+
   /// Whether dropping the item on [from] onto the one on [onto] makes them
   /// interact (a merge today; a hive or an incubator taking a bee will join
   /// here) rather than trade places. `false` when either cell is empty.
   bool interacts(BoardPosition from, BoardPosition onto) =>
       switch ((itemAt(from), itemAt(onto))) {
         (Larva(family: final a), Larva(family: final b)) => a == b,
-        // Bees will join with APY-7, only while they can merge: two identical
-        // bees of the maximum level trade places.
+        // Two identical bees of the family's last level trade places.
+        (final Bee a, final Bee b) => _beesMerge(a, b),
         _ => false,
       };
 

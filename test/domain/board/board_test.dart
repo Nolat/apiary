@@ -99,6 +99,11 @@ void main() {
   });
 
   group('BoardItem.level', () {
+    test('is the level of a bee', () {
+      expect(const BoardItem.bee(family: Family.common).level, 1);
+      expect(const BoardItem.bee(family: Family.common, level: 3).level, 3);
+    });
+
     test('is 1 for a queen', () {
       expect(const BoardItem.queen(family: Family.common).level, 1);
     });
@@ -325,6 +330,69 @@ void main() {
     });
   });
 
+  group('Board.mergeBees', () {
+    const from = BoardPosition(column: 1, row: 1);
+    const onto = BoardPosition(column: 2, row: 1);
+    Board boardWith(BoardItem a, BoardItem b) => Board.initial().copyWith(
+      items: {...Board.initial().items, from: a, onto: b},
+    );
+    BoardItem bee(int level) =>
+        BoardItem.bee(family: Family.common, level: level);
+
+    test(
+      'replaces two bees of level N by one of level N + 1 on the target',
+      () {
+        for (var level = 1; level < Family.common.maxLevel; level++) {
+          final board = boardWith(bee(level), bee(level));
+
+          final merged = board.mergeBees(from, onto)!;
+
+          expect(merged.itemAt(from), isNull);
+          expect(merged.itemAt(onto), bee(level + 1));
+          expect(merged.items, hasLength(board.items.length - 1));
+          expect(
+            merged.itemAt(Board.startingQueenPosition),
+            board.itemAt(Board.startingQueenPosition),
+          );
+        }
+      },
+    );
+
+    test('does not merge bees of the last level', () {
+      final last = bee(Family.common.maxLevel);
+
+      expect(boardWith(last, last).mergeBees(from, onto), isNull);
+    });
+
+    test('does not merge bees of different levels, itself or off board', () {
+      final board = boardWith(bee(1), bee(2));
+
+      expect(board.mergeBees(from, onto), isNull);
+      expect(boardWith(bee(1), bee(1)).mergeBees(from, from), isNull);
+      expect(
+        boardWith(bee(1), bee(1)).mergeBees(
+          from,
+          const BoardPosition(column: 9, row: 9),
+        ),
+        isNull,
+      );
+    });
+
+    test('does not merge something that is not a bee', () {
+      const larva = BoardItem.larva(family: Family.common);
+
+      expect(boardWith(larva, bee(1)).mergeBees(from, onto), isNull);
+      expect(boardWith(bee(1), larva).mergeBees(from, onto), isNull);
+      expect(
+        boardWith(
+          bee(1),
+          bee(1),
+        ).mergeBees(from, const BoardPosition(column: 0, row: 0)),
+        isNull,
+      );
+    });
+  });
+
   group('Board.move', () {
     const larva = BoardItem.larva(family: Family.common);
     const from = BoardPosition(column: 1, row: 1);
@@ -406,9 +474,24 @@ void main() {
       expect(board.interacts(larvaCell, otherLarvaCell), isTrue);
     });
 
-    test('does not hold between other pairs, bees and queens included', () {
-      // Bees cannot merge yet: see APY-7.
-      expect(board.interacts(beeCell, otherBeeCell), isFalse);
+    test('holds between identical bees below the last level', () {
+      expect(board.interacts(beeCell, otherBeeCell), isTrue);
+    });
+
+    test('does not hold between bees of the last level or of two levels', () {
+      const last = BoardItem.bee(family: Family.common, level: 5);
+      final withLast = board.copyWith(
+        items: {...board.items, beeCell: last, otherBeeCell: last},
+      );
+      final mixed = board.copyWith(
+        items: {...board.items, otherBeeCell: last},
+      );
+
+      expect(withLast.interacts(beeCell, otherBeeCell), isFalse);
+      expect(mixed.interacts(beeCell, otherBeeCell), isFalse);
+    });
+
+    test('does not hold between other pairs, queens included', () {
       expect(board.interacts(larvaCell, beeCell), isFalse);
       expect(board.interacts(larvaCell, queen), isFalse);
       expect(board.interacts(queen, beeCell), isFalse);
@@ -457,10 +540,14 @@ void main() {
       expect(withBee.itemAt(queen), bee);
     });
 
-    test('exchanges two identical bees, which cannot merge yet', () {
+    test('exchanges two bees of the last level, which cannot merge', () {
       const otherBeeCell = BoardPosition(column: 6, row: 6);
+      final last = BoardItem.bee(
+        family: Family.common,
+        level: Family.common.maxLevel,
+      );
       final twoBees = board.copyWith(
-        items: {...board.items, otherBeeCell: bee},
+        items: {...board.items, beeCell: last, otherBeeCell: last},
       );
 
       expect(twoBees.swap(beeCell, otherBeeCell), isNotNull);

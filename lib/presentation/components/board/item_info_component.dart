@@ -162,9 +162,9 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       Larva(:final family) => 'item.larva.name'.tr(
         namedArgs: {'family': 'family.${family.name}'.tr()},
       ),
-      Bee(:final family) => 'item.bee.name'.tr(
-        namedArgs: {'family': 'family.${family.name}'.tr()},
-      ),
+      // Placeholder species names, until the game data defines the real ones.
+      Bee(:final family, :final level) =>
+        'species.${family.name}.level_$level'.tr(),
     };
     final level = item.level;
     return level == null
@@ -177,7 +177,8 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   static String _tipOf(BoardItem item) => switch (item) {
     Queen() => 'item.queen.tip'.tr(),
     Larva() => 'item.larva.tip'.tr(),
-    Bee() => 'item.bee.tip'.tr(),
+    Bee(:final family, :final level) =>
+      level == family.maxLevel ? 'item.bee.tip_max'.tr() : 'item.bee.tip'.tr(),
   };
 
   /// Covers [area], in the parent's coordinates.

@@ -12,9 +12,14 @@ import 'package:apiary/domain/bees/family.dart';
 /// [borderColor], so a new family needs a color here, not a new outline
 /// sprite. This lives in `presentation/`: the domain knows nothing of looks.
 extension FamilySprites on Family {
-  /// The family's bee, which the queen of the family also wears.
-  String get beeImage => switch (this) {
-    Family.common => 'bees/common.png',
+  /// The family's level-1 bee, which the queen of the family also wears.
+  String get beeImage => beeImageAt(1);
+
+  /// The family's bee of [level], each level with its own look. Provisional:
+  /// the levels above 1 are recolors of the first one, until each species
+  /// has its own art.
+  String beeImageAt(int level) => switch (this) {
+    Family.common => level == 1 ? 'bees/common.png' : 'bees/common_$level.png',
   };
 
   /// The family's larva.

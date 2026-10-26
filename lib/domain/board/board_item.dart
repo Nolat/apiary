@@ -17,9 +17,16 @@ sealed class BoardItem with _$BoardItem {
   /// queen.
   const factory BoardItem.larva({required Family family}) = Larva;
 
-  /// A bee of the base species of its [family], level 1, born from the merge
-  /// of two larvae of that family. Higher levels join with their own story.
-  const factory BoardItem.bee({required Family family}) = Bee;
+  /// A bee of its [family]: level 1 when born from the merge of two larvae,
+  /// then one level higher per merge of two identical bees, up to the
+  /// family's [Family.maxLevel]. The upper bound is kept by `Board.mergeBees`;
+  /// a bee rebuilt from stored data must be checked against it by whoever
+  /// reads that data.
+  @Assert('level >= 1', 'level must be at least 1')
+  const factory BoardItem.bee({
+    required Family family,
+    @Default(1) int level,
+  }) = Bee;
 }
 
 extension BoardItemLevel on BoardItem {
@@ -27,6 +34,6 @@ extension BoardItemLevel on BoardItem {
   int? get level => switch (this) {
     Queen() => 1,
     Larva() => null,
-    Bee() => 1,
+    Bee(:final level) => level,
   };
 }

@@ -10,7 +10,16 @@
     }
   },
   "family": {
-    "common": "Commune"
+    "common": "commune"
+  },
+  "species": {
+    "common": {
+      "level_1": "Abeille commune",
+      "level_2": "Abeille cultivée",
+      "level_3": "Abeille domestique",
+      "level_4": "Abeille royale",
+      "level_5": "Abeille dorée"
+    }
   },
   "item": {
     "queen": {
@@ -18,8 +27,8 @@
       "tip": "TOUCHEZ pour produire des abeilles"
     },
     "bee": {
-      "name": "Abeille {family}",
-      "tip": "FUSIONNEZ avec une autre abeille identique pour monter de niveau"
+      "tip": "FUSIONNEZ avec une autre abeille identique pour monter de niveau",
+      "tip_max": "Niveau maximal : cette abeille ne fusionne plus"
     },
     "larva": {
       "name": "Larve {family}",

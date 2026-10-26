@@ -29,9 +29,11 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// Lifting the finger from a selected queen creates a larva next to her; when
 /// the board is full, the queen shakes instead. A drag never does: it cancels
 /// the tap. Any item can be dragged: it follows the finger and is selected.
-/// Dropped on a larva of the same family, a larva merges into a bee; dropped
-/// on an empty cell, an item moves there; dropped on a different item, the
-/// two swap places; otherwise it goes back to its cell.
+/// Dropped on a larva of the same family, a larva merges into a bee; a bee
+/// dropped on an identical one (unless of the family's last level) merges into
+/// the bee of the next level; dropped on an empty cell, an item moves there;
+/// dropped on a different item, the two swap places; otherwise it goes back to
+/// its cell.
 ///
 /// The look follows the visual universe in `docs/DESIGN.md` ("Univers
 /// visuel").
@@ -247,7 +249,9 @@ class BoardComponent extends PositionComponent
       selection.value = onto;
       return;
     }
-    final merged = board.contains(onto) ? board.mergeLarvae(from, onto) : null;
+    final merged = board.contains(onto)
+        ? board.mergeLarvae(from, onto) ?? board.mergeBees(from, onto)
+        : null;
     if (merged == null) {
       item.position.setFrom(itemPosition(from));
       return;
@@ -270,8 +274,9 @@ class BoardComponent extends PositionComponent
         family: family,
         position: itemPosition(position),
       ),
-      Bee(:final family) => BeeComponent(
+      Bee(:final family, :final level) => BeeComponent(
         family: family,
+        level: level,
         position: itemPosition(position),
       ),
     };

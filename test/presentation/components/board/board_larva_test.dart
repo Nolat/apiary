@@ -243,7 +243,7 @@ void main() {
             .descendants()
             .whereType<ItemInfoComponent>()
             .single;
-        expect(info.titleText, 'Larve Commune');
+        expect(info.titleText, 'Larve commune');
         expect(
           info.tipText,
           'FUSIONNEZ avec une autre larve pour obtenir une abeille',

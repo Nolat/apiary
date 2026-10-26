@@ -392,4 +392,81 @@ void main() {
       },
     );
   });
+
+  group('BeeComponent', () {
+    test('refuses a level beyond the last one of its family', () {
+      expect(
+        () => BeeComponent(
+          family: Family.common,
+          level: Family.common.maxLevel + 1,
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+      expect(
+        () => BeeComponent(family: Family.common, level: 0),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+  });
+
+  group('Dragging a bee', () {
+    const from = BoardPosition(column: 1, row: 1);
+    const onto = BoardPosition(column: 2, row: 1);
+
+    // Replaces the scene's board by one holding two bees of [level].
+    Future<BoardComponent> twoBees(ApiaryGame game, int level) async {
+      final scene = await boardOf(game);
+      final bee = BoardItem.bee(family: Family.common, level: level);
+      final board = BoardComponent(
+        board: Board(items: {from: bee, onto: bee}),
+      )..position.setFrom(scene.position);
+      scene.removeFromParent();
+      await game.world.add(board);
+      await game.ready();
+      return board;
+    }
+
+    testWithGame<ApiaryGame>(
+      'merges onto an identical bee into the next level',
+      ApiaryGame.new,
+      (game) async {
+        final board = await twoBees(game, 1);
+
+        CellDrag(game, board)
+          ..start(from)
+          ..moveTo(onto.column, onto.row)
+          ..end();
+        await game.ready();
+
+        expect(board.board.itemAt(from), isNull);
+        expect(
+          board.board.itemAt(onto),
+          const BoardItem.bee(family: Family.common, level: 2),
+        );
+        expect(board.board.items, hasLength(1));
+        expect(board.children.whereType<BeeComponent>(), hasLength(1));
+        expect(board.children.whereType<BeeComponent>().single.level, 2);
+        expect(board.selection.value, onto);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'goes back to its cell when both bees have the last level',
+      ApiaryGame.new,
+      (game) async {
+        final board = await twoBees(game, Family.common.maxLevel);
+        final before = board.board;
+
+        CellDrag(game, board)
+          ..start(from)
+          ..moveTo(onto.column, onto.row)
+          ..end();
+        await game.ready();
+
+        // Same items either way: the bees trade places.
+        expect(board.board.items, before.items);
+        expect(board.children.whereType<BeeComponent>(), hasLength(2));
+      },
+    );
+  });
 }

@@ -12,14 +12,23 @@
   "family": {
     "common": "Common"
   },
+  "species": {
+    "common": {
+      "level_1": "Common bee",
+      "level_2": "Cultivated bee",
+      "level_3": "Domestic bee",
+      "level_4": "Royal bee",
+      "level_5": "Golden bee"
+    }
+  },
   "item": {
     "queen": {
       "name": "{family} queen",
       "tip": "TAP to produce bees"
     },
     "bee": {
-      "name": "{family} bee",
-      "tip": "MERGE with an identical bee to level up"
+      "tip": "MERGE with an identical bee to level up",
+      "tip_max": "Maximum level: this bee no longer merges"
     },
     "larva": {
       "name": "{family} larva",
