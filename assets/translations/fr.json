@@ -16,6 +16,10 @@
     "queen": {
       "name": "Reine {family}",
       "tip": "Touchez pour produire des abeilles"
+    },
+    "larva": {
+      "name": "Larve {family}",
+      "tip": "Fusionnez deux larves identiques"
     }
   }
 }

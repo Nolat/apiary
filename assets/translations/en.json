@@ -16,6 +16,10 @@
     "queen": {
       "name": "{family} queen",
       "tip": "Tap to produce bees"
+    },
+    "larva": {
+      "name": "{family} larva",
+      "tip": "Merge two identical larvae"
     }
   }
 }

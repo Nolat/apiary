@@ -154,6 +154,9 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       Queen(:final family) => 'item.queen.name'.tr(
         namedArgs: {'family': 'family.${family.name}'.tr()},
       ),
+      Larva(:final family) => 'item.larva.name'.tr(
+        namedArgs: {'family': 'family.${family.name}'.tr()},
+      ),
     };
     final level = item.level;
     return level == null
@@ -165,6 +168,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
 
   static String _tipOf(BoardItem item) => switch (item) {
     Queen() => 'item.queen.tip'.tr(),
+    Larva() => 'item.larva.tip'.tr(),
   };
 
   /// Covers [area], in the parent's coordinates.

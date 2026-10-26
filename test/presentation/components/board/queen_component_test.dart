@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
+import 'package:apiary/presentation/components/board/family_sprites.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 
@@ -70,8 +71,8 @@ void main() {
           expect(layer.paint.filterQuality, FilterQuality.none);
         }
         for (final (index, path) in [
-          QueenComponent.borderImage,
-          QueenComponent.beeImage(Family.common),
+          Family.common.beeBorderImage,
+          Family.common.beeImage,
           QueenComponent.crownImage,
         ].indexed) {
           expect(

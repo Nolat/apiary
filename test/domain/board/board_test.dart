@@ -1,3 +1,6 @@
+// 🎯 Dart imports:
+import 'dart:math';
+
 // 📦 Package imports:
 import 'package:glados/glados.dart';
 
@@ -6,6 +9,7 @@ import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
+import 'package:apiary/domain/board/larva_spawn.dart';
 
 extension AnyBoardPosition on Any {
   Generator<BoardPosition> get boardPosition => combine2(
@@ -97,6 +101,163 @@ void main() {
   group('BoardItem.level', () {
     test('is 1 for a queen', () {
       expect(const BoardItem.queen(family: Family.common).level, 1);
+    });
+
+    test('is absent for a larva', () {
+      expect(const BoardItem.larva(family: Family.common).level, isNull);
+    });
+  });
+
+  group('Board.nearestFreeCell', () {
+    const origin = BoardPosition(column: 3, row: 4);
+    const larva = BoardItem.larva(family: Family.common);
+
+    // The board with a larva on each of [cells], plus the starting queen.
+    Board filled(Iterable<BoardPosition> cells) => Board(
+      items: {
+        Board.startingQueenPosition: const BoardItem.queen(
+          family: Family.common,
+        ),
+        for (final cell in cells) cell: larva,
+      },
+    );
+
+    Iterable<BoardPosition> allCells() => [
+      for (var row = 0; row < Board.rows; row++)
+        for (var column = 0; column < Board.columns; column++)
+          BoardPosition(column: column, row: row),
+    ];
+
+    int ring(BoardPosition a, BoardPosition b) =>
+        max((a.column - b.column).abs(), (a.row - b.row).abs());
+
+    test('starts with the cell above the origin', () {
+      expect(
+        Board.initial().nearestFreeCell(origin),
+        const BoardPosition(column: 3, row: 3),
+      );
+    });
+
+    test('goes clockwise around the origin: top, right, bottom, then left', () {
+      var board = Board.initial();
+      final cells = <BoardPosition>[];
+      for (var i = 0; i < 8; i++) {
+        final cell = board.nearestFreeCell(origin)!;
+        cells.add(cell);
+        board = filled([...board.items.keys, cell]);
+      }
+
+      expect(
+        cells.map((cell) => (cell.column - 3, cell.row - 4)),
+        [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)],
+      );
+    });
+
+    test('moves on to the next cell of the ring once one is taken', () {
+      final board = filled([const BoardPosition(column: 3, row: 3)]);
+
+      expect(
+        board.nearestFreeCell(origin),
+        const BoardPosition(column: 4, row: 3),
+      );
+    });
+
+    test('moves on to the next ring once the 8 cells around are taken', () {
+      final board = filled(
+        allCells().where((cell) => ring(cell, origin) == 1),
+      );
+
+      expect(
+        board.nearestFreeCell(origin),
+        const BoardPosition(column: 3, row: 2),
+      );
+    });
+
+    test('is found far from the origin, in a corner', () {
+      final board = filled(
+        allCells().where(
+          (cell) => cell != const BoardPosition(column: 6, row: 8),
+        ),
+      );
+
+      expect(
+        board.nearestFreeCell(origin),
+        const BoardPosition(column: 6, row: 8),
+      );
+    });
+
+    test('is absent when the board is full', () {
+      expect(filled(allCells()).nearestFreeCell(origin), isNull);
+    });
+
+    Glados2(any.boardPosition, any.boardPosition).test(
+      'is an empty cell of the board, no farther than any other',
+      (origin, taken) {
+        final board = filled([taken, origin]);
+
+        final nearest = board.nearestFreeCell(origin)!;
+
+        expect(board.contains(nearest), isTrue);
+        expect(board.itemAt(nearest), isNull);
+        for (final cell in allCells().where((c) => board.itemAt(c) == null)) {
+          expect(ring(nearest, origin), lessThanOrEqualTo(ring(cell, origin)));
+        }
+      },
+    );
+  });
+
+  group('Board.spawnLarva', () {
+    const queen = Board.startingQueenPosition;
+
+    test('puts a larva of the queen family on the nearest free cell', () {
+      final result = Board.initial().spawnLarva(queen);
+
+      expect(
+        result,
+        LarvaSpawn.created(
+          board: Board(
+            items: {
+              queen: const BoardItem.queen(family: Family.common),
+              const BoardPosition(column: 3, row: 3): const BoardItem.larva(
+                family: Family.common,
+              ),
+            },
+          ),
+          position: const BoardPosition(column: 3, row: 3),
+        ),
+      );
+    });
+
+    test('gives the same answer on the same board every time', () {
+      expect(
+        Board.initial().spawnLarva(queen),
+        Board.initial().spawnLarva(queen),
+      );
+    });
+
+    test('creates exactly one larva per tap and keeps the queen', () {
+      var board = Board.initial();
+      for (var taps = 1; taps <= 20; taps++) {
+        final result = board.spawnLarva(queen) as LarvaCreated;
+        board = result.board;
+
+        expect(board.items, hasLength(1 + taps));
+        expect(
+          board.itemAt(queen),
+          const BoardItem.queen(family: Family.common),
+        );
+        expect(board.itemAt(result.position), isA<Larva>());
+      }
+    });
+
+    test('creates nothing on a full board, until the last free cell', () {
+      var board = Board.initial();
+      for (var free = Board.columns * Board.rows - 1; free > 0; free--) {
+        board = (board.spawnLarva(queen) as LarvaCreated).board;
+      }
+
+      expect(board.items, hasLength(Board.columns * Board.rows));
+      expect(board.spawnLarva(queen), const LarvaSpawn.boardFull());
     });
   });
 }

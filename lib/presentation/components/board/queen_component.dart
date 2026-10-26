@@ -6,11 +6,13 @@ import 'package:flame/components.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/family.dart';
+import 'package:apiary/presentation/components/board/family_sprites.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
-/// A queen, drawn as the queen of her family: the family's bee, an
-/// outline (a separate sprite hugging the queen's silhouette, see "Univers
-/// visuel" in `docs/DESIGN.md`) and a crown. Its parent places it on its cell;
+/// A queen, drawn as the queen of her family: the family's bee, the
+/// family's outline (a separate sprite hugging the bee's silhouette, see
+/// "Univers visuel" in `docs/DESIGN.md`) and a crown, which is what sets her
+/// apart from a bee. Its parent places it on its cell;
 /// the board handles taps.
 class QueenComponent extends PositionComponent with HasGameReference {
   QueenComponent({required this.family, super.position})
@@ -18,27 +20,29 @@ class QueenComponent extends PositionComponent with HasGameReference {
 
   final Family family;
 
-  static const borderImage = 'queens/border_queen.png';
   static const crownImage = 'queens/crown_queen.png';
-
-  /// The family's bee, under the queen's outline and crown.
-  static String beeImage(Family family) => switch (family) {
-    Family.common => 'bees/common.png',
-  };
 
   @override
   Future<void> onLoad() async {
     final [border, bee, crown] = await game.images.loadAll([
-      borderImage,
-      beeImage(family),
+      family.beeBorderImage,
+      family.beeImage,
       crownImage,
     ]);
     // Nearest-neighbor, so pixels stay sharp at fractional scales.
     final paint = Paint()..filterQuality = FilterQuality.none;
     // Bottom to top: the outline never covers the bee, the crown sits on top.
-    for (final image in [border, bee, crown]) {
+    for (final (image, layerPaint) in [
+      (border, family.borderPaint),
+      (bee, paint),
+      (crown, paint),
+    ]) {
       await add(
-        SpriteComponent(sprite: Sprite(image), paint: paint, size: size),
+        SpriteComponent(
+          sprite: Sprite(image),
+          paint: layerPaint,
+          size: size,
+        ),
       );
     }
   }

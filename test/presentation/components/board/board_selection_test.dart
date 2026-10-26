@@ -3,7 +3,6 @@ import 'dart:ui' show Rect;
 
 // 📦 Package imports:
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -17,6 +16,7 @@ import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
+import '../../../helpers/board_tap.dart';
 import '../../../helpers/game_text.dart';
 
 void main() {
@@ -28,30 +28,6 @@ void main() {
     const queen = Board.startingQueenPosition;
     const emptyCell = BoardPosition(column: 0, row: 0);
     const otherEmptyCell = BoardPosition(column: 6, row: 8);
-
-    Future<BoardComponent> boardOf(ApiaryGame game) async {
-      await game.ready();
-      return game.world.descendants().whereType<BoardComponent>().single;
-    }
-
-    // Taps the middle of [cell] as the player would, through Flame's tap
-    // dispatcher.
-    void tap(ApiaryGame game, BoardComponent board, BoardPosition cell) {
-      final inBoard = Vector2(
-        (cell.column + 0.5) * 20,
-        (cell.row + 0.5) * 20,
-      );
-      final screen = game.camera.localToGlobal(
-        board.absolutePositionOf(inBoard),
-      );
-      (game.findByKey(const MultiTapDispatcherKey())! as MultiTapDispatcher)
-          .onTapDown(
-            createTapDownEvents(
-              game: game,
-              globalPosition: Offset(screen.x, screen.y),
-            ),
-          );
-    }
 
     SpriteComponent frameOf(BoardComponent board) =>
         board.children.whereType<SpriteComponent>().singleWhere(
@@ -88,7 +64,7 @@ void main() {
       (game) async {
         final board = await boardOf(game);
 
-        tap(game, board, queen);
+        tapCell(game, board, queen);
 
         expect(board.selection.value, queen);
         expect(board.selectedItem, board.board.itemAt(queen));
@@ -108,8 +84,8 @@ void main() {
       (game) async {
         final board = await boardOf(game);
 
-        tap(game, board, queen);
-        tap(game, board, queen);
+        tapCell(game, board, queen);
+        tapCell(game, board, queen);
 
         expect(board.selection.value, queen);
         expect(frameOf(board).opacity, 1);
@@ -122,12 +98,12 @@ void main() {
       (game) async {
         final board = await boardOf(game);
 
-        tap(game, board, emptyCell);
+        tapCell(game, board, emptyCell);
         expect(board.selection.value, isNull);
 
-        tap(game, board, queen);
-        tap(game, board, emptyCell);
-        tap(game, board, otherEmptyCell);
+        tapCell(game, board, queen);
+        tapCell(game, board, emptyCell);
+        tapCell(game, board, otherEmptyCell);
         expect(board.selection.value, queen);
       },
     );
@@ -139,7 +115,7 @@ void main() {
         final board = await boardOf(game);
         final before = board.board;
 
-        tap(game, board, queen);
+        tapCell(game, board, queen);
 
         expect(board.board, before);
       },
@@ -157,7 +133,7 @@ void main() {
         );
         final invitation = info.titleText;
 
-        tap(game, board, queen);
+        tapCell(game, board, queen);
 
         expect(info.titleText, isNot(invitation));
         expect(info.titleText, 'Reine Commune · Niv. 1');

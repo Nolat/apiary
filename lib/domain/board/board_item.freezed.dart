@@ -69,7 +69,7 @@ class _$BoardItemCopyWithImpl<$Res>
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? family = null,}) {
-  return _then(BoardItem.queen(
+  return _then(_self.copyWith(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
   ));
@@ -92,11 +92,12 @@ extension BoardItemPatterns on BoardItem {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
-return queen(_that);case _:
+return queen(_that);case Larva() when larva != null:
+return larva(_that);case _:
   return orElse();
 
 }
@@ -114,11 +115,12 @@ return queen(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,}){
 final _that = this;
 switch (_that) {
 case Queen():
-return queen(_that);}
+return queen(_that);case Larva():
+return larva(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -132,11 +134,12 @@ return queen(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
-return queen(_that);case _:
+return queen(_that);case Larva() when larva != null:
+return larva(_that);case _:
   return null;
 
 }
@@ -153,10 +156,11 @@ return queen(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
-return queen(_that.family);case _:
+return queen(_that.family);case Larva() when larva != null:
+return larva(_that.family);case _:
   return orElse();
 
 }
@@ -174,10 +178,11 @@ return queen(_that.family);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,}) {final _that = this;
 switch (_that) {
 case Queen():
-return queen(_that.family);}
+return queen(_that.family);case Larva():
+return larva(_that.family);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -191,10 +196,11 @@ return queen(_that.family);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
-return queen(_that.family);case _:
+return queen(_that.family);case Larva() when larva != null:
+return larva(_that.family);case _:
   return null;
 
 }
@@ -262,6 +268,74 @@ class _$QueenCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
   return _then(Queen(
+family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
+as Family,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class Larva implements BoardItem {
+  const Larva({required this.family});
+  
+
+@override final  Family family;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LarvaCopyWith<Larva> get copyWith => _$LarvaCopyWithImpl<Larva>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Larva&&(identical(other.family, family) || other.family == family));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,family);
+}
+
+@override
+String toString() {
+    return 'BoardItem.larva(family: $family)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LarvaCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
+  factory $LarvaCopyWith(Larva value, $Res Function(Larva) _then) = _$LarvaCopyWithImpl;
+@override @useResult
+$Res call({
+ Family family
+});
+
+
+
+
+}
+/// @nodoc
+class _$LarvaCopyWithImpl<$Res>
+    implements $LarvaCopyWith<$Res> {
+  _$LarvaCopyWithImpl(this._self, this._then);
+
+  final Larva _self;
+  final $Res Function(Larva) _then;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
+  return _then(Larva(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
   ));

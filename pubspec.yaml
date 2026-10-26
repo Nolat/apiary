@@ -69,6 +69,7 @@ flutter:
   assets:
     - assets/images/bees/
     - assets/images/board/
+    - assets/images/larvae/
     - assets/images/queens/
     - assets/images/ui/
     - assets/translations/
