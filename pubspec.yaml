@@ -69,8 +69,15 @@ flutter:
   assets:
     - assets/images/bees/
     - assets/images/board/
-    - assets/images/generators/
+    - assets/images/queens/
+    - assets/images/ui/
     - assets/translations/
+  fonts:
+    # The game's pixel font; its native size is 8 px (one font pixel = one game
+    # pixel).
+    - family: BoldPixels
+      fonts:
+        - asset: assets/fonts/BoldPixels.ttf
 
 # Patrol E2E tests (patrol_test/), run with `patrol test` — see docs/TESTING.md.
 patrol:

@@ -10,14 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
-import 'package:apiary/presentation/components/board/generator_component.dart';
+import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 
 void main() {
   // The sprites load from the asset bundle, which needs the binding.
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('GeneratorComponent', () {
+  group('QueenComponent', () {
     Future<BoardComponent> boardOf(ApiaryGame game) async {
       await game.ready();
       return game.world.descendants().whereType<BoardComponent>().single;
@@ -29,9 +29,9 @@ void main() {
       (game) async {
         final board = await boardOf(game);
 
-        final generators = board.children.whereType<GeneratorComponent>();
-        expect(generators, hasLength(1));
-        expect(generators.single.family, Family.common);
+        final queens = board.children.whereType<QueenComponent>();
+        expect(queens, hasLength(1));
+        expect(queens.single.family, Family.common);
       },
     );
 
@@ -39,14 +39,14 @@ void main() {
       'sits on its starting cell, centered with a 2 px margin',
       ApiaryGame.new,
       (game) async {
-        final generator = (await boardOf(game)).children
-            .whereType<GeneratorComponent>()
+        final queen = (await boardOf(game)).children
+            .whereType<QueenComponent>()
             .single;
 
-        const cell = Board.startingGeneratorPosition;
-        expect(generator.size, Vector2.all(16));
+        const cell = Board.startingQueenPosition;
+        expect(queen.size, Vector2.all(16));
         expect(
-          generator.position,
+          queen.position,
           Vector2(cell.column * 20.0 + 2, cell.row * 20.0 + 2),
         );
       },
@@ -56,11 +56,11 @@ void main() {
       'stacks the outline, the family bee and the crown, bottom to top',
       ApiaryGame.new,
       (game) async {
-        final generator = (await boardOf(game)).children
-            .whereType<GeneratorComponent>()
+        final queen = (await boardOf(game)).children
+            .whereType<QueenComponent>()
             .single;
 
-        final layers = generator.children.whereType<SpriteComponent>().toList();
+        final layers = queen.children.whereType<SpriteComponent>().toList();
         expect(layers, hasLength(3));
         for (final layer in layers) {
           expect(layer.position, Vector2.zero());
@@ -70,9 +70,9 @@ void main() {
           expect(layer.paint.filterQuality, FilterQuality.none);
         }
         for (final (index, path) in [
-          GeneratorComponent.borderImage,
-          GeneratorComponent.beeImage(Family.common),
-          GeneratorComponent.crownImage,
+          QueenComponent.borderImage,
+          QueenComponent.beeImage(Family.common),
+          QueenComponent.crownImage,
         ].indexed) {
           expect(
             layers[index].sprite!.image,
@@ -83,16 +83,20 @@ void main() {
     );
 
     testWithGame<ApiaryGame>(
-      'draws above the cells',
+      'draws above the cells, under the selection frame',
       ApiaryGame.new,
       (game) async {
         final board = await boardOf(game);
 
         final children = board.children.toList();
-        final generatorIndex = children.indexWhere(
-          (child) => child is GeneratorComponent,
+        final queenIndex = children.indexWhere(
+          (child) => child is QueenComponent,
         );
-        expect(generatorIndex, children.length - 1);
+        expect(queenIndex, children.length - 2);
+        expect(
+          (children.last as SpriteComponent).sprite!.image,
+          same(game.images.fromCache(BoardComponent.selectionImage)),
+        );
       },
     );
   });

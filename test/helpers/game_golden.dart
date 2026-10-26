@@ -8,12 +8,14 @@ import 'package:flutter_test/flutter_test.dart';
 // 🌎 Project imports:
 import 'package:apiary/presentation/game/apiary_game.dart';
 
+import 'game_text.dart';
+
 /// Tag of every golden test, declared in `dart_test.yaml`. Goldens only match
 /// on the reference platform (macOS), so CI on Linux excludes it — see
 /// docs/TESTING.md.
 const goldenTag = 'golden';
 
-/// Renders a full [ApiaryGame] at its minimum size (140×246, device pixel
+/// Renders a full [ApiaryGame] at its minimum size (140×248, device pixel
 /// ratio 1: the tightest layout, the iPhone SE's) and compares it to
 /// [goldenFile], so one golden pixel is one game pixel.
 ///
@@ -43,6 +45,7 @@ void testGameGolden(
     // Flame loads assets and components asynchronously: real async is needed
     // for that work to complete inside the fake-async test zone.
     await tester.runAsync(() async {
+      await loadGameText();
       await tester.pumpWidget(GameWidget(key: key, game: game));
       await tester.pump();
       await game.ready();

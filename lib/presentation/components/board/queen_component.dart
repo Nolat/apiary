@@ -8,18 +8,18 @@ import 'package:flame/components.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
-/// A family generator, drawn as a queen of its family: the family's bee, an
+/// A queen, drawn as the queen of her family: the family's bee, an
 /// outline (a separate sprite hugging the queen's silhouette, see "Univers
-/// visuel" in `docs/DESIGN.md`) and a crown. Inert for now: tapping it does
-/// nothing. Its parent places it on its cell.
-class GeneratorComponent extends PositionComponent with HasGameReference {
-  GeneratorComponent({required this.family, super.position})
+/// visuel" in `docs/DESIGN.md`) and a crown. Its parent places it on its cell;
+/// the board handles taps.
+class QueenComponent extends PositionComponent with HasGameReference {
+  QueenComponent({required this.family, super.position})
     : super(size: Vector2.all(ScreenLayout.itemSize));
 
   final Family family;
 
-  static const borderImage = 'generators/border_queen.png';
-  static const crownImage = 'generators/crown_queen.png';
+  static const borderImage = 'queens/border_queen.png';
+  static const crownImage = 'queens/crown_queen.png';
 
   /// The family's bee, under the queen's outline and crown.
   static String beeImage(Family family) => switch (family) {

@@ -4,6 +4,7 @@ import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
@@ -17,12 +18,24 @@ void main() {
       goldenFile: 'goldens/board_scene_start.png',
     );
 
+    testGameGolden(
+      'renders the board with the queen selected',
+      goldenFile: 'goldens/board_scene_selected.png',
+      arrange: (game, tester) async {
+        final board = game.world
+            .descendants()
+            .whereType<BoardComponent>()
+            .single;
+        board.selection.value = Board.startingQueenPosition;
+      },
+    );
+
     testWithGame<ApiaryGame>(
       'covers the whole screen with its decor',
       ApiaryGame.new,
       (game) async {
         await game.ready();
-        // Wider than 140×246: the screen is more than 140 game pixels wide.
+        // Wider than 140×248: the screen is more than 140 game pixels wide.
         game.onGameResize(Vector2(600, 800));
 
         final decor = game.world
@@ -39,7 +52,7 @@ void main() {
     );
 
     for (final (name, screenSize) in [
-      ('the minimum screen', Vector2(140, 246)),
+      ('the minimum screen', Vector2(140, 248)),
       ('a tall phone', Vector2(393, 852)),
       ('a tablet', Vector2(1024, 1366)),
     ]) {

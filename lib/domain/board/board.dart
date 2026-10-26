@@ -16,11 +16,11 @@ abstract class Board with _$Board {
     @Default({}) Map<BoardPosition, BoardItem> items,
   }) = _Board;
 
-  /// The board of a first game: a single Common generator on
-  /// [startingGeneratorPosition].
+  /// The board of a first game: a single Common queen on
+  /// [startingQueenPosition].
   factory Board.initial() => Board(
     items: {
-      startingGeneratorPosition: const BoardItem.generator(
+      startingQueenPosition: const BoardItem.queen(
         family: Family.common,
       ),
     },
@@ -31,9 +31,9 @@ abstract class Board with _$Board {
   static const columns = 7;
   static const rows = 9;
 
-  /// Where the starting generator is. Provisional, until the layout of all the
+  /// Where the starting queen is. Provisional, until the layout of all the
   /// starting objects (hive, incubator) is settled — see `docs/DESIGN.md`.
-  static const startingGeneratorPosition = BoardPosition(column: 3, row: 4);
+  static const startingQueenPosition = BoardPosition(column: 3, row: 4);
 
   /// Whether [position] lies on the grid.
   bool contains(BoardPosition position) =>
@@ -44,4 +44,12 @@ abstract class Board with _$Board {
 
   /// The item on [position], or `null` when the cell is empty.
   BoardItem? itemAt(BoardPosition position) => items[position];
+
+  /// The selected cell once the player taps [tapped], [current] being the
+  /// selected cell so far (`null` when nothing is selected): tapping an item
+  /// selects it, tapping an empty cell leaves the selection as it was.
+  BoardPosition? selectionAfterTap(
+    BoardPosition? current,
+    BoardPosition tapped,
+  ) => itemAt(tapped) == null ? current : tapped;
 }

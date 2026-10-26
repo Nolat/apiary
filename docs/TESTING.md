@@ -98,7 +98,7 @@ Bonnes propriétés à viser :
 - une fusion de deux éléments identiques donne toujours l'élément de niveau supérieur ;
 - une fusion ne crée ni ne détruit de ressources (conservation) ;
 - un croisement donne toujours une espèce existante du catalogue ;
-- une commande générée est toujours réalisable avec les générateurs débloqués ;
+- une commande générée est toujours réalisable avec les reines débloquées ;
 - sérialiser puis désérialiser un état redonne le même état (aller-retour).
 
 ```dart
@@ -188,7 +188,7 @@ testWithGame<ApiaryGame>('opens on the board scene', ApiaryGame.new, (game) asyn
 
 ### Goldens pixel-perfect : `testGameGolden`
 
-Le pixel art se prête très bien aux goldens : images petites, aucune police système, différences lisibles à l'œil. Le helper `testGameGolden` (`test/helpers/game_golden.dart`) rend l'`ApiaryGame` complet **à sa taille minimale, 140×246 (la mise en page la plus serrée, celle de l'iPhone SE), avec un device pixel ratio de 1** : **un pixel du PNG = un pixel du jeu**. Les autres tailles d'écran sont couvertes par les tests de `ScreenLayout` (les 7 appareils et un balayage de tailles) et par `tool/screenshots/ios.sh`.
+Le pixel art se prête très bien aux goldens : images petites, aucune police système, différences lisibles à l'œil. Le helper `testGameGolden` (`test/helpers/game_golden.dart`) rend l'`ApiaryGame` complet **à sa taille minimale, 140×248 (la mise en page la plus serrée, celle de l'iPhone SE), avec un device pixel ratio de 1** : **un pixel du PNG = un pixel du jeu**. Les autres tailles d'écran sont couvertes par les tests de `ScreenLayout` (les 7 appareils et un balayage de tailles) et par `tool/screenshots/ios.sh`.
 
 ```dart
 testGameGolden(
@@ -210,7 +210,7 @@ Règles :
 
 ### Mise en page multi-écrans : `tool/screenshots/ios.sh`
 
-Les goldens tournent à 140×246 / DPR 1, où le viewport est trivial (×1). Pour vérifier le `GameViewport` et `ScreenLayout` sur de vrais écrans, `tool/screenshots/ios.sh` compile l'app pour simulateur avec `--dart-define=APIARY_LAYOUT_DEBUG=true`, qui affiche une mire par-dessus les scènes (`LayoutDebugOverlay` : contour de chaque bande, miel pour le plateau, damier de pixels de jeu dessiné comme un sprite, échelle). Le script la lance sur des simulateurs extrêmes (iPhone SE 16:9 à DPR 2, mini, Pro, Pro Max, pliable, iPad mini, iPad Pro 13"), qu'il crée et démarre au besoin. Puis `tool/screenshots/check_layout.py` mesure chaque capture, pour une échelle s : plateau de 140s×180s pixels physiques, bord à bord sur iPhone, centré sur les écrans marqués `centered` (iPad, pliable) ; contours des bandes rencontrés dans l'ordre (HUD, commandes, plateau, barre du bas) sans chevauchement ; damier à ⌊s⌋ ou ⌈s⌉ px par pixel de jeu (rendu « nearest », sans flou) ; aucune bande de la couleur de fond du jeu sur les côtés.
+Les goldens tournent à 140×248 / DPR 1, où le viewport est trivial (×1). Pour vérifier le `GameViewport` et `ScreenLayout` sur de vrais écrans, `tool/screenshots/ios.sh` compile l'app pour simulateur avec `--dart-define=APIARY_LAYOUT_DEBUG=true`, qui affiche une mire par-dessus les scènes (`LayoutDebugOverlay` : contour de chaque bande, miel pour le plateau, damier de pixels de jeu dessiné comme un sprite, échelle). Le script la lance sur des simulateurs extrêmes (iPhone SE 16:9 à DPR 2, mini, Pro, Pro Max, pliable, iPad mini, iPad Pro 13"), qu'il crée et démarre au besoin. Puis `tool/screenshots/check_layout.py` mesure chaque capture, pour une échelle s : plateau de 140s×180s pixels physiques, bord à bord sur iPhone, centré sur les écrans marqués `centered` (iPad, pliable) ; contours des bandes rencontrés dans l'ordre (HUD, commandes, plateau, barre du bas) sans chevauchement ; damier à ⌊s⌋ ou ⌈s⌉ px par pixel de jeu (rendu « nearest », sans flou).
 
 ```bash
 tool/screenshots/ios.sh                                # tous les appareils (~10 min)

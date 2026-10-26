@@ -15,9 +15,9 @@ import 'package:apiary/domain/board/board.dart';
 /// ┌─ safe area ─────────────┐  decor ([screen]) extends under the system UI
 /// │ hud           12 fixed  │  ← pinned to the top
 /// │ orders        32 fixed  │
-/// │ spacer       ≥ 6 flex   │  ← 9 (iPhone SE) to ~50 (iPhone Pro Max)
+/// │ spacer       ≥ 0 flex   │  ← 1 (iPhone SE) to ~42 (iPhone Pro Max)
 /// │ board    140×180 fixed  │  ← 7×9 cells of 20, centered
-/// │ bottomBar     16 fixed  │  ← pinned to the bottom
+/// │ bottomBar     24 fixed  │  ← pinned to the bottom (panel 22, padded 2)
 /// └─────────────────────────┘
 /// ```
 ///
@@ -52,7 +52,8 @@ class ScreenLayout {
     final left = safeArea.left.roundToDouble();
     final top = safeArea.top.roundToDouble();
     final right = safeArea.right.roundToDouble();
-    final bottom = safeArea.bottom.roundToDouble();
+    // Floored, so the bottom bar never dips under the home indicator.
+    final bottom = safeArea.bottom.floorToDouble();
 
     final hud = Rect.fromLTRB(left, top, right, top + hudHeight);
     final orders = Rect.fromLTRB(
@@ -85,7 +86,13 @@ class ScreenLayout {
 
   static const hudHeight = 12.0;
   static const ordersHeight = 32.0;
-  static const bottomBarHeight = 16.0;
+
+  /// The bottom bar holds the panels, [bottomBarPanelHeight] tall, with
+  /// [bottomBarPadding] of room above them, which keeps them off the board,
+  /// and on each side, which keeps them clear of the rounded screen corners.
+  static const bottomBarPadding = 2.0;
+  static const bottomBarPanelHeight = 22.0;
+  static const double bottomBarHeight = bottomBarPadding + bottomBarPanelHeight;
 
   /// A cell's size, and its sprites' (×1 assets only).
   static const cellSize = 20.0;
@@ -102,11 +109,11 @@ class ScreenLayout {
   static const double fixedHeight =
       hudHeight + ordersHeight + Board.rows * cellSize + bottomBarHeight;
 
-  static const minimumSpacerHeight = 6.0;
+  static const minimumSpacerHeight = 0.0;
 
   /// The smallest safe area the layout fits: the board's width, and the
-  /// fixed bands' height plus the minimum spacer — 246, which the iPhone SE,
-  /// the tightest screen, just meets (249.0).
+  /// fixed bands' height plus the minimum spacer — 248, which the iPhone SE,
+  /// the tightest screen, just meets (249.0, a 1 px spacer).
   static const minimumSafeSize = Size(
     Board.columns * cellSize,
     fixedHeight + minimumSpacerHeight,

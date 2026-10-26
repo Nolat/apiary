@@ -3,6 +3,19 @@
     "title": "Apiary"
   },
   "board": {
-    "enter": "Board"
+    "enter": "Board",
+    "info": {
+      "empty": "Tap an item to see its details here.",
+      "title_level": "{name} · Lv. {level}"
+    }
+  },
+  "family": {
+    "common": "Common"
+  },
+  "item": {
+    "queen": {
+      "name": "{family} queen",
+      "tip": "Tap to produce bees"
+    }
   }
 }

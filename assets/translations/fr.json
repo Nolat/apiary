@@ -3,6 +3,19 @@
     "title": "Apiary"
   },
   "board": {
-    "enter": "Plateau"
+    "enter": "Plateau",
+    "info": {
+      "empty": "Touchez un objet pour consulter ses détails ici.",
+      "title_level": "{name} · Niv. {level}"
+    }
+  },
+  "family": {
+    "common": "Commune"
+  },
+  "item": {
+    "queen": {
+      "name": "Reine {family}",
+      "tip": "Touchez pour produire des abeilles"
+    }
   }
 }

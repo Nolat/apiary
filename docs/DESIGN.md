@@ -22,7 +22,7 @@ Un merge-2 où le joueur élève des abeilles, découvre de nouvelles espèces p
 
 ## Boucle de gameplay
 
-Une abeille part soit en ruche pour produire, soit en incubateur pour découvrir une espèce. Chaque journée terminée relance la boucle avec une jauge pleine et, certains jours, de nouveaux objets (générateurs, ruches, incubateurs, gemmes).
+Une abeille part soit en ruche pour produire, soit en incubateur pour découvrir une espèce. Chaque journée terminée relance la boucle avec une jauge pleine et, certains jours, de nouveaux objets (reines, ruches, incubateurs, gemmes).
 
 ## Éléments du plateau
 
@@ -30,8 +30,8 @@ Deux gestes structurent tout : **fusionner** deux objets identiques pour monter 
 
 | Élément               | Rôle                                                                                                                                                   | Comment l'obtenir                                 | Énergie                 |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- | ----------------------- |
-| Générateur de famille | Crée des larves de l'espèce de base de sa famille (Commune, Rocheuse…)                                                                                 | Départ, puis récompenses de fin de journée        | Oui, à chaque larve     |
-| Larve                 | 2 larves identiques fusionnées = 1 abeille de l'espèce de base                                                                                         | Générateur de famille                             | Non                     |
+| Reine                 | Crée des larves de l'espèce de base de sa famille (Commune, Rocheuse…)                                                                                 | Départ, puis récompenses de fin de journée        | Oui, à chaque larve     |
+| Larve                 | 2 larves identiques fusionnées = 1 abeille de l'espèce de base                                                                                         | Reine                                             | Non                     |
 | Abeille               | 2 abeilles identiques fusionnées = espèce de niveau supérieur de sa famille. Va en ruche ou en incubateur                                              | Fusion de larves ou d'abeilles, incubateur        | Non                     |
 | Incubateur            | Reçoit 2 abeilles d'espèces différentes et produit une nouvelle espèce si la paire forme une mutation                                                  | Donné dès le début, d'autres en fin de journée    | Non                     |
 | Ruche                 | Reçoit une abeille et devient un générateur de ressources jusqu'à épuisement de l'abeille                                                              | Donnée dès le début, d'autres en fin de journée   | Oui, à chaque ressource |
@@ -53,10 +53,10 @@ Deux gestes structurent tout : **fusionner** deux objets identiques pour monter 
 
 ## Espèces et mutations
 
-Les espèces mutées ne sortent d'aucun générateur au départ : pour en produire, le joueur refait la mutation, ce qui donne un sens répété à l'incubateur.
+Les espèces mutées ne sortent d'aucune reine au départ : pour en produire, le joueur refait la mutation, ce qui donne un sens répété à l'incubateur.
 
-- Chaque famille a son générateur, qui ne crée que l'espèce de base.
-- Une espèce mutée s'obtient d'abord uniquement par l'incubateur, sous forme d'abeille. Une fois découverte, elle peut plus tard avoir son propre générateur en récompense (voir [Progression](#progression)).
+- Chaque famille a sa reine, qui ne crée que l'espèce de base.
+- Une espèce mutée s'obtient d'abord uniquement par l'incubateur, sous forme d'abeille. Une fois découverte, elle peut plus tard avoir sa propre reine en récompense (voir [Progression](#progression)).
 - Une mutation = deux espèces parentes, sans autre condition. Deux parents donnés donnent toujours la même espèce.
 - Une fois découverte, la recette est connue. La refaire ne coûte que de l'énergie, de la place, deux abeilles et le temps d'incubation.
 
@@ -75,7 +75,7 @@ Le jeu avance par journées : on en termine une en remplissant toutes ses comman
 
 Chaque commande remplie rapporte des **pièces** (voir [Pièces](#pièces)).
 
-**Fin de journée** : jauge d'énergie remplie entièrement et, certains jours, une récompense (nouveaux générateurs, ruches, incubateurs, gemmes). Les objets reçus arrivent dans un inventaire des récompenses, une file d'où le joueur les pose sur le plateau quand il le souhaite.
+**Fin de journée** : jauge d'énergie remplie entièrement et, certains jours, une récompense (nouvelles reines, ruches, incubateurs, gemmes). Les objets reçus arrivent dans un inventaire des récompenses, une file d'où le joueur les pose sur le plateau quand il le souhaite.
 
 **Risque connu** : une commande objectif ne doit jamais bloquer la journée. Pistes : indice clair livré avec la commande, commande bonus facultative, indice plus précis après plusieurs essais, indice de mutation acheté en pièces (voir [Pièces](#pièces)). Une commande de haut palier peut aussi manquer de place (un palier N demande 2^(N−1) ressources de palier 1) : pour l'instant, c'est au joueur de libérer de la place (suppression, stockage) ; à réévaluer en testant.
 
@@ -83,13 +83,13 @@ Chaque commande remplie rapporte des **pièces** (voir [Pièces](#pièces)).
 
 1 énergie par minute (app ouverte ou fermée), 100 au maximum, recharge complète à chaque journée terminée. Jauge vide : 1 h 40. De l'énergie supplémentaire s'achète en gemmes (voir [Gemmes](#gemmes)).
 
-Consomment de l'énergie : taper un générateur de famille (une larve) ; taper une ruche (une ressource, plus une unité de durée de vie).
+Consomment de l'énergie : taper une reine (une larve) ; taper une ruche (une ressource, plus une unité de durée de vie).
 
 Ordres de grandeur (hypothèse : 1 énergie par larve et par ressource, durée de vie de 5) : 1 abeille = 2 larves = 2 énergie ; 1 ressource de palier 4 ≈ 12 énergie ; une jauge pleine couvre environ 8 commandes de palier 4. Point de départ pour calibrer la taille des journées (ex. 1,5 jauge au début, 2 plus tard).
 
 ## Plateau persistant et encombrement
 
-Le plateau (grille 7×9, 63 cases) est conservé d'une journée à l'autre : on peut anticiper. Il reste jouable grâce aux commandes disponibles, à la place limitée et à un bouton de suppression des larves, abeilles et ressources (générateurs, ruches, incubateurs et gemmes ne se suppriment pas). Un stockage hors plateau, dont quelques emplacements sont offerts et les suivants achetés en pièces, donne un peu de marge (voir [Pièces](#pièces)).
+Le plateau (grille 7×9, 63 cases) est conservé d'une journée à l'autre : on peut anticiper. Il reste jouable grâce aux commandes disponibles, à la place limitée et à un bouton de suppression des larves, abeilles et ressources (reines, ruches, incubateurs et gemmes ne se suppriment pas). Un stockage hors plateau, dont quelques emplacements sont offerts et les suivants achetés en pièces, donne un peu de marge (voir [Pièces](#pièces)).
 
 ## Pièces
 
@@ -97,16 +97,16 @@ Monnaie courante du jeu, gagnée en remplissant les commandes. Les pièces serve
 
 **Usages**
 
-1. **Améliorer les générateurs et les ruches (dépense principale)** : chaque générateur de famille et chaque ruche a des niveaux, achetés en pièces à prix croissant, et un visuel propre à chaque niveau. Un niveau améliore le rendement, pas le coût : le double coût énergie + durée de vie de la ruche reste intact. Effets : un générateur amélioré a, à chaque tap, une probabilité de produire directement une abeille de l'espèce de base au lieu d'une larve, qui augmente avec le niveau ; une ruche améliorée a, à chaque production, une probabilité de donner directement une ressource de palier 2 au lieu de palier 1, qui augmente avec le niveau. C'est la dépense qui ne s'épuise pas : chaque générateur ou ruche reçu en fin de journée ouvre une nouvelle série d'améliorations, et les autres usages ci-dessous finissent par être tous achetés.
+1. **Améliorer les reines et les ruches (dépense principale)** : chaque reine et chaque ruche a des niveaux, achetés en pièces à prix croissant, et un visuel propre à chaque niveau. Un niveau améliore le rendement, pas le coût : le double coût énergie + durée de vie de la ruche reste intact. Effets : une reine améliorée a, à chaque tap, une probabilité de produire directement une abeille de l'espèce de base au lieu d'une larve, qui augmente avec le niveau ; une ruche améliorée a, à chaque production, une probabilité de donner directement une ressource de palier 2 au lieu de palier 1, qui augmente avec le niveau. C'est la dépense qui ne s'épuise pas : chaque reine ou ruche reçue en fin de journée ouvre une nouvelle série d'améliorations, et les autres usages ci-dessous finissent par être tous achetés.
 2. **Indices de mutation** : dans l'Apidex, le joueur achète un indice sur une espèce mutée non découverte : il révèle l'une de ses deux espèces parentes, toujours la même. La seconde reste à trouver, ou s'obtient avec la recette complète en gemmes (voir [Gemmes](#gemmes)). L'indice est déterministe et donne de l'information, jamais l'abeille : le joueur doit toujours faire la mutation lui-même (pilier « Découvrir »). C'est aussi la parade de dernier recours au risque de blocage par une commande objectif.
 3. **Stockage hors plateau** : des emplacements de réserve, hors de la grille ; quelques-uns sont offerts au départ, les suivants s'achètent un par un, à prix croissant. Tout objet peut y être rangé, sauf un incubateur en cours ou prêt. Un objet stocké n'occupe plus de case mais ne peut ni fusionner ni produire tant qu'il n'est pas reposé sur le plateau. Le plateau de 63 cases reste la contrainte principale (pilier « Arbitrer ») ; le stockage n'en desserre qu'une partie, de plus en plus chère.
 
-**Ce que les pièces n'achètent pas** : de l'énergie (elle rythme les journées ; elle s'achète en gemmes, voir [Gemmes](#gemmes)), des abeilles mutées (elles court-circuiteraient l'incubateur), de la durée de vie pour une abeille en ruche (le double coût énergie + durée de vie est voulu), des générateurs, des ruches ou des incubateurs (ils restent des récompenses de fin de journée).
+**Ce que les pièces n'achètent pas** : de l'énergie (elle rythme les journées ; elle s'achète en gemmes, voir [Gemmes](#gemmes)), des abeilles mutées (elles court-circuiteraient l'incubateur), de la durée de vie pour une abeille en ruche (le double coût énergie + durée de vie est voulu), des reines, des ruches ou des incubateurs (ils restent des récompenses de fin de journée).
 
 **À trancher**
 
 - Gains : pièces rapportées par une commande, selon le palier des ressources demandées et le type de commande (disponible ou objectif).
-- Améliorations : nombre de niveaux, probabilité et prix de chaque niveau ; niveau d'un générateur ou d'une ruche reçu en récompense (niveau 1, ou celui des existants). L'effet sur l'énergie et la taille des journées est à simuler. (Décidé : effets probables, achat depuis l'encart de l'objet sélectionné.)
+- Améliorations : nombre de niveaux, probabilité et prix de chaque niveau ; niveau d'une reine ou d'une ruche reçue en récompense (niveau 1, ou celui des existants). L'effet sur l'énergie et la taille des journées est à simuler. (Décidé : effets probables, achat depuis l'encart de l'objet sélectionné.)
 - Indices : prix d'un indice.
 - Stockage : nombre d'emplacements offerts au départ, prix du premier emplacement acheté et progression, nombre maximal d'emplacements, place à l'écran.
 - Déblocage : dès le départ ou après quelques journées, pour ne pas surcharger le début (lien avec le tutoriel).
@@ -139,14 +139,14 @@ Monnaie premium (nom provisoire), achetable avec de l'argent réel et parfois do
 
 **Courbe des commandes** : espèces de base, puis espèces mutées (chaque mutation sert de tutoriel), puis ressources de deux espèces mutées ou mutations de mutations.
 
-**Récompenses de fin de journée** : nouveaux générateurs de famille, nouvelles ruches, nouveaux incubateurs, et plus tard des générateurs d'espèce mutée (raccourci mérité) : ils produisent des larves de cette espèce, ne sont donnés que pour une espèce déjà découverte, et suivent toutes les règles des générateurs de famille. À trancher : quelles mutations méritent un générateur, et à partir de quelle journée.
+**Récompenses de fin de journée** : nouvelles reines, nouvelles ruches, nouveaux incubateurs, et plus tard des reines d'espèce mutée (raccourci mérité) : elles produisent des larves de cette espèce, ne sont données que pour une espèce déjà découverte, et suivent toutes les règles des reines. À trancher : quelles mutations méritent une reine, et à partir de quelle journée.
 
 ## Direction artistique
 
 - **Pixel art**, confirmée (2026-10-24).
-- **Largeur de jeu : 140 px** (7 cases de 20), hauteur variable (portrait), avec des assets fournis à ×1 uniquement (pas de variante ×2 : à ×8 d'échelle, elle n'apporterait pas de netteté et mélangerait des tailles de pixel), agrandis sans interpolation floue (rendu « nearest »). Sur tous les iPhone, l'écran fait exactement 140 px de jeu de large, bord à bord, au prix d'une échelle fractionnaire (quelques pixels de jeu 1 pixel physique plus larges que les autres) ; la hauteur sûre varie de ~249 px (iPhone SE) à ~295 px. **Minimum garanti : 140×246 px de zone sûre** ; sur iPad et pliables, l'écran s'élargit (jusqu'à ~190 px) — voir `docs/STACK.md`.
+- **Largeur de jeu : 140 px** (7 cases de 20), hauteur variable (portrait), avec des assets fournis à ×1 uniquement (pas de variante ×2 : à ×8 d'échelle, elle n'apporterait pas de netteté et mélangerait des tailles de pixel), agrandis sans interpolation floue (rendu « nearest »). Sur tous les iPhone, l'écran fait exactement 140 px de jeu de large, bord à bord, au prix d'une échelle fractionnaire (quelques pixels de jeu 1 pixel physique plus larges que les autres) ; la hauteur sûre varie de ~249 px (iPhone SE) à ~295 px. **Minimum garanti : 140×248 px de zone sûre** ; sur iPad et pliables, l'écran s'élargit (jusqu'à ~190 px) — voir `docs/STACK.md`.
 - **Plateau : grille 7×9, cases de 20×20 px, objets de 16×16 px** (sprites 16×16 ; 2 px de marge de chaque côté dans la case). L'objet est dessiné sur 12×12 px au centre du sprite, et son liseré (voir [Univers visuel](#univers-visuel)) sur le pixel autour, soit 140×180 px. Il **remplit toujours la largeur sur iPhone** (la taille des cases à l'écran s'adapte : ~172 pixels physiques sur un iPhone 18 Pro, ~107 sur un SE) ; sur iPad et pliables, il est aussi grand que la hauteur le permet, centré, décor sur les côtés.
-- **Mise en page en bandes, à la Flambé** : HUD (12 px) et commandes (32 px) accrochés en haut de la zone sûre, barre du bas (16 px, bouton de l'Apidex et encart d'informations de l'objet sélectionné) en bas, plateau juste au-dessus, et un espace libre (≥ 6 px) qui absorbe la différence de hauteur entre appareils. Il reste ~60 px au minimum (iPhone SE) pour le HUD, les commandes et la barre du bas. Le décor couvre tout l'écran, y compris sous la Dynamic Island. Les hauteurs des bandes autres que le plateau sont provisoires, en attendant le design du HUD et des commandes.
+- **Mise en page en bandes, à la Flambé** : HUD (12 px) et commandes (32 px) accrochés en haut de la zone sûre, barre du bas (24 px : 2 px de marge sous le plateau et de chaque côté, à cause des coins arrondis des écrans, puis 22 px, soit deux lignes de texte de 8 px pour le bouton de l'Apidex et l'encart d'informations de l'objet sélectionné) en bas, plateau juste au-dessus, et un espace libre (≥ 0 px ; 1 px sur l'iPhone SE) qui absorbe la différence de hauteur entre appareils. Il reste ~68 px au minimum (iPhone SE) pour le HUD, les commandes et la barre du bas. Le décor couvre tout l'écran, y compris sous la Dynamic Island. Les hauteurs des bandes autres que le plateau sont provisoires, en attendant le design du HUD et des commandes.
 - Cette DA réoriente le choix du moteur de rendu vers **Flame** plutôt que des widgets Flutter classiques — voir `CLAUDE.md` et `docs/STACK.md`. Le pixel art tire nativement parti d'un moteur à sprites/tilesets (rendu « nearest » à échelle fractionnaire, tilesets pour la grille du plateau, gestion de caméra/viewport, animations frame par frame des abeilles et des ruches).
 - **Maquette de l'écran du plateau** (2026-10-25) : [artifact Claude](https://claude.ai/artifact/VtvG6NbEmsD1v4pK4WwduQ). Ses écarts avec ce document ont été tranchés le 2026-10-25, reportés ici et dans le backlog, puis la maquette a été alignée dessus (cases sans espacement, toutes les commandes en défilement horizontal, glisser-déposer) : case verte et « n/N » sur les commandes, « + » sur l'énergie et les gemmes, « Jour N · livrées/total » dans le HUD, bouton de l'Apidex dans la barre du bas. Son contenu (espèces, ressources, valeurs, textes) est provisoire et ne fait pas référence ; en cas de désaccord, ce document l'emporte.
 
@@ -156,7 +156,7 @@ Défini le 2026-10-26 à partir des assets de la première version du projet (`a
 
 - **Ton** : un pixel art chaleureux, doux et lisible, dans l'esprit de Stardew Valley (objets « autocollants », couleurs franches). Couleurs saturées mais jamais agressives, rien de sombre ni de menaçant : le jeu est fait pour se détendre. Les personnages (les clients des commandes) restent à dessiner.
 - **Un seul langage de contour** : tout objet posé sur le plateau (abeilles, larves, ressources, ruches) est détaché du fond par un **liseré extérieur d'1 px, blanc pour la plupart des objets**, comme un autocollant. Le liseré change de couleur quand il porte une information : famille d'abeilles ou niveau de qualité (jaune clair `#fbda80` pour l'un d'eux). Ce n'est pas un contour dessiné dans le sprite : c'est un **sprite séparé, superposé à l'objet**, de même taille (16×16) et épousant sa silhouette, donc **un liseré par silhouette** (celui de l'abeille ne sert pas à une larve) et une couleur par variante. L'objet lui-même est dessiné sans contour, dans une zone de 12×12 px centrée dans le sprite ; le liseré occupe le pixel juste autour (14×14), sans jamais recouvrir l'objet. Les couleurs et leur sens restent à fixer avec les familles et les niveaux de qualité.
-- **Générateurs de famille** (2026-10-26) : dessinés comme une **reine**, empilée en trois sprites 16×16 : l'abeille de la famille (`bees/common.png` pour la Commune), son liseré (`generators/border_queen.png`, jaune clair `#fbda80` pour l'instant : la couleur propre à chaque famille reste à fixer) et une couronne (`generators/crown_queen.png`), du bas vers le haut : liseré, abeille, couronne.
+- **Reines** (2026-10-26, nommées d'abord « générateurs de famille ») : dessinées comme la **reine** de leur famille, empilée en trois sprites 16×16 : l'abeille de la famille (`bees/common.png` pour la Commune), son liseré (`queens/border_queen.png`, jaune clair `#fbda80` pour l'instant : la couleur propre à chaque famille reste à fixer) et une couronne (`queens/crown_queen.png`), du bas vers le haut : liseré, abeille, couronne.
 - **Interface en bois** : panneaux, boutons et fentes en bruns chauds, avec trois tons (ombre `#2c150d`, base `#804b38`, lumière `#b27b59`, reflet `#dda27e`). Les boutons sont plus clairs que les panneaux et s'enfoncent à l'appui ; les éléments inactifs passent au gris-brun.
 - **Plateau** : des cases en bois (clair et foncé en damier, mêmes tons que l'interface) posées sur un **fond en bois** brun très sombre (`#24140d`, à terme des planches avec joints `#2c150d` et veines `#4b291c` ; aplat provisoire en attendant). Les cases, plus claires et cerclées de lumière, ressortent ; le fond reste calme derrière.
 - **Palette de référence** : bois `#24140d` / `#2c150d` / `#4b291c` / `#804b38` / `#b27b59` / `#dda27e` ; miel et or `#f79617` / `#f9c22b` / `#fbda80` (liseré jaune, reflet de la couronne) ; accents (baies, fleurs) `#ea4f36`, `#4d65b4`, `#fca790`. Les ressources et les abeilles gardent leurs couleurs propres (une dominante par espèce, rayures sombres sur l'abdomen) pour se reconnaître d'un coup d'œil.

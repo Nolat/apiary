@@ -10,7 +10,7 @@ The rules of the game live in `lib/domain/`, in pure Dart, deterministic by cons
 
 ## 1. Pin the rule down
 
-- Find the rule in `docs/DESIGN.md` and quote the lines it comes from. Use its vocabulary exactly (`Larva`, `Bee`, `Hive`, `Incubator`, `Resource`, `Generator`, `Order`, `Day`, `Energy`, `Species`, `Family`, `Mutation`) — no competing synonyms.
+- Find the rule in `docs/DESIGN.md` and quote the lines it comes from. Use its vocabulary exactly (`Larva`, `Bee`, `Hive`, `Incubator`, `Resource`, `Queen`, `Order`, `Day`, `Energy`, `Species`, `Family`, `Mutation`) — no competing synonyms.
 - List every invariant the text implies, e.g. for incubation: only valid pairs are accepted, no failed attempt, two given parents always give the same species, the result is a bee.
 - If DESIGN.md is silent or ambiguous on something the code must decide (a number, an edge case, an ordering), **stop and ask** rather than inventing it. Once answered, propose the matching line for DESIGN.md.
 - Look at what already exists in `lib/domain/` and reuse its models: don't duplicate a type.

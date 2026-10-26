@@ -69,7 +69,7 @@ class _$BoardItemCopyWithImpl<$Res>
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? family = null,}) {
-  return _then(BoardItem.generator(
+  return _then(BoardItem.queen(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
   ));
@@ -92,11 +92,11 @@ extension BoardItemPatterns on BoardItem {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( FamilyGenerator value)?  generator,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case FamilyGenerator() when generator != null:
-return generator(_that);case _:
+case Queen() when queen != null:
+return queen(_that);case _:
   return orElse();
 
 }
@@ -114,11 +114,11 @@ return generator(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( FamilyGenerator value)  generator,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,}){
 final _that = this;
 switch (_that) {
-case FamilyGenerator():
-return generator(_that);}
+case Queen():
+return queen(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -132,11 +132,11 @@ return generator(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( FamilyGenerator value)?  generator,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,}){
 final _that = this;
 switch (_that) {
-case FamilyGenerator() when generator != null:
-return generator(_that);case _:
+case Queen() when queen != null:
+return queen(_that);case _:
   return null;
 
 }
@@ -153,10 +153,10 @@ return generator(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  generator,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case FamilyGenerator() when generator != null:
-return generator(_that.family);case _:
+case Queen() when queen != null:
+return queen(_that.family);case _:
   return orElse();
 
 }
@@ -174,10 +174,10 @@ return generator(_that.family);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  generator,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,}) {final _that = this;
 switch (_that) {
-case FamilyGenerator():
-return generator(_that.family);}
+case Queen():
+return queen(_that.family);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -191,10 +191,10 @@ return generator(_that.family);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  generator,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,}) {final _that = this;
 switch (_that) {
-case FamilyGenerator() when generator != null:
-return generator(_that.family);case _:
+case Queen() when queen != null:
+return queen(_that.family);case _:
   return null;
 
 }
@@ -205,8 +205,8 @@ return generator(_that.family);case _:
 /// @nodoc
 
 
-class FamilyGenerator implements BoardItem {
-  const FamilyGenerator({required this.family});
+class Queen implements BoardItem {
+  const Queen({required this.family});
   
 
 @override final  Family family;
@@ -215,13 +215,13 @@ class FamilyGenerator implements BoardItem {
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$FamilyGeneratorCopyWith<FamilyGenerator> get copyWith => _$FamilyGeneratorCopyWithImpl<FamilyGenerator>(this, _$identity);
+$QueenCopyWith<Queen> get copyWith => _$QueenCopyWithImpl<Queen>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is FamilyGenerator&&(identical(other.family, family) || other.family == family));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Queen&&(identical(other.family, family) || other.family == family));
 }
 
 
@@ -232,15 +232,15 @@ int get hashCode {
 
 @override
 String toString() {
-    return 'BoardItem.generator(family: $family)';
+    return 'BoardItem.queen(family: $family)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $FamilyGeneratorCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
-  factory $FamilyGeneratorCopyWith(FamilyGenerator value, $Res Function(FamilyGenerator) _then) = _$FamilyGeneratorCopyWithImpl;
+abstract mixin class $QueenCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
+  factory $QueenCopyWith(Queen value, $Res Function(Queen) _then) = _$QueenCopyWithImpl;
 @override @useResult
 $Res call({
  Family family
@@ -251,17 +251,17 @@ $Res call({
 
 }
 /// @nodoc
-class _$FamilyGeneratorCopyWithImpl<$Res>
-    implements $FamilyGeneratorCopyWith<$Res> {
-  _$FamilyGeneratorCopyWithImpl(this._self, this._then);
+class _$QueenCopyWithImpl<$Res>
+    implements $QueenCopyWith<$Res> {
+  _$QueenCopyWithImpl(this._self, this._then);
 
-  final FamilyGenerator _self;
-  final $Res Function(FamilyGenerator) _then;
+  final Queen _self;
+  final $Res Function(Queen) _then;
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
-  return _then(FamilyGenerator(
+  return _then(Queen(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
   ));

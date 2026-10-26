@@ -23,6 +23,11 @@ void main() {
           .single
           .children
           .whereType<SpriteComponent>()
+          .where(
+            (sprite) =>
+                sprite.sprite!.image !=
+                game.images.fromCache(BoardComponent.selectionImage),
+          )
           .toList();
     }
 

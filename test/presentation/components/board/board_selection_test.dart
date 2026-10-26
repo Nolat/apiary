@@ -1,0 +1,291 @@
+// 🎯 Dart imports:
+import 'dart:ui' show Rect;
+
+// 📦 Package imports:
+import 'package:flame/components.dart';
+import 'package:flame/events.dart';
+import 'package:flame_test/flame_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+// 🌎 Project imports:
+import 'package:apiary/domain/bees/family.dart';
+import 'package:apiary/domain/board/board.dart';
+import 'package:apiary/domain/board/board_item.dart';
+import 'package:apiary/domain/board/board_position.dart';
+import 'package:apiary/presentation/components/board/board_component.dart';
+import 'package:apiary/presentation/components/board/item_info_component.dart';
+import 'package:apiary/presentation/game/apiary_game.dart';
+import 'package:apiary/presentation/game/screen_layout.dart';
+
+import '../../../helpers/game_text.dart';
+
+void main() {
+  // The sprites load from the asset bundle, which needs the binding.
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(loadGameText);
+
+  group('Selecting an item', () {
+    const queen = Board.startingQueenPosition;
+    const emptyCell = BoardPosition(column: 0, row: 0);
+    const otherEmptyCell = BoardPosition(column: 6, row: 8);
+
+    Future<BoardComponent> boardOf(ApiaryGame game) async {
+      await game.ready();
+      return game.world.descendants().whereType<BoardComponent>().single;
+    }
+
+    // Taps the middle of [cell] as the player would, through Flame's tap
+    // dispatcher.
+    void tap(ApiaryGame game, BoardComponent board, BoardPosition cell) {
+      final inBoard = Vector2(
+        (cell.column + 0.5) * 20,
+        (cell.row + 0.5) * 20,
+      );
+      final screen = game.camera.localToGlobal(
+        board.absolutePositionOf(inBoard),
+      );
+      (game.findByKey(const MultiTapDispatcherKey())! as MultiTapDispatcher)
+          .onTapDown(
+            createTapDownEvents(
+              game: game,
+              globalPosition: Offset(screen.x, screen.y),
+            ),
+          );
+    }
+
+    SpriteComponent frameOf(BoardComponent board) =>
+        board.children.whereType<SpriteComponent>().singleWhere(
+          (sprite) =>
+              sprite.sprite!.image ==
+              board.game.images.fromCache(BoardComponent.selectionImage),
+        );
+
+    ItemInfoComponent infoOf(ApiaryGame game) =>
+        game.world.descendants().whereType<ItemInfoComponent>().single;
+
+    testWithGame<ApiaryGame>(
+      'starts with nothing selected',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+
+        expect(board.selection.value, isNull);
+        expect(board.selectedItem, isNull);
+        expect(frameOf(board).opacity, 0);
+        // Hiding the frame must not hide the grid.
+        final cells = board.children.whereType<SpriteComponent>().where(
+          (sprite) => sprite != frameOf(board),
+        );
+        for (final cell in cells) {
+          expect(cell.opacity, 1);
+        }
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'selects a tapped item and frames its cell',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+
+        tap(game, board, queen);
+
+        expect(board.selection.value, queen);
+        expect(board.selectedItem, board.board.itemAt(queen));
+        final frame = frameOf(board);
+        expect(frame.opacity, 1);
+        expect(frame.size, Vector2.all(20));
+        expect(
+          frame.position,
+          Vector2(queen.column * 20.0, queen.row * 20.0),
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'keeps the selection when the same item is tapped again',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+
+        tap(game, board, queen);
+        tap(game, board, queen);
+
+        expect(board.selection.value, queen);
+        expect(frameOf(board).opacity, 1);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'keeps the selection when an empty cell is tapped',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+
+        tap(game, board, emptyCell);
+        expect(board.selection.value, isNull);
+
+        tap(game, board, queen);
+        tap(game, board, emptyCell);
+        tap(game, board, otherEmptyCell);
+        expect(board.selection.value, queen);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'does not change the board',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        final before = board.board;
+
+        tap(game, board, queen);
+
+        expect(board.board, before);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'shows the item in the info panel, and the invitation otherwise',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+        final info = infoOf(game);
+        expect(
+          '${info.titleText} ${info.tipText}'.trim(),
+          'Touchez un objet pour consulter ses détails ici.',
+        );
+        final invitation = info.titleText;
+
+        tap(game, board, queen);
+
+        expect(info.titleText, isNot(invitation));
+        expect(info.titleText, 'Reine Commune · Niv. 1');
+        expect(info.tipText, 'Touchez pour produire des abeilles');
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'wraps the invitation on two lines on the narrowest screen',
+      ApiaryGame.new,
+      (game) async {
+        await game.ready();
+        game.onGameResize(ApiaryGame.minimumSize);
+
+        final info = infoOf(game);
+        expect(info.titleText, isNotEmpty);
+        expect(info.tipText, isNotEmpty);
+        expect(
+          '${info.titleText} ${info.tipText}',
+          'Touchez un objet pour consulter ses détails ici.',
+        );
+      },
+    );
+
+    test(
+      'fits the texts of every item on the two lines of the narrowest panel',
+      () {
+        // The narrowest screen's bottom bar, less its padding on both sides.
+        final panelWidth =
+            ApiaryGame.minimumSize.x - 2 * ScreenLayout.bottomBarPadding;
+
+        expect(
+          ItemInfoComponent.lineCount(null, panelWidth),
+          lessThanOrEqualTo(2),
+        );
+        for (final family in Family.values) {
+          expect(
+            ItemInfoComponent.lineCount(
+              BoardItem.queen(family: family),
+              panelWidth,
+            ),
+            lessThanOrEqualTo(2),
+            reason: 'the $family queen',
+          );
+        }
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'wraps again once the panel is placed after it loaded',
+      ApiaryGame.new,
+      (game) async {
+        await game.ready();
+        // Loaded with no size yet, as when it loads before the first resize.
+        final info = ItemInfoComponent();
+        await game.world.add(info);
+        await game.ready();
+        expect(info.tipText, isEmpty);
+
+        info.place(const Rect.fromLTWH(0, 0, 136, 22));
+
+        expect(info.tipText, isNotEmpty);
+        expect(
+          '${info.titleText} ${info.tipText}',
+          'Touchez un objet pour consulter ses détails ici.',
+        );
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'releases the selection notifier when the board leaves the game',
+      ApiaryGame.new,
+      (game) async {
+        final board = await boardOf(game);
+
+        board.removeFromParent();
+        await game.ready();
+
+        expect(() => board.selection.addListener(() {}), throwsFlutterError);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'places the info panel on the bottom bar',
+      ApiaryGame.new,
+      (game) async {
+        await game.ready();
+        game.onGameResize(Vector2(393, 852));
+
+        final info = infoOf(game);
+        final band = game.layout.bottomBar;
+        // Inside the padding that keeps it off the board and the screen's
+        // rounded corners.
+        expect(info.position, Vector2(band.left + 2, band.top + 2));
+        expect(info.size, Vector2(band.width - 4, 22));
+        expect(info.position.y, greaterThan(game.layout.board.bottom));
+      },
+    );
+  });
+
+  group('ItemInfoComponent.wrap', () {
+    // Every character is 4 px wide.
+    double measure(String text) => text.length * 4;
+
+    test('keeps a text that fits on one line', () {
+      expect(ItemInfoComponent.wrap('un deux', 40, measure), ['un deux']);
+    });
+
+    test('breaks at spaces, never inside a word', () {
+      expect(
+        ItemInfoComponent.wrap('un deux trois quatre', 40, measure),
+        ['un deux', 'trois', 'quatre'],
+      );
+      expect(
+        ItemInfoComponent.wrap('un deux trois', 48, measure),
+        ['un deux', 'trois'],
+      );
+    });
+
+    test('leaves a word wider than the line alone on its own line', () {
+      expect(
+        ItemInfoComponent.wrap('un extraordinaire de', 20, measure),
+        ['un', 'extraordinaire', 'de'],
+      );
+    });
+
+    test('has no line for an empty text', () {
+      expect(ItemInfoComponent.wrap('', 40, measure), isEmpty);
+    });
+  });
+}

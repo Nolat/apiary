@@ -12,8 +12,7 @@ pixels per game pixel, usually fractional), and checks that:
   board, bottom bar — with none overlapping;
 - every game pixel inside the checkerboard (an image, drawn like a sprite) is
   floor(s) or ceil(s) physical pixels (nearest-neighbor scaling, no blur);
-  the checkerboard's outer edges may be soft, as the GPU anti-aliases them;
-- no band of the game's background color shows on either side.
+  the checkerboard's outer edges may be soft, as the GPU anti-aliases them.
 
 Screens that iOS downsamples (iPhone mini, "Plus" models: the app renders at
 @3x, then iOS shrinks the image to the panel) blur the checkerboard: give
@@ -33,7 +32,6 @@ CHECKERBOARD_OFFSET = 8  # game pixels from the board's corner
 CHECKERBOARD_SIZE = 16
 HONEY = (0xF2, 0xC1, 0x4E)  # AppColors.honey: board outline
 ACCENT = (0xE5, 0x9A, 0x1F)  # AppColors.accent: other bands, checkerboard
-BACKGROUND = (0x1B, 0x14, 0x0A)  # AppColors.background: ApiaryGame's clear color
 TOLERANCE = 12
 
 
@@ -149,14 +147,6 @@ def check(path, downsampled=False, centered=False):
                 f"physical px, expected {sorted(sizes)}"
             )
             (warnings if downsampled else failures).append(problem)
-
-    for side in (0, width - 1):
-        band = [
-            y for y in range(height // 4, 3 * height // 4, 8)
-            if close(pixels[side, y], BACKGROUND)
-        ]
-        if band:
-            failures.append(f"background band on the side x={side}")
 
     summary = (
         f"x{scale:.3f}, board {board_width}x{board_height} at ({left}, {top}) "

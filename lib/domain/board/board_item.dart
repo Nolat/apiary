@@ -10,6 +10,13 @@ part 'board_item.freezed.dart';
 /// the union as their stories land.
 @freezed
 sealed class BoardItem with _$BoardItem {
-  /// A family generator, level 1: creates the larvae of its [family].
-  const factory BoardItem.generator({required Family family}) = FamilyGenerator;
+  /// A queen, level 1: creates the larvae of its [family].
+  const factory BoardItem.queen({required Family family}) = Queen;
+}
+
+extension BoardItemLevel on BoardItem {
+  /// The item's level, or `null` for an item that has none.
+  int? get level => switch (this) {
+    Queen() => 1,
+  };
 }

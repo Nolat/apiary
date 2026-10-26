@@ -42,12 +42,12 @@ void main() {
       'maps one game pixel to one pixel at the minimum size',
       gameWith(devicePixelRatio: 1),
       (game) async {
-        game.onGameResize(Vector2(140, 246));
+        game.onGameResize(Vector2(140, 248));
         final viewport = viewportFor(game);
 
         expect(viewport.pixelScale, 1);
-        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 246));
-        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 246));
+        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 248));
+        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 248));
       },
     );
 
@@ -58,7 +58,7 @@ void main() {
         game.onGameResize(iPhoneProSize);
         final viewport = viewportFor(game);
 
-        // min(1206 / 140, 2334 / 246): the width limits, ×8.614.
+        // min(1206 / 140, 2334 / 248): the width limits, ×8.614.
         const scale = 1206 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.scale.x, closeTo(scale / 3, 1e-6));
@@ -77,10 +77,10 @@ void main() {
         game.onGameResize(Vector2(375, 667));
         final viewport = viewportFor(game);
 
-        // min(750 / 140, 1334 / 246): still the width, 140×249.
+        // min(750 / 140, 1334 / 248): still the width, 140×249.
         expect(viewport.pixelScale, closeTo(750 / 140, 1e-6));
         expect(viewport.visibleArea.width, closeTo(140, 1e-4));
-        expect(viewport.visibleArea.height, greaterThanOrEqualTo(246));
+        expect(viewport.visibleArea.height, greaterThanOrEqualTo(248));
       },
     );
 
@@ -96,10 +96,10 @@ void main() {
         game.onGameResize(Vector2(1032, 1376));
         final viewport = viewportFor(game);
 
-        // min(2064 / 140, 2664 / 246) = 10.83: 191 game pixels wide.
-        const scale = 2664 / 246;
+        // min(2064 / 140, 2664 / 248) = 10.83: 191 game pixels wide.
+        const scale = 2664 / 248;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
-        expect(viewport.safeArea.height, closeTo(246, 1e-4));
+        expect(viewport.safeArea.height, closeTo(248, 1e-4));
         expect(viewport.visibleArea.width, closeTo(2064 / scale, 1e-4));
       },
     );
@@ -115,12 +115,12 @@ void main() {
         game.onGameResize(Vector2(466, 678));
         final viewport = viewportFor(game);
 
-        // min(1146 / 140, 2034 / 246): the width limits, just.
+        // min(1146 / 140, 2034 / 248): the width limits, just.
         const scale = 1146 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.safeArea.left, 0);
         expect(viewport.safeArea.width, closeTo(140, 1e-4));
-        expect(viewport.safeArea.height, greaterThanOrEqualTo(246));
+        expect(viewport.safeArea.height, greaterThanOrEqualTo(248));
       },
     );
 
