@@ -2,6 +2,8 @@
 # PostToolUse (Edit|Write): formats the edited Dart file and sorts its imports
 # (emoji sections, see CLAUDE.md). Generated files are left alone.
 set -uo pipefail
+# Cloud environments install fvm outside the hooks' default PATH.
+export PATH="$HOME/.fvm_bin:$HOME/.pub-cache/bin:$PATH"
 
 file=$(jq -r '.tool_input.file_path // empty')
 [[ "$file" == *.dart ]] || exit 0

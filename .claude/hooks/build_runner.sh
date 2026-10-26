@@ -2,6 +2,8 @@
 # Stop: runs build_runner once per turn, only when a Dart file using code
 # generation (@freezed, @riverpod, drift tables) changed since the last run.
 set -uo pipefail
+# Cloud environments install fvm outside the hooks' default PATH.
+export PATH="$HOME/.fvm_bin:$HOME/.pub-cache/bin:$PATH"
 
 input=$(cat)
 # Already continuing because of this hook: don't loop on a failing build.
