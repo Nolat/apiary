@@ -4,6 +4,9 @@ import 'dart:ui';
 // 🐦 Flutter imports:
 import 'package:flutter/foundation.dart' show immutable;
 
+// 🌎 Project imports:
+import 'package:apiary/domain/board/board.dart';
+
 /// Where each band of the game screen goes, in game pixels, Flambé-style:
 /// fixed-size bands pinned to the top and bottom of the safe area, and a
 /// [spacer] absorbing the height that varies from one device to another.
@@ -84,16 +87,20 @@ class ScreenLayout {
   static const ordersHeight = 32.0;
   static const bottomBarHeight = 16.0;
 
-  static const boardColumns = 7;
-  static const boardRows = 9;
-
   /// A cell's size, and its sprites' (×1 assets only).
   static const cellSize = 20.0;
-  static const boardSize = Size(boardColumns * cellSize, boardRows * cellSize);
+
+  /// An item's sprites are 16×16, centered in a cell.
+  static const itemMargin = 2.0;
+  static const double itemSize = cellSize - 2 * itemMargin;
+  static const boardSize = Size(
+    Board.columns * cellSize,
+    Board.rows * cellSize,
+  );
 
   /// Height of the fixed bands, stacked.
   static const double fixedHeight =
-      hudHeight + ordersHeight + boardRows * cellSize + bottomBarHeight;
+      hudHeight + ordersHeight + Board.rows * cellSize + bottomBarHeight;
 
   static const minimumSpacerHeight = 6.0;
 
@@ -101,7 +108,7 @@ class ScreenLayout {
   /// fixed bands' height plus the minimum spacer — 246, which the iPhone SE,
   /// the tightest screen, just meets (249.0).
   static const minimumSafeSize = Size(
-    boardColumns * cellSize,
+    Board.columns * cellSize,
     fixedHeight + minimumSpacerHeight,
   );
 

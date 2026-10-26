@@ -67,7 +67,9 @@ sentry:
 flutter:
   uses-material-design: true
   assets:
+    - assets/images/bees/
     - assets/images/board/
+    - assets/images/generators/
     - assets/translations/
 
 # Patrol E2E tests (patrol_test/), run with `patrol test` — see docs/TESTING.md.

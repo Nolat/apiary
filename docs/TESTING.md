@@ -192,8 +192,8 @@ Le pixel art se prête très bien aux goldens : images petites, aucune police sy
 
 ```dart
 testGameGolden(
-  'renders the empty board',
-  goldenFile: 'goldens/board_scene_empty.png',
+  'renders the starting board',
+  goldenFile: 'goldens/board_scene_start.png',
   arrange: (game, tester) async {
     // optionnel : naviguer, poser des abeilles, game.update(dt)…
   },

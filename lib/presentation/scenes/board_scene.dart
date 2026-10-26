@@ -2,6 +2,7 @@
 import 'package:flame/components.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
@@ -10,7 +11,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
   static const routeName = 'board';
 
   final _decor = DecorComponent();
-  final _board = BoardComponent();
+  final _board = BoardComponent(board: Board.initial());
 
   @override
   Future<void> onLoad() async {

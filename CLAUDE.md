@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Apiary is a relaxing mobile merge game (Flutter): the player raises bees, crosses species to discover new ones, and harvests their resources to fulfil daily orders. The full design lives in `docs/DESIGN.md`.
 
-The codebase is a bare scaffold: the app shell (routing, DI, theming, i18n, auth, crash reporting) is wired up, but no gameplay feature is implemented yet beyond an empty board screen. Work is tracked in **Linear** (workspace Nolat, team Apiary, key `APY`) as a prioritized product backlog: one project per epic, one issue per user story — managed with the `/backlog` skill.
+The codebase is a bare scaffold: the app shell (routing, DI, theming, i18n, auth, crash reporting) is wired up, but no gameplay feature is implemented yet beyond a board screen showing the starting family generator. Work is tracked in **Linear** (workspace Nolat, team Apiary, key `APY`) as a prioritized product backlog: one project per epic, one issue per user story — managed with the `/backlog` skill.
 
 Two sources of truth, no duplication between them:
 
@@ -52,7 +52,7 @@ Dart/Flutter, Firebase and Linear MCP servers, hooks, subagents (`architecture-r
 
 ## Architecture & stack
 
-- **Folder structure**: `lib/` is split by technical layer — `core/` (DI, routing, theme: cross-cutting app infra), `presentation/` (pages, widgets), `domain/` and `data/` (currently empty, populate as features need a business/data layer). This is a deliberate choice kept over a feature-based layout when it was reconsidered.
+- **Folder structure**: `lib/` is split by technical layer — `core/` (DI, routing, theme: cross-cutting app infra), `presentation/` (pages, widgets), `domain/` (pure Dart game rules and models, e.g. `board/`, `bees/`) and `data/` (only the local database for now, populate as features need a data layer). This is a deliberate choice kept over a feature-based layout when it was reconsidered.
 - **State management**: `flutter_riverpod` + `riverpod_annotation`/`riverpod_generator` — providers are code-generated (`@riverpod`), not hand-written `Provider(...)` declarations.
 - **DI**: `get_it` — instance and `configureDependencies()` entry point in `lib/core/di/injection.dart`, called from `bootstrap()`. Use it for cross-cutting singletons/services (e.g. logging, repositories) rather than for widget-facing state, which stays in Riverpod.
 - **Routing**: scene navigation uses Flame's `RouterComponent`/`Route`, owned by `ApiaryGame` (`lib/presentation/game/apiary_game.dart`). Each screen is a Flame scene (a `Component` in `lib/presentation/scenes/`, e.g. `BoardScene`) registered in the `routes` map under a `routeName` constant; navigate with `game.router.pushNamed(...)`/`pop()`. There is no Flutter-side router.

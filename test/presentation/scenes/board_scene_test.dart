@@ -13,8 +13,8 @@ import '../../helpers/game_golden.dart';
 void main() {
   group('BoardScene', () {
     testGameGolden(
-      'renders the empty board',
-      goldenFile: 'goldens/board_scene_empty.png',
+      'renders the starting board',
+      goldenFile: 'goldens/board_scene_start.png',
     );
 
     testWithGame<ApiaryGame>(
