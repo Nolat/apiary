@@ -9,6 +9,9 @@ import 'package:apiary/presentation/game/game_viewport.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
 
 void main() {
+  // The board's sprites load from the asset bundle, which needs the binding.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('ApiaryGame', () {
     testWithGame<ApiaryGame>(
       'opens on the board scene',
