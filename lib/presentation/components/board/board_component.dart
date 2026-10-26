@@ -12,9 +12,7 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// from its neighbours. Its parent places it on [ScreenLayout.board].
 ///
 /// The cell sprites are placeholders until the visual universe is set (see
-/// `docs/DESIGN.md`, "Direction artistique"). Only the ×1 files are loaded:
-/// picking the ×2 ones from the viewport's scale is still open (see
-/// `docs/STACK.md`).
+/// `docs/DESIGN.md`, "Direction artistique").
 class BoardComponent extends PositionComponent with HasGameReference {
   BoardComponent()
     : super(

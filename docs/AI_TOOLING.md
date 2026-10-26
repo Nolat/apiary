@@ -21,5 +21,5 @@ Project-level, versioned in `.claude/`:
 - **Skills** (`.claude/skills/`):
   - `/game-rule <rule>` implements a DESIGN.md rule in `lib/domain/` (freezed models, pure function, glados properties) — Claude may also use it on its own for gameplay logic;
   - `/backlog [init|add|done|prioritize]` creates and maintains the Linear backlog (user stories `APY-N`, one Linear project per epic, framed one at a time with the user);
-  - `/new-sprite <name> <x1.png> [x2.png]` validates a pixel-art asset (`check_sprite.py`), declares and loads it, with a golden;
+  - `/new-sprite <name> <png>` validates a pixel-art asset (`check_sprite.py`), declares and loads it, with a golden;
   - user-only: `/new-scene <Name>` (Flame scene + route + translations + tests), `/drift-migration <change>` (schema export, `schemaVersion` bump, migration, tests), `/firestore-collection <data>` (repository, rules, fake and emulator tests — never deploys), `/release [patch|minor|major]` (pre-flight, version bump, release notes, then the fastlane commands for the user to run).

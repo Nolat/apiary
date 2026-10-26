@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Checks a pixel-art sprite pair (x1 + optional x2) for Apiary.
+"""Checks a pixel-art sprite for Apiary.
 
-Usage: check_sprite.py <x1.png> [<x2.png>] [--size WxH]
+Usage: check_sprite.py <png> [--size WxH]
 
-Errors (exit 1): not a PNG, size mismatch, semi-transparent pixels, x2 not
-exactly twice the x1 size. Info: colour count, whether x2 is a plain
-nearest-neighbour upscale of x1.
+Errors (exit 1): not a PNG, size mismatch, semi-transparent pixels. Info:
+colour count.
 """
 
 import argparse
@@ -36,32 +35,19 @@ def check_alpha(path, image):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("x1")
-    parser.add_argument("x2", nargs="?")
-    parser.add_argument("--size", help="expected x1 size, e.g. 16x16 for a board item")
+    parser.add_argument("png")
+    parser.add_argument("--size", help="expected size, e.g. 16x16 for a board item")
     args = parser.parse_args()
 
     ok = True
-    x1 = load(args.x1)
-    print(f"{args.x1}: {x1.width}x{x1.height}, {len(set(pixels(x1)))} colours")
+    image = load(args.png)
+    print(f"{args.png}: {image.width}x{image.height}, {len(set(pixels(image)))} colours")
     if args.size:
         width, height = (int(v) for v in args.size.lower().split("x"))
-        if (x1.width, x1.height) != (width, height):
-            print(f"ERROR {args.x1}: expected {width}x{height}")
+        if (image.width, image.height) != (width, height):
+            print(f"ERROR {args.png}: expected {width}x{height}")
             ok = False
-    ok &= check_alpha(args.x1, x1)
-
-    if args.x2:
-        x2 = load(args.x2)
-        print(f"{args.x2}: {x2.width}x{x2.height}, {len(set(pixels(x2)))} colours")
-        if (x2.width, x2.height) != (x1.width * 2, x1.height * 2):
-            print(f"ERROR {args.x2}: expected {x1.width * 2}x{x1.height * 2} (twice the x1 size)")
-            ok = False
-        else:
-            upscale = x1.resize(x2.size, Image.NEAREST)
-            same = list(pixels(upscale)) == list(pixels(x2))
-            print("INFO x2 is " + ("a plain nearest-neighbour upscale of x1" if same else "redrawn (differs from a plain upscale of x1)"))
-        ok &= check_alpha(args.x2, x2)
+    ok &= check_alpha(args.png, image)
 
     print("OK" if ok else "FAILED")
     sys.exit(0 if ok else 1)

@@ -13,8 +13,7 @@ import 'package:flame/components.dart';
 /// board on tablets and foldables). The tile grid is aligned on the board's
 /// cells, so the decor lines up with the grid wherever it shows.
 ///
-/// The tile is a placeholder, ×1 only, like the cells (see
-/// `BoardComponent`).
+/// The tile is a placeholder, like the cells (see `BoardComponent`).
 class DecorComponent extends PositionComponent with HasGameReference {
   static const tileImage = 'board/decor.png';
 

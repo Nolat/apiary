@@ -87,7 +87,7 @@ class ScreenLayout {
   static const boardColumns = 7;
   static const boardRows = 9;
 
-  /// A cell's size, and its sprites' (×1 assets; ×2 ones are 40×40).
+  /// A cell's size, and its sprites' (×1 assets only).
   static const cellSize = 20.0;
   static const boardSize = Size(boardColumns * cellSize, boardRows * cellSize);
 
