@@ -29,8 +29,7 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// - the scale and screen size, as text, in the board under the
 ///   checkerboard.
 class LayoutDebugOverlay extends Component with HasGameReference<ApiaryGame> {
-  // static const enabled = bool.fromEnvironment('APIARY_LAYOUT_DEBUG');
-  static const enabled = true;
+  static const enabled = bool.fromEnvironment('APIARY_LAYOUT_DEBUG');
 
   /// Size of the checkerboard, in game pixels, and its offset from the
   /// board's corner: centered in the board's first cell.
