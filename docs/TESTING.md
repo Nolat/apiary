@@ -38,8 +38,10 @@ test/                         # tests rapides, sans appareil (`flutter test`)
         ├── board_scene_test.dart
         └── goldens/          # PNG de référence, versionnés
 patrol_test/                  # E2E sur appareil (`patrol test`)
-├── common.dart               # launchApiary($), gameOf($)
-└── launch_test.dart
+├── common.dart               # launchApiary($), relaunchApiary($), gameOf($)
+├── board_driver.dart         # BoardDriver : vrais taps/drags sur le plateau
+├── launch_test.dart          # démarrage à froid
+└── board_epic_test.dart      # épopée « Plateau et fusion » de bout en bout
 dart_test.yaml                # déclaration des tags (golden)
 ```
 
@@ -239,6 +241,12 @@ patrolTest('cold start signs in anonymously and opens the board', ($) async {
   expect(game.router.currentRoute.name, BoardScene.routeName);
 });
 ```
+
+### Le parcours de l'épopée « Plateau et fusion »
+
+`patrol_test/board_epic_test.dart` rejoue **toute l'épopée** (APY-1 à APY-10) dans une seule partie, depuis une app vide (`AppDatabase.reset()` + `restartFromScratch()`, comme l'écran dev) : sélection et panneau d'info, larves sur la cellule libre la plus proche, retrait et annulation (par de vrais taps sur les boutons), déplacement, échange, fusion de larves puis de bees jusqu'au dernier niveau, plateau plein (la reine ne crée rien), deux bees du dernier niveau qui s'échangent, sauvegarde après chaque action, puis réouverture de l'app (`relaunchApiary`) qui restaure le plateau.
+
+Contrairement aux tests `testWithGame`, les gestes passent par le vrai pipeline de pointeurs (`WidgetTester.tapAt`, `startGesture`), via `BoardDriver`. C'est volontairement redondant avec les tests rapides : il vérifie que les règles, les gestes, l'animation et Drift tiennent ensemble sur un appareil. À étendre avec chaque nouvelle épopée. Durée : ~1 min 30 sur simulateur. Le fichier ignore le lint `invalid_use_of_visible_for_testing_member` (`patrol_test/` n'est pas reconnu comme un dossier de tests).
 
 **Quoi tester en E2E** : uniquement ce qui ne peut pas l'être plus bas, c'est-à-dire l'intégration réelle avec la plateforme et les services. Candidats : démarrage à froid et connexion, persistance après redémarrage de l'app, permission de notifications pour les commandes du jour, achat in-app en sandbox, liaison Game Center / Play Games. Une règle de jeu testée en E2E est une règle mal placée.
 
