@@ -7,9 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
+import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../helpers/board_tap.dart';
 import '../../helpers/game_golden.dart';
 
@@ -33,6 +33,26 @@ void main() {
         game
           ..update(0)
           ..update(1)
+          ..update(0);
+      },
+    );
+
+    testGameGolden(
+      'renders the full-board banner over a full board',
+      goldenFile: 'goldens/board_scene_full.png',
+      arrange: (game, tester) async {
+        final board = await boardOf(game);
+        const queen = Board.startingQueenPosition;
+        tapCell(game, board, queen);
+        while (board.board.items.length < Board.columns * Board.rows) {
+          tapCell(game, board, queen);
+        }
+        // One more tap: the banner pops in, then holds.
+        tapCell(game, board, queen);
+        await game.ready();
+        game
+          ..update(0)
+          ..update(BoardFullBannerComponent.popDuration + 0.5)
           ..update(0);
       },
     );

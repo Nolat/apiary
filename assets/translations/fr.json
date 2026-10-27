@@ -3,6 +3,7 @@
     "title": "Apiary"
   },
   "board": {
+    "full": "Plateau plein !",
     "enter": "Plateau",
     "info": {
       "empty": "Touchez un objet pour consulter ses détails ici.",

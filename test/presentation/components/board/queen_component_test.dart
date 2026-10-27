@@ -93,11 +93,15 @@ void main() {
         final queenIndex = children.indexWhere(
           (child) => child is QueenComponent,
         );
-        expect(queenIndex, children.length - 2);
-        expect(
-          (children.last as SpriteComponent).sprite!.image,
-          same(game.images.fromCache(BoardComponent.selectionImage)),
+        // After the 63 cells, before the selection frame.
+        final frameIndex = children.indexWhere(
+          (child) =>
+              child is SpriteComponent &&
+              child.sprite!.image ==
+                  game.images.fromCache(BoardComponent.selectionImage),
         );
+        expect(queenIndex, greaterThanOrEqualTo(Board.columns * Board.rows));
+        expect(queenIndex, lessThan(frameIndex));
       },
     );
   });

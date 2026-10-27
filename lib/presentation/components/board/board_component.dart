@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'package:flutter/services.dart' show HapticFeedback;
 
 // 📦 Package imports:
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
@@ -19,6 +20,7 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
 import 'package:apiary/presentation/components/board/bee_component.dart';
+import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/bounce_effect.dart';
 import 'package:apiary/presentation/components/board/centered_scale_effect.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
@@ -39,6 +41,9 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// the bee of the next level; dropped on an empty cell, an item moves there;
 /// dropped on a different item, the two swap places; otherwise it goes back to
 /// its cell.
+///
+/// Tapping a queen on a full board also pops up a banner on the top row (see
+/// [BoardFullBannerComponent]) and is felt as a heavy haptic impact.
 ///
 /// A larva born and a merge are felt as a light and a medium haptic impact.
 ///
@@ -89,6 +94,7 @@ class BoardComponent extends PositionComponent
   }
 
   late final SpriteComponent _selectionFrame;
+  late final BoardFullBannerComponent _fullBanner;
   final _itemComponents = <BoardPosition, PositionComponent>{};
 
   // The queen the current tap started on while she was already selected: she
@@ -106,6 +112,9 @@ class BoardComponent extends PositionComponent
 
   /// Priority of a dragged item: above the selection frame and the items.
   static const draggedPriority = 2;
+
+  /// Priority of the full-board banner: above everything, a dragged item too.
+  static const bannerPriority = 3;
 
   static const selectionImage = 'board/selection.png';
   static const lightCellImage = 'board/cell_light.png';
@@ -193,6 +202,10 @@ class BoardComponent extends PositionComponent
       size: Vector2.all(ScreenLayout.cellSize),
     )..opacity = 0;
     await add(_selectionFrame);
+    // Invisible until the board is full and tapped.
+    await add(
+      _fullBanner = BoardFullBannerComponent(message: 'board.full'.tr()),
+    );
     selection
       ..addListener(_updateSelectionFrame)
       ..addListener(_bounceSelected);
@@ -450,6 +463,9 @@ class BoardComponent extends PositionComponent
         unawaited(_bounce(_itemComponents[queen]!, itemPosition(queen)));
         await add(_componentFor(position, board.itemAt(position)!));
       case BoardFull():
+        unawaited(HapticFeedback.heavyImpact());
+        // The middle of the top row, where the eye is not on a finger.
+        _fullBanner.show(Vector2(size.x / 2, ScreenLayout.cellSize / 2));
         await _shake(queen);
     }
   }

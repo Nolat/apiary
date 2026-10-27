@@ -91,7 +91,7 @@ Ordres de grandeur (hypothèse : 1 énergie par larve et par ressource, durée d
 
 Le plateau (grille 7×9, 63 cases) est conservé d'une journée à l'autre : on peut anticiper. Il reste jouable grâce aux commandes disponibles, à la place limitée et à un bouton de suppression des larves, abeilles et ressources (reines, ruches, incubateurs et gemmes ne se suppriment pas). Un stockage hors plateau, dont quelques emplacements sont offerts et les suivants achetés en pièces, donne un peu de marge (voir [Pièces](#pièces)).
 
-**Apparition d'une larve** : elle prend la case libre la plus proche de la reine (d'abord les 8 cases qui l'entourent, puis la couronne suivante, etc.) ; à distance égale, on tourne dans le sens horaire en partant de la case au-dessus de la reine : le haut vers la droite, puis le côté droit en descendant, le bas vers la gauche et le côté gauche en montant, comme dans Flambé (départage provisoire, à confirmer en jeu). Sur un plateau plein, aucune larve n'est créée et la reine tremble. Ce retour visuel est provisoire.
+**Apparition d'une larve** : elle prend la case libre la plus proche de la reine (d'abord les 8 cases qui l'entourent, puis la couronne suivante, etc.) ; à distance égale, on tourne dans le sens horaire en partant de la case au-dessus de la reine : le haut vers la droite, puis le côté droit en descendant, le bas vers la gauche et le côté gauche en montant, comme dans Flambé (départage provisoire, à confirmer en jeu). Sur un plateau plein, aucune larve n'est créée et la reine tremble, une vibration forte se fait sentir et un bandeau « Plateau plein ! » apparaît en haut du plateau (il grossit en rebondissant, reste un instant puis s'efface), comme dans Flambé. Ce retour visuel est provisoire.
 
 ## Pièces
 

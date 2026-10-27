@@ -3,6 +3,7 @@
     "title": "Apiary"
   },
   "board": {
+    "full": "Board full!",
     "enter": "Board",
     "info": {
       "empty": "Tap an item to see its details here.",
