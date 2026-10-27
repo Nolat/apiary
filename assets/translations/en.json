@@ -2,6 +2,13 @@
   "app": {
     "title": "Apiary"
   },
+  "startup": {
+    "services": "Connecting to services...",
+    "account": "Signing in...",
+    "board": "Loading the board...",
+    "ready": "Ready!",
+    "failed": "Could not start"
+  },
   "board": {
     "full": "Board full!",
     "enter": "Board",

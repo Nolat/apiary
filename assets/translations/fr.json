@@ -2,6 +2,13 @@
   "app": {
     "title": "Apiary"
   },
+  "startup": {
+    "services": "Connexion aux services...",
+    "account": "Connexion au compte...",
+    "board": "Chargement du plateau...",
+    "ready": "Prêt !",
+    "failed": "Démarrage impossible"
+  },
   "board": {
     "full": "Plateau plein !",
     "enter": "Plateau",

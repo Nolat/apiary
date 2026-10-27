@@ -19,6 +19,9 @@ import 'package:apiary/core/dev/dev_tools.dart';
 import 'package:apiary/core/dev/shake_detector.dart';
 import 'package:apiary/core/di/injection.dart';
 import 'package:apiary/core/platform/system_ui.dart';
+import 'package:apiary/core/startup/game_services.dart';
+import 'package:apiary/core/startup/startup.dart';
+import 'package:apiary/core/startup/startup_step.dart';
 import 'package:apiary/data/local/app_database.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/firebase_options.dart';
@@ -34,19 +37,6 @@ Future<void> bootstrap() async {
 
   await EasyLocalization.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  configureDependencies();
-
-  final crashReportingService = getIt<CrashReportingService>();
-  await crashReportingService.initialize();
-
-  final authService = getIt<AuthService>();
-  await authService.ensureSignedIn();
-  await crashReportingService.setUserIdentifier(
-    authService.currentUserId ?? 'unknown',
-  );
-
   runApp(
     // Root wrapper Sentry needs for screenshots and user interaction tracing.
     SentryWidget(
@@ -55,16 +45,35 @@ Future<void> bootstrap() async {
         path: 'assets/translations',
         fallbackLocale: const Locale('fr'),
         child: ProviderScope(
-          child: ApiaryApp(
-            boardRepository: getIt<BoardRepository>(),
-            // Also in release builds, for now (see docs/STACK.md).
-            devTools: DevTools(
-              resetDatabase: getIt<AppDatabase>().reset,
-              shakes: ShakeDetector().shakes,
-            ),
-          ),
+          // The rest of the launch runs behind the splash screen.
+          child: ApiaryApp(startup: Startup(_startServices)),
         ),
       ),
+    ),
+  );
+}
+
+Future<GameServices> _startServices(ValueNotifier<StartupStep> step) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  configureDependencies();
+
+  final crashReportingService = getIt<CrashReportingService>();
+  await crashReportingService.initialize();
+
+  step.value = StartupStep.account;
+  final authService = getIt<AuthService>();
+  await authService.ensureSignedIn();
+  await crashReportingService.setUserIdentifier(
+    authService.currentUserId ?? 'unknown',
+  );
+
+  return GameServices(
+    boardRepository: getIt<BoardRepository>(),
+    // Also in release builds, for now (see docs/STACK.md).
+    devTools: DevTools(
+      resetDatabase: getIt<AppDatabase>().reset,
+      shakes: ShakeDetector().shakes,
     ),
   );
 }

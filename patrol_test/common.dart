@@ -14,9 +14,10 @@ import 'package:apiary/bootstrap.dart';
 import 'package:apiary/core/di/injection.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
+import 'package:apiary/presentation/scenes/board_scene.dart';
 
 /// Starts the real app exactly like `main()` (Sentry, Firebase, anonymous
-/// sign-in...) and waits for the game to be on screen.
+/// sign-in...) and waits for the splash screen to give way to the board.
 ///
 /// Call once per test: `bootstrap()` initializes process-wide singletons
 /// (Firebase, get_it). Android runs each test in a fresh process (test
@@ -27,6 +28,11 @@ Future<ApiaryGame> launchApiary(PatrolIntegrationTester $) async {
   await $(GameWidget<ApiaryGame>).waitUntilExists();
   final game = gameOf($);
   await game.ready();
+  // The launch runs behind the splash screen, which leaves once it is over.
+  for (var i = 0; game.router.currentRoute.name != BoardScene.routeName; i++) {
+    expect(i, lessThan(300), reason: 'The splash screen never gave way');
+    await $.tester.pump(const Duration(milliseconds: 100));
+  }
   return game;
 }
 

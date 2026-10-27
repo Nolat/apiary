@@ -8,19 +8,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/core/dev/dev_tools.dart';
+import 'package:apiary/core/startup/startup.dart';
 import 'package:apiary/core/theme/app_theme.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/layout_debug_overlay.dart';
 
 class ApiaryApp extends ConsumerWidget {
-  const ApiaryApp({this.boardRepository, this.devTools, super.key});
+  const ApiaryApp({
+    this.boardRepository,
+    this.devTools,
+    this.startup,
+    super.key,
+  });
 
   /// Where the board is kept; `null` plays without saving (tests).
   final BoardRepository? boardRepository;
 
   /// The dev screen's actions and triggers; `null` has no dev screen.
   final DevTools? devTools;
+
+  /// The launch to run behind the splash screen; `null` opens straight on
+  /// the board (tests).
+  final Startup? startup;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,6 +49,7 @@ class ApiaryApp extends ConsumerWidget {
         gameFactory: () => ApiaryGame(
           boardRepository: boardRepository,
           devTools: devTools,
+          startup: startup,
         ),
       ),
     );

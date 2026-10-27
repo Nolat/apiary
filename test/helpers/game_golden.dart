@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import 'game_text.dart';
 
 /// Tag of every golden test, declared in `dart_test.yaml`. Goldens only match
@@ -19,6 +18,8 @@ const goldenTag = 'golden';
 /// ratio 1: the tightest layout, the iPhone SE's) and compares it to
 /// [goldenFile], so one golden pixel is one game pixel.
 ///
+/// [newGame] makes the game to render, [ApiaryGame.new] by default.
+///
 /// [arrange] runs once the game is loaded on its initial scene: navigate
 /// (`game.router.pushNamed(...)`), add components, advance time
 /// (`game.update(dt)`)... before the frame is captured.
@@ -28,6 +29,7 @@ const goldenTag = 'golden';
 void testGameGolden(
   String description, {
   required String goldenFile,
+  ApiaryGame Function() newGame = ApiaryGame.new,
   Future<void> Function(ApiaryGame game, WidgetTester tester)? arrange,
 }) {
   testWidgets(description, tags: goldenTag, (tester) async {
@@ -39,7 +41,7 @@ void testGameGolden(
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final game = ApiaryGame();
+    final game = newGame();
     const key = ValueKey('golden-game');
 
     // Flame loads assets and components asynchronously: real async is needed

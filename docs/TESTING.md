@@ -229,7 +229,7 @@ Le seul widget à tester est l'hôte `ApiaryApp`. `test/app_test.dart` vérifie 
 
 ## 4. E2E sur appareil — Patrol
 
-Patrol lance **la vraie app** (`bootstrap()` complet : Sentry, Firebase, connexion anonyme) sur un émulateur ou un appareil, et sait en plus piloter l'OS (dialogues de permission, notifications, Game Center plus tard), ce que `integration_test` seul ne fait pas.
+Patrol lance **la vraie app** (`bootstrap()` complet : Sentry, Firebase, connexion anonyme ; `launchApiary` attend que le splash cède la place au plateau) sur un émulateur ou un appareil, et sait en plus piloter l'OS (dialogues de permission, notifications, Game Center plus tard), ce que `integration_test` seul ne fait pas.
 
 Comme le jeu est un canvas, les finders Patrol (`$('texte')`) ne servent qu'aux éléments natifs ou Flutter. Le jeu se pilote **par `ApiaryGame`**, récupéré avec `gameOf($)` (`patrol_test/common.dart`) :
 
