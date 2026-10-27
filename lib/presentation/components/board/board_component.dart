@@ -505,8 +505,8 @@ class BoardComponent extends PositionComponent
           position: position,
         ),
         Hive(:final bee) => HiveComponent(bee: bee, position: position),
-        Resource(:final type, :final tier) => ResourceComponent(
-          type: type,
+        Resource(:final branch, :final tier) => ResourceComponent(
+          branch: branch,
           tier: tier,
           position: position,
         ),

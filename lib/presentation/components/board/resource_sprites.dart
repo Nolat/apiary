@@ -1,12 +1,12 @@
 // 🌎 Project imports:
-import 'package:apiary/domain/resources/resource_type.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 
-/// How a [ResourceType] looks on the board. This lives in `presentation/`: the
+/// How a [ResourceBranch] looks on the board. This lives in `presentation/`: the
 /// domain knows nothing of looks.
-extension ResourceSprites on ResourceType {
+extension ResourceSprites on ResourceBranch {
   /// The sprite of the resource of [tier], each tier with its own look, like
-  /// the levels of a bee: tier 1 is `<type>.png`, the others
-  /// `<type>_<tier>.png`. Only tier 1 has art for now.
+  /// the levels of a bee: tier 1 is `<branch>.png`, the others
+  /// `<branch>_<tier>.png`: the comb is `comb.png` and its honey `comb_2.png`.
   String imageAt(int tier) =>
       tier == 1 ? 'resources/$name.png' : 'resources/${name}_$tier.png';
 }

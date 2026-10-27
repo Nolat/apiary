@@ -129,14 +129,14 @@ return resource(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee,  int remainingLife)?  hive,TResult Function( ResourceType type,  int tier)?  resource,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee,  int remainingLife)?  hive,TResult Function( ResourceBranch branch,  int tier)?  resource,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
 return bee(_that.family,_that.level);case Hive() when hive != null:
 return hive(_that.bee,_that.remainingLife);case Resource() when resource != null:
-return resource(_that.type,_that.tier);case _:
+return resource(_that.branch,_that.tier);case _:
   return orElse();
 
 }
@@ -154,14 +154,14 @@ return resource(_that.type,_that.tier);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee,  int remainingLife)  hive,required TResult Function( ResourceType type,  int tier)  resource,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee,  int remainingLife)  hive,required TResult Function( ResourceBranch branch,  int tier)  resource,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
 return larva(_that.family);case Bee():
 return bee(_that.family,_that.level);case Hive():
 return hive(_that.bee,_that.remainingLife);case Resource():
-return resource(_that.type,_that.tier);}
+return resource(_that.branch,_that.tier);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -175,14 +175,14 @@ return resource(_that.type,_that.tier);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee,  int remainingLife)?  hive,TResult? Function( ResourceType type,  int tier)?  resource,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee,  int remainingLife)?  hive,TResult? Function( ResourceBranch branch,  int tier)?  resource,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
 return bee(_that.family,_that.level);case Hive() when hive != null:
 return hive(_that.bee,_that.remainingLife);case Resource() when resource != null:
-return resource(_that.type,_that.tier);case _:
+return resource(_that.branch,_that.tier);case _:
   return null;
 
 }
@@ -470,10 +470,10 @@ as int,
 
 
 class Resource implements BoardItem {
-  const Resource({required this.type, this.tier = 1}): assert(tier >= 1, 'tier must be at least 1');
+  const Resource({required this.branch, this.tier = 1}): assert(tier >= 1, 'tier must be at least 1');
   
 
- final  ResourceType type;
+ final  ResourceBranch branch;
 @JsonKey() final  int tier;
 
 /// Create a copy of BoardItem
@@ -486,18 +486,18 @@ $ResourceCopyWith<Resource> get copyWith => _$ResourceCopyWithImpl<Resource>(thi
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is Resource&&(identical(other.type, type) || other.type == type)&&(identical(other.tier, tier) || other.tier == tier));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Resource&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.tier, tier) || other.tier == tier));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,type,tier);
+    return Object.hash(runtimeType,branch,tier);
 }
 
 @override
 String toString() {
-    return 'BoardItem.resource(type: $type, tier: $tier)';
+    return 'BoardItem.resource(branch: $branch, tier: $tier)';
 }
 
 
@@ -508,7 +508,7 @@ abstract mixin class $ResourceCopyWith<$Res> implements $BoardItemCopyWith<$Res>
   factory $ResourceCopyWith(Resource value, $Res Function(Resource) _then) = _$ResourceCopyWithImpl;
 @useResult
 $Res call({
- ResourceType type, int tier
+ ResourceBranch branch, int tier
 });
 
 
@@ -525,10 +525,10 @@ class _$ResourceCopyWithImpl<$Res>
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? type = null,Object? tier = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? branch = null,Object? tier = null,}) {
   return _then(Resource(
-type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as ResourceType,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
+branch: null == branch ? _self.branch : branch // ignore: cast_nullable_to_non_nullable
+as ResourceBranch,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

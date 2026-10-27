@@ -15,6 +15,7 @@
     "info": {
       "empty": "Tap an item to see its details here.",
       "title_level": "{name} · Lv. {level}",
+      "title_tier": "{name} · Tier {tier}",
       "remove": "Remove",
       "undo": "Undo",
       "removed": "has been removed."
@@ -57,7 +58,12 @@
     }
   },
   "resource": {
-    "comb": "Honeycomb",
-    "pollen": "Pollen"
+    "comb": {
+      "tier_1": "Honeycomb",
+      "tier_2": "Honey"
+    },
+    "pollen": {
+      "tier_1": "Pollen"
+    }
   }
 }

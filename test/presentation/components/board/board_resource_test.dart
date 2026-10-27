@@ -12,6 +12,7 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 import 'package:apiary/domain/resources/resource_catalogue.dart';
 import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/hive_component.dart';
@@ -84,7 +85,7 @@ void main() {
 
     for (final seed in [0, 1, 2, 3]) {
       testWithGame<ApiaryGame>(
-        'draws its type from the seed ($seed)',
+        'draws its branch from the seed ($seed)',
         () => gameWith(starting, seed: seed),
         (game) async {
           final board = await boardOf(game);
@@ -93,12 +94,14 @@ void main() {
           tapCell(game, board, hive);
           await game.ready();
 
-          final types = ResourceCatalogue.typesMadeBy(
+          final branches = ResourceCatalogue.branchesMadeBy(
             const Bee(family: Family.common),
           );
           expect(
             board.board.itemAt(firstResource),
-            BoardItem.resource(type: types[Random(seed).nextInt(types.length)]),
+            BoardItem.resource(
+              branch: branches[Random(seed).nextInt(branches.length)],
+            ),
           );
         },
       );
@@ -164,8 +167,21 @@ void main() {
             .descendants()
             .whereType<ItemInfoComponent>()
             .single;
-        expect(info.titleText, endsWith('· Niv. 1'));
-        expect(info.tipText, 'FUSIONNEZ pour atteindre le niveau suivant.');
+        final made = board.board.itemAt(firstResource)! as Resource;
+        expect(
+          info.titleText,
+          made.branch == ResourceBranch.comb
+              ? 'Rayon · Palier 1'
+              : 'Pollen · Palier 1',
+        );
+        // Only the comb has a tier above its first: pollen is already at its
+        // branch's last tier.
+        expect(
+          info.tipText,
+          made.branch == ResourceBranch.comb
+              ? 'FUSIONNEZ pour atteindre le niveau suivant.'
+              : 'Niveau maximal : cette ressource ne fusionne plus',
+        );
       },
     );
 

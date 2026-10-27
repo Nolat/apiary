@@ -360,11 +360,20 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       final Bee bee => _speciesOf(bee),
       Hive(bee: null) => 'item.hive.name'.tr(),
       Hive() => 'item.hive.name_occupied'.tr(),
-      Resource(:final type) => 'resource.${type.name}'.tr(),
+      // Each tier of a branch has its own name: the comb, then honey.
+      Resource(:final branch, :final tier) =>
+        'resource.${branch.name}.tier_$tier'.tr(),
     };
     final level = item.level;
-    return level == null
-        ? name
+    if (level == null) {
+      return name;
+    }
+    // A resource has a tier, as the orders and DESIGN.md call it; the rest a
+    // level.
+    return item is Resource
+        ? 'board.info.title_tier'.tr(
+            namedArgs: {'name': name, 'tier': '$level'},
+          )
         : 'board.info.title_level'.tr(
             namedArgs: {'name': name, 'level': '$level'},
           );
@@ -383,8 +392,8 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
     Hive(:final bee?) => 'item.hive.tip_occupied'.tr(
       namedArgs: {'species': _speciesOf(bee)},
     ),
-    Resource(:final type, :final tier) =>
-      tier == type.maxTier
+    Resource(:final branch, :final tier) =>
+      tier == branch.maxTier
           ? 'item.resource.tip_max'.tr()
           : 'item.resource.tip'.tr(),
   };

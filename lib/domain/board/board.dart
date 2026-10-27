@@ -144,12 +144,14 @@ abstract class Board with _$Board {
     if (item is! Hive || item.bee == null || cell == null) {
       return const ResourceProduction.boardFull();
     }
-    final types = ResourceCatalogue.typesMadeBy(item.bee!);
+    final branches = ResourceCatalogue.branchesMadeBy(item.bee!);
     return ResourceProduction.created(
       board: copyWith(
         items: {
           ...items,
-          cell: BoardItem.resource(type: types[random.nextInt(types.length)]),
+          cell: BoardItem.resource(
+            branch: branches[random.nextInt(branches.length)],
+          ),
           hive: item.remainingLife == 1
               ? const BoardItem.hive()
               : item.copyWith(remainingLife: item.remainingLife - 1),
@@ -210,7 +212,10 @@ abstract class Board with _$Board {
     if (housed != null) {
       return BoardDrop.housed(board: housed);
     }
-    final merged = mergeLarvae(from, onto) ?? mergeBees(from, onto);
+    final merged =
+        mergeLarvae(from, onto) ??
+        mergeBees(from, onto) ??
+        mergeResources(from, onto);
     return merged == null ? null : BoardDrop.merged(board: merged);
   }
 
@@ -226,13 +231,7 @@ abstract class Board with _$Board {
     if (itemAt(onto) != null) {
       return null;
     }
-    return copyWith(
-      items: {
-        for (final MapEntry(:key, :value) in items.entries)
-          if (key != from) key: value,
-        onto: dragged,
-      },
-    );
+    return _intoCell(from, onto, dragged);
   }
 
   /// What dropping the larva on [from] onto [onto] does: the two larvae
@@ -248,14 +247,19 @@ abstract class Board with _$Board {
         dragged.family != target.family) {
       return null;
     }
-    return copyWith(
-      items: {
-        for (final MapEntry(:key, :value) in items.entries)
-          if (key != from) key: value,
-        onto: BoardItem.bee(family: target.family),
-      },
-    );
+    return _intoCell(from, onto, BoardItem.bee(family: target.family));
   }
+
+  // The board with the item on [from] gone and [item] on [onto]: what a move,
+  // a merge or a bee going into a hive leaves behind.
+  Board _intoCell(BoardPosition from, BoardPosition onto, BoardItem item) =>
+      copyWith(
+        items: {
+          for (final MapEntry(:key, :value) in items.entries)
+            if (key != from) key: value,
+          onto: item,
+        },
+      );
 
   /// What dropping the bee on [from] onto [onto] does: the two bees
   /// disappear and a bee of the next level of their family appears on [onto];
@@ -271,12 +275,34 @@ abstract class Board with _$Board {
         !_beesMerge(dragged, target)) {
       return null;
     }
-    return copyWith(
-      items: {
-        for (final MapEntry(:key, :value) in items.entries)
-          if (key != from) key: value,
-        onto: BoardItem.bee(family: target.family, level: target.level + 1),
-      },
+    return _intoCell(
+      from,
+      onto,
+      BoardItem.bee(family: target.family, level: target.level + 1),
+    );
+  }
+
+  /// What dropping the resource on [from] onto [onto] does: the two
+  /// resources disappear and a resource of the next tier of their branch
+  /// appears on [onto]; `null` when the drop is not a merge (a different or no
+  /// item, resources of another branch or tier, resources of the branch's last
+  /// tier, the same cell, or a cell off the board) and the board stays as it
+  /// is.
+  Board? mergeResources(BoardPosition from, BoardPosition onto) {
+    final dragged = itemAt(from);
+    final target = itemAt(onto);
+    if (from == onto ||
+        dragged is! Resource ||
+        target is! Resource ||
+        dragged.branch != target.branch ||
+        dragged.tier != target.tier ||
+        target.tier >= target.branch.maxTier) {
+      return null;
+    }
+    return _intoCell(
+      from,
+      onto,
+      BoardItem.resource(branch: target.branch, tier: target.tier + 1),
     );
   }
 
@@ -296,15 +322,13 @@ abstract class Board with _$Board {
         target.bee != null) {
       return null;
     }
-    return copyWith(
-      items: {
-        for (final MapEntry(:key, :value) in items.entries)
-          if (key != from) key: value,
-        onto: BoardItem.hive(
-          bee: dragged,
-          remainingLife: BeeLifespan.of(dragged.family),
-        ),
-      },
+    return _intoCell(
+      from,
+      onto,
+      BoardItem.hive(
+        bee: dragged,
+        remainingLife: BeeLifespan.of(dragged.family),
+      ),
     );
   }
 

@@ -4,48 +4,31 @@ import 'package:glados/glados.dart';
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
-import 'package:apiary/domain/board/bee_release.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/resource_production.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 import 'package:apiary/domain/resources/resource_catalogue.dart';
-import 'package:apiary/domain/resources/resource_type.dart';
+
+import '../../helpers/hive_boards.dart';
 
 void main() {
   const hive = Board.startingHivePosition;
 
-  Board boardWith(Bee bee) => Board.initial().copyWith(
-    items: {
-      ...Board.initial().items,
-      hive: BoardItem.hive(bee: bee),
-    },
-  );
-
-  Board fullBoardWith(Bee bee) => Board(
-    items: {
-      for (var column = 0; column < Board.columns; column++)
-        for (var row = 0; row < Board.rows; row++)
-          BoardPosition(column: column, row: row): const BoardItem.larva(
-            family: Family.common,
-          ),
-      hive: BoardItem.hive(bee: bee),
-    },
-  );
-
   group('Board.produceResource', () {
     Glados2(any.intInRange(1, 6), any.intInRange(0, 1 << 20)).test(
-      'makes one tier-1 resource of a type the species makes, next to the '
+      'makes one tier-1 resource of a branch the species makes, next to the '
       'hive, and uses one life of the bee',
       (level, seed) {
         final bee = Bee(family: Family.common, level: level);
-        final board = boardWith(bee);
+        final board = boardWithBeeInHive(bee);
 
         final result =
             board.produceResource(hive, Random(seed)) as ResourceCreated;
 
         final made = result.board.itemAt(result.position)! as Resource;
-        expect(ResourceCatalogue.typesMadeBy(bee), contains(made.type));
+        expect(ResourceCatalogue.branchesMadeBy(bee), contains(made.branch));
         expect(made.tier, 1);
         expect(result.position, board.nearestFreeCell(hive));
         expect(
@@ -100,7 +83,7 @@ void main() {
     test('empties a hive after exactly its lifespan of productions', () {
       const bee = Bee(family: Family.common);
       final random = Random(0);
-      var board = boardWith(bee);
+      var board = boardWithBeeInHive(bee);
       var made = 0;
       while (board.itemAt(hive) is Hive &&
           (board.itemAt(hive)! as Hive).bee != null) {
@@ -138,7 +121,7 @@ void main() {
 
     test('keeps the life of a bee when the board is full', () {
       const bee = Bee(family: Family.common);
-      final full = fullBoardWith(bee);
+      final full = fullBoardWithBeeInHive(bee);
 
       expect(
         full.produceResource(hive, Random(0)),
@@ -147,23 +130,24 @@ void main() {
       expect(full.itemAt(hive), const BoardItem.hive(bee: bee));
     });
 
-    test('draws both types of a two-type species', () {
+    test('draws both branches of a two-branch species', () {
       const bee = Bee(family: Family.common);
       final random = Random(1);
-      final types = {
+      final branches = {
         for (var tap = 0; tap < 50; tap++)
-          ((boardWith(bee).produceResource(hive, random) as ResourceCreated)
+          ((boardWithBeeInHive(bee).produceResource(hive, random)
+                          as ResourceCreated)
                       .board
                       .itemAt(const BoardPosition(column: 3, row: 6))!
                   as Resource)
-              .type,
+              .branch,
       };
 
-      expect(types, {ResourceType.comb, ResourceType.pollen});
+      expect(branches, {ResourceBranch.comb, ResourceBranch.pollen});
     });
 
     test('is deterministic for a given seed', () {
-      final board = boardWith(const Bee(family: Family.common));
+      final board = boardWithBeeInHive(const Bee(family: Family.common));
 
       expect(
         board.produceResource(hive, Random(7)),
@@ -173,89 +157,11 @@ void main() {
 
     test('makes nothing on a full board', () {
       expect(
-        fullBoardWith(
+        fullBoardWithBeeInHive(
           const Bee(family: Family.common),
         ).produceResource(hive, Random(0)),
         const ResourceProduction.boardFull(),
       );
-    });
-  });
-
-  group('Board.releaseBee', () {
-    const bee = Bee(family: Family.common, level: 3);
-
-    test('puts a bee that made nothing on the nearest free cell', () {
-      final board = boardWith(bee);
-
-      final result = board.releaseBee(hive)! as BeeReleased;
-
-      expect(result.position, board.nearestFreeCell(hive));
-      expect(result.board.itemAt(result.position), bee);
-      expect(result.board.itemAt(hive), const BoardItem.hive());
-      expect(result.board.items, hasLength(board.items.length + 1));
-    });
-
-    test('lets the hive take a bee again, with its whole lifespan', () {
-      final result = boardWith(bee).releaseBee(hive)! as BeeReleased;
-
-      final again = result.board.drop(result.position, hive)!.board;
-
-      expect(
-        again.itemAt(hive),
-        BoardItem.hive(bee: bee, remainingLife: BeeLifespan.of(bee.family)),
-      );
-    });
-
-    test('keeps the bee once it has made a resource', () {
-      final worn = (boardWith(
-        bee,
-      ).produceResource(hive, Random(0)) as ResourceCreated).board;
-
-      expect(worn.releaseBee(hive), isNull);
-    });
-
-    test('does nothing for an empty hive or a cell that is no hive', () {
-      expect(Board.initial().releaseBee(hive), isNull);
-      expect(
-        Board.initial().releaseBee(Board.startingQueenPosition),
-        isNull,
-      );
-      expect(
-        Board.initial().releaseBee(const BoardPosition(column: 0, row: 0)),
-        isNull,
-      );
-    });
-
-    test('keeps the bee in its hive on a full board', () {
-      final full = fullBoardWith(bee);
-
-      expect(full.releaseBee(hive), const BeeRelease.boardFull());
-      expect(full.itemAt(hive), const BoardItem.hive(bee: bee));
-    });
-  });
-
-  group('A resource', () {
-    const resource = BoardItem.resource(type: ResourceType.comb);
-    const from = BoardPosition(column: 1, row: 1);
-    const onto = BoardPosition(column: 2, row: 1);
-    final board = Board.initial().copyWith(
-      items: {...Board.initial().items, from: resource},
-    );
-
-    test('can be removed', () {
-      expect(board.remove(from)!.itemAt(from), isNull);
-    });
-
-    test('moves to an empty cell and swaps with another item', () {
-      expect(board.move(from, onto)!.itemAt(onto), resource);
-      expect(
-        board.swap(from, Board.startingQueenPosition)!.itemAt(from),
-        const BoardItem.queen(family: Family.common),
-      );
-    });
-
-    test('does not go into a hive', () {
-      expect(board.placeInHive(from, hive), isNull);
     });
   });
 }

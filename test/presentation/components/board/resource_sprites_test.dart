@@ -5,24 +5,27 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
-import 'package:apiary/domain/resources/resource_type.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 import 'package:apiary/presentation/components/board/resource_sprites.dart';
 
 void main() {
-  group('ResourceType sprites', () {
-    test('have art for tier 1 of every type', () {
-      for (final type in ResourceType.values) {
-        expect(
-          File('assets/images/${type.imageAt(1)}').existsSync(),
-          isTrue,
-          reason: '${type.name} has no tier-1 sprite',
-        );
+  group('ResourceBranch sprites', () {
+    test('have art for every tier of every branch', () {
+      for (final branch in ResourceBranch.values) {
+        for (var tier = 1; tier <= branch.maxTier; tier++) {
+          expect(
+            File('assets/images/${branch.imageAt(tier)}').existsSync(),
+            isTrue,
+            reason: '${branch.name} has no tier $tier sprite',
+          );
+        }
       }
     });
 
-    test('name the other tiers after the type and the tier', () {
-      expect(ResourceType.comb.imageAt(1), 'resources/comb.png');
-      expect(ResourceType.pollen.imageAt(3), 'resources/pollen_3.png');
+    test('name the tiers after the branch and the tier', () {
+      expect(ResourceBranch.comb.imageAt(1), 'resources/comb.png');
+      expect(ResourceBranch.comb.imageAt(2), 'resources/comb_2.png');
+      expect(ResourceBranch.pollen.imageAt(1), 'resources/pollen.png');
     });
   });
 }

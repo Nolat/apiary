@@ -13,7 +13,7 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
-import 'package:apiary/domain/resources/resource_type.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 
 /// Keeps the board in the local SQLite database, one row per item.
 class DriftBoardRepository implements BoardRepository {
@@ -72,7 +72,7 @@ class DriftBoardRepository implements BoardRepository {
   });
 
   static BoardCellsCompanion _rowOf(BoardPosition position, BoardItem item) {
-    // The name of the family, or of the resource type, that goes with the
+    // The name of the family, or of the resource branch, that goes with the
     // kind; empty for an empty hive.
     final (kind, name) = switch (item) {
       Queen(:final family) => (_queen, family.name),
@@ -80,7 +80,7 @@ class DriftBoardRepository implements BoardRepository {
       Bee(:final family) => (_bee, family.name),
       Hive(bee: null) => (_hive, _noFamily),
       Hive(:final bee?) => (_housedHive, bee.family.name),
-      Resource(:final type) => (_resource, type.name),
+      Resource(:final branch) => (_resource, branch.name),
     };
     return BoardCellsCompanion.insert(
       column: position.column,
@@ -100,10 +100,10 @@ class DriftBoardRepository implements BoardRepository {
 
   static BoardItem? _itemOf(BoardCell row) {
     if (row.kind == _resource) {
-      final type = ResourceType.values.asNameMap()[row.family];
-      return type == null || row.level < 1 || row.level > type.maxTier
+      final branch = ResourceBranch.values.asNameMap()[row.family];
+      return branch == null || row.level < 1 || row.level > branch.maxTier
           ? null
-          : BoardItem.resource(type: type, tier: row.level);
+          : BoardItem.resource(branch: branch, tier: row.level);
     }
     final family = Family.values.asNameMap()[row.family];
     // A hive is never lost: one whose bee cannot be read comes back empty.

@@ -10,7 +10,7 @@ import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
-import 'package:apiary/domain/resources/resource_type.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 
 void main() {
   late AppDatabase database;
@@ -64,15 +64,18 @@ void main() {
     expect(await repository.load(), board);
   });
 
-  test('keeps the resources, with their type and tier', () async {
+  test('keeps the resources, with their branch and tier', () async {
     final board = Board(
       items: {
         const BoardPosition(column: 0, row: 0): const BoardItem.resource(
-          type: ResourceType.comb,
+          branch: ResourceBranch.comb,
         ),
         const BoardPosition(column: 1, row: 0): const BoardItem.resource(
-          type: ResourceType.pollen,
-          tier: 3,
+          branch: ResourceBranch.comb,
+          tier: 2,
+        ),
+        const BoardPosition(column: 2, row: 0): const BoardItem.resource(
+          branch: ResourceBranch.pollen,
         ),
       },
     );
@@ -82,10 +85,11 @@ void main() {
     expect(await repository.load(), board);
   });
 
-  test('ignores a resource of an unknown type or of tier 0', () async {
+  test('ignores a resource of an unknown branch or an unknown tier', () async {
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level) VALUES '
-      "(0, 0, 'resource', 'unknown', 1), (1, 0, 'resource', 'comb', 0)",
+      "(0, 0, 'resource', 'unknown', 1), (1, 0, 'resource', 'comb', 0), "
+      "(2, 0, 'resource', 'comb', 3), (3, 0, 'resource', 'pollen', 2)",
     );
 
     expect((await repository.load())?.items ?? const {}, isEmpty);

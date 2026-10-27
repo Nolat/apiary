@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
-import 'package:apiary/domain/resources/resource_type.dart';
+import 'package:apiary/domain/resources/resource_branch.dart';
 
 part 'board_item.freezed.dart';
 
@@ -44,12 +44,14 @@ sealed class BoardItem with _$BoardItem {
     @Default(BeeLifespan.provisional) int remainingLife,
   }) = Hive;
 
-  /// A resource of a [type], made by a hive from its bee: tier 1, then one
-  /// tier higher per merge of two identical resources. The upper bound is not
-  /// set yet.
+  /// A resource of a [branch], made by a hive from its bee: tier 1, then one
+  /// tier higher per merge of two identical resources, up to the branch's
+  /// [ResourceBranch.maxTier]. The upper bound is kept by
+  /// `Board.mergeResources`; a resource rebuilt from stored data must be
+  /// checked against it by whoever reads that data.
   @Assert('tier >= 1', 'tier must be at least 1')
   const factory BoardItem.resource({
-    required ResourceType type,
+    required ResourceBranch branch,
     @Default(1) int tier,
   }) = Resource;
 }

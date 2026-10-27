@@ -185,7 +185,7 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
   final String kind;
 
   /// A `Family` name; empty for an empty hive, which has none. A hive that
-  /// holds a bee has the bee's. A `ResourceType` name for a resource.
+  /// holds a bee has the bee's. A `ResourceBranch` name for a resource.
   final String family;
 
   /// The level of a bee, or of the bee a hive holds, or the tier of a
