@@ -56,14 +56,15 @@ extension BoardItemPatterns on BoardItem {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,TResult Function( Bee value)?  bee,TResult Function( Hive value)?  hive,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,TResult Function( Bee value)?  bee,TResult Function( Hive value)?  hive,TResult Function( Resource value)?  resource,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that);case Larva() when larva != null:
 return larva(_that);case Bee() when bee != null:
 return bee(_that);case Hive() when hive != null:
-return hive(_that);case _:
+return hive(_that);case Resource() when resource != null:
+return resource(_that);case _:
   return orElse();
 
 }
@@ -81,14 +82,15 @@ return hive(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,required TResult Function( Bee value)  bee,required TResult Function( Hive value)  hive,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,required TResult Function( Bee value)  bee,required TResult Function( Hive value)  hive,required TResult Function( Resource value)  resource,}){
 final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that);case Larva():
 return larva(_that);case Bee():
 return bee(_that);case Hive():
-return hive(_that);}
+return hive(_that);case Resource():
+return resource(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -102,14 +104,15 @@ return hive(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,TResult? Function( Bee value)?  bee,TResult? Function( Hive value)?  hive,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,TResult? Function( Bee value)?  bee,TResult? Function( Hive value)?  hive,TResult? Function( Resource value)?  resource,}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that);case Larva() when larva != null:
 return larva(_that);case Bee() when bee != null:
 return bee(_that);case Hive() when hive != null:
-return hive(_that);case _:
+return hive(_that);case Resource() when resource != null:
+return resource(_that);case _:
   return null;
 
 }
@@ -126,13 +129,14 @@ return hive(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee)?  hive,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee)?  hive,TResult Function( ResourceType type,  int tier)?  resource,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
 return bee(_that.family,_that.level);case Hive() when hive != null:
-return hive(_that.bee);case _:
+return hive(_that.bee);case Resource() when resource != null:
+return resource(_that.type,_that.tier);case _:
   return orElse();
 
 }
@@ -150,13 +154,14 @@ return hive(_that.bee);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee)  hive,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee)  hive,required TResult Function( ResourceType type,  int tier)  resource,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
 return larva(_that.family);case Bee():
 return bee(_that.family,_that.level);case Hive():
-return hive(_that.bee);}
+return hive(_that.bee);case Resource():
+return resource(_that.type,_that.tier);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -170,13 +175,14 @@ return hive(_that.bee);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee)?  hive,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee)?  hive,TResult? Function( ResourceType type,  int tier)?  resource,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
 return bee(_that.family,_that.level);case Hive() when hive != null:
-return hive(_that.bee);case _:
+return hive(_that.bee);case Resource() when resource != null:
+return resource(_that.type,_that.tier);case _:
   return null;
 
 }
@@ -452,6 +458,76 @@ class _$HiveCopyWithImpl<$Res>
   return _then(Hive(
 bee: freezed == bee ? _self.bee : bee // ignore: cast_nullable_to_non_nullable
 as Bee?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class Resource implements BoardItem {
+  const Resource({required this.type, this.tier = 1}): assert(tier >= 1, 'tier must be at least 1');
+  
+
+ final  ResourceType type;
+@JsonKey() final  int tier;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ResourceCopyWith<Resource> get copyWith => _$ResourceCopyWithImpl<Resource>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Resource&&(identical(other.type, type) || other.type == type)&&(identical(other.tier, tier) || other.tier == tier));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,type,tier);
+}
+
+@override
+String toString() {
+    return 'BoardItem.resource(type: $type, tier: $tier)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ResourceCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
+  factory $ResourceCopyWith(Resource value, $Res Function(Resource) _then) = _$ResourceCopyWithImpl;
+@useResult
+$Res call({
+ ResourceType type, int tier
+});
+
+
+
+
+}
+/// @nodoc
+class _$ResourceCopyWithImpl<$Res>
+    implements $ResourceCopyWith<$Res> {
+  _$ResourceCopyWithImpl(this._self, this._then);
+
+  final Resource _self;
+  final $Res Function(Resource) _then;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? type = null,Object? tier = null,}) {
+  return _then(Resource(
+type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as ResourceType,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

@@ -10,6 +10,8 @@ import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
+import 'package:apiary/domain/board/resource_production.dart';
+import 'package:apiary/domain/resources/resource_catalogue.dart';
 
 part 'board.freezed.dart';
 
@@ -128,6 +130,29 @@ abstract class Board with _$Board {
     );
   }
 
+  /// What tapping the hive on [hive] does: a tier-1 resource of one of the
+  /// types its bee's species makes, picked with [random] when there are two,
+  /// on the nearest free cell, or nothing when the board is full. The bee
+  /// stays in the hive. [hive] must hold an occupied hive.
+  ResourceProduction produceResource(BoardPosition hive, Random random) {
+    final item = itemAt(hive);
+    assert(item is Hive && item.bee != null, 'No occupied hive on $hive');
+    final cell = nearestFreeCell(hive);
+    if (item is! Hive || item.bee == null || cell == null) {
+      return const ResourceProduction.boardFull();
+    }
+    final types = ResourceCatalogue.typesMadeBy(item.bee!);
+    return ResourceProduction.created(
+      board: copyWith(
+        items: {
+          ...items,
+          cell: BoardItem.resource(type: types[random.nextInt(types.length)]),
+        },
+      ),
+      position: cell,
+    );
+  }
+
   /// What dropping the item on [from] onto [onto] does, whatever [onto] holds:
   /// it moves to an empty cell, merges with the item it interacts with, or
   /// trades places with any other; `null` when nothing happens (no item on
@@ -141,15 +166,20 @@ abstract class Board with _$Board {
     if (itemAt(onto) == null) {
       return BoardDrop.moved(board: move(from, onto)!);
     }
+    return _interaction(from, onto) ??
+        BoardDrop.swapped(board: swap(from, onto)!);
+  }
+
+  // What the two items do together when they interact (the rules are tried
+  // one after the other, and only the one that applies builds a board), or
+  // `null` when they just trade places.
+  BoardDrop? _interaction(BoardPosition from, BoardPosition onto) {
     final housed = placeInHive(from, onto);
     if (housed != null) {
       return BoardDrop.housed(board: housed);
     }
     final merged = mergeLarvae(from, onto) ?? mergeBees(from, onto);
-    if (merged != null) {
-      return BoardDrop.merged(board: merged);
-    }
-    return BoardDrop.swapped(board: swap(from, onto)!);
+    return merged == null ? null : BoardDrop.merged(board: merged);
   }
 
   /// What dropping the item on [from] onto [onto] does when [onto] is an
@@ -249,9 +279,7 @@ abstract class Board with _$Board {
   /// is empty. Derived from the rules themselves, so a new one cannot be
   /// forgotten here.
   bool interacts(BoardPosition from, BoardPosition onto) =>
-      placeInHive(from, onto) != null ||
-      mergeLarvae(from, onto) != null ||
-      mergeBees(from, onto) != null;
+      _interaction(from, onto) != null;
 
   /// What dropping the item on [from] onto [onto] does when both cells hold
   /// an item and the two do not [interacts]: they exchange their cells,

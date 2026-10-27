@@ -73,6 +73,7 @@ flutter:
     - assets/images/hives/
     - assets/images/larvae/
     - assets/images/queens/
+    - assets/images/resources/
     - assets/images/ui/
     - assets/translations/
   fonts:

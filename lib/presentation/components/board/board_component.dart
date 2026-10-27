@@ -1,5 +1,6 @@
 // 🎯 Dart imports:
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 // 🐦 Flutter imports:
@@ -19,6 +20,7 @@ import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
+import 'package:apiary/domain/board/resource_production.dart';
 import 'package:apiary/presentation/components/board/bee_component.dart';
 import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/bounce_effect.dart';
@@ -26,6 +28,7 @@ import 'package:apiary/presentation/components/board/centered_scale_effect.dart'
 import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
+import 'package:apiary/presentation/components/board/resource_component.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// The 7×9 grid of [ScreenLayout.cellSize] cells: a checkerboard of light and
@@ -54,13 +57,17 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// visuel").
 class BoardComponent extends PositionComponent
     with HasGameReference, TapCallbacks, DragCallbacks {
-  BoardComponent({required this.board, this.onChanged})
-    : super(
+  BoardComponent({required this.board, this.onChanged, Random? random})
+    : _random = random ?? Random(),
+      super(
         size: Vector2(
           ScreenLayout.boardSize.width,
           ScreenLayout.boardSize.height,
         ),
       );
+
+  // Picks which of two resources a hive makes. Injected so tests can seed it.
+  final Random _random;
 
   /// What to draw on the grid. The component replaces it as the player acts;
   /// nothing else observes it yet.
@@ -100,9 +107,10 @@ class BoardComponent extends PositionComponent
   late final BoardFullBannerComponent _fullBanner;
   final _itemComponents = <BoardPosition, PositionComponent>{};
 
-  // The queen the current tap started on while she was already selected: she
-  // makes a larva when the tap ends, unless it turns into a drag.
-  BoardPosition? _tappedQueen;
+  // The queen or occupied hive the current tap started on while it was already
+  // selected: it makes a larva or a resource when the tap ends, unless the tap
+  // turns into a drag.
+  BoardPosition? _tappedGenerator;
 
   // The cell of the item being dragged, and where the finger is, in this
   // component's coordinates; `null` when no item is being dragged.
@@ -232,28 +240,34 @@ class BoardComponent extends PositionComponent
       return;
     }
     final item = board.itemAt(tapped);
-    _tappedQueen = item is Queen && selection.value == tapped ? tapped : null;
+    final generates = item is Queen || (item is Hive && item.bee != null);
+    _tappedGenerator = generates && selection.value == tapped ? tapped : null;
     selection.value = board.selectionAfterTap(selection.value, tapped);
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    final queen = _tappedQueen;
-    _tappedQueen = null;
-    if (queen != null) {
-      unawaited(_spawnLarva(queen));
+    final generator = _tappedGenerator;
+    _tappedGenerator = null;
+    if (generator == null) {
+      return;
     }
+    unawaited(
+      board.itemAt(generator) is Queen
+          ? _spawnLarva(generator)
+          : _produceResource(generator),
+    );
   }
 
   @override
-  void onTapCancel(TapCancelEvent event) => _tappedQueen = null;
+  void onTapCancel(TapCancelEvent event) => _tappedGenerator = null;
 
   @override
   void onDragStart(DragStartEvent event) {
     super.onDragStart(event);
     _forgetRemoval();
     // Whatever the tap recognizer reports next, this gesture is a drag.
-    _tappedQueen = null;
+    _tappedGenerator = null;
     // One item at a time: another finger cannot take over the drag.
     if (_dragged != null) {
       return;
@@ -464,6 +478,11 @@ class BoardComponent extends PositionComponent
           position: position,
         ),
         Hive(:final bee) => HiveComponent(bee: bee, position: position),
+        Resource(:final type, :final tier) => ResourceComponent(
+          type: type,
+          tier: tier,
+          position: position,
+        ),
       };
 
   PositionComponent _componentFor(BoardPosition position, BoardItem item) =>
@@ -481,11 +500,30 @@ class BoardComponent extends PositionComponent
         unawaited(_bounce(_itemComponents[queen]!, itemPosition(queen)));
         await add(_componentFor(position, board.itemAt(position)!));
       case BoardFull():
-        unawaited(HapticFeedback.heavyImpact());
-        // The middle of the top row, where the eye is not on a finger.
-        _fullBanner.show(Vector2(size.x / 2, ScreenLayout.cellSize / 2));
-        await _shake(queen);
+        await _signalBoardFull(queen);
     }
+  }
+
+  Future<void> _produceResource(BoardPosition hive) async {
+    switch (board.produceResource(hive, _random)) {
+      case ResourceCreated(board: final updated, :final position):
+        board = updated;
+        onChanged?.call(board);
+        unawaited(HapticFeedback.lightImpact());
+        unawaited(_bounce(_itemComponents[hive]!, itemPosition(hive)));
+        await add(_componentFor(position, board.itemAt(position)!));
+      case ResourceBoardFull():
+        await _signalBoardFull(hive);
+    }
+  }
+
+  // The generator at [position] cannot make anything: a heavy impact, the
+  // banner, and the generator shakes.
+  Future<void> _signalBoardFull(BoardPosition position) async {
+    unawaited(HapticFeedback.heavyImpact());
+    // The middle of the top row, where the eye is not on a finger.
+    _fullBanner.show(Vector2(size.x / 2, ScreenLayout.cellSize / 2));
+    await _shake(position);
   }
 
   // Back and forth around the item's cell, ending exactly where it started.

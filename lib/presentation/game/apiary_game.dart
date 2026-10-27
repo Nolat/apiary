@@ -1,5 +1,6 @@
 // 🎯 Dart imports:
 import 'dart:async';
+import 'dart:math';
 
 // 🐦 Flutter imports:
 import 'package:flutter/services.dart';
@@ -26,17 +27,24 @@ import 'package:apiary/presentation/scenes/dev_scene.dart';
 import 'package:apiary/presentation/scenes/splash_scene.dart';
 
 class ApiaryGame extends FlameGame with KeyboardEvents {
-  ApiaryGame({this._boardRepository, this._devTools, this.startup})
-    : super(
-        camera: CameraComponent(
-          viewport: GameViewport(minimumSize: minimumSize),
-        ),
-      );
+  ApiaryGame({
+    this._boardRepository,
+    this._devTools,
+    this.startup,
+    this._random,
+  }) : super(
+         camera: CameraComponent(
+           viewport: GameViewport(minimumSize: minimumSize),
+         ),
+       );
 
   /// The launch to run behind the splash screen, which the game opens on; it
   /// brings the board repository and the dev tools, once it is done. `null`
   /// opens straight on the board (most tests).
   final Startup? startup;
+
+  // Seeds the hives' draws; `null` for an unseeded one (tests seed it).
+  final Random? _random;
 
   BoardRepository? _boardRepository;
   DevTools? _devTools;
@@ -95,7 +103,11 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
         initialRoute: initialRoute,
         routes: {
           BoardScene.routeName: Route(
-            () => BoardScene(board: _board, repository: _boardRepository),
+            () => BoardScene(
+              board: _board,
+              repository: _boardRepository,
+              random: _random,
+            ),
           ),
           if (startup case final startup?)
             SplashScene.routeName: Route(

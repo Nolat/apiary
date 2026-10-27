@@ -50,6 +50,14 @@
     "larva": {
       "name": "{family} larva",
       "tip": "MERGE with another larva to get a bee"
+    },
+    "resource": {
+      "tip": "MERGE to reach the next level.",
+      "tip_max": "Maximum level: this resource no longer merges"
     }
+  },
+  "resource": {
+    "comb": "Honeycomb",
+    "pollen": "Pollen"
   }
 }

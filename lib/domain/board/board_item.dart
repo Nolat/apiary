@@ -3,11 +3,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/family.dart';
+import 'package:apiary/domain/resources/resource_type.dart';
 
 part 'board_item.freezed.dart';
 
-/// What can sit in a cell of the board. Resources join the union as their
-/// stories land.
+/// What can sit in a cell of the board.
 @freezed
 sealed class BoardItem with _$BoardItem {
   /// A queen, level 1: creates the larvae of its [family].
@@ -31,23 +31,34 @@ sealed class BoardItem with _$BoardItem {
   /// A hive, which belongs to no family. It starts empty and takes one [bee]
   /// at a time (see `Board.placeInHive`); `null` while it is empty.
   const factory BoardItem.hive({Bee? bee}) = Hive;
+
+  /// A resource of a [type], made by a hive from its bee: tier 1, then one
+  /// tier higher per merge of two identical resources. The upper bound is not
+  /// set yet.
+  @Assert('tier >= 1', 'tier must be at least 1')
+  const factory BoardItem.resource({
+    required ResourceType type,
+    @Default(1) int tier,
+  }) = Resource;
 }
 
 extension BoardItemLevel on BoardItem {
-  /// The item's level, or `null` for an item that has none.
+  /// The item's level (a resource's tier), or `null` for an item that has
+  /// none.
   int? get level => switch (this) {
     Queen() => 1,
     Larva() => null,
     Bee(:final level) => level,
     Hive() => null,
+    Resource(:final tier) => tier,
   };
 }
 
 extension BoardItemRemoval on BoardItem {
-  /// Whether the player can remove the item from the board: larvae and bees
-  /// can, queens and hives cannot.
+  /// Whether the player can remove the item from the board: larvae, bees and
+  /// resources can, queens and hives cannot.
   bool get removable => switch (this) {
     Queen() || Hive() => false,
-    Larva() || Bee() => true,
+    Larva() || Bee() || Resource() => true,
   };
 }

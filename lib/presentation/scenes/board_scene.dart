@@ -1,5 +1,6 @@
 // 🎯 Dart imports:
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 // 📦 Package imports:
@@ -16,13 +17,17 @@ import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 class BoardScene extends Component with HasGameReference<ApiaryGame> {
-  BoardScene({required Board board, BoardRepository? repository})
-    : _board = BoardComponent(
-        board: board,
-        onChanged: repository == null
-            ? null
-            : (board) => _save(repository, board),
-      );
+  BoardScene({
+    required Board board,
+    BoardRepository? repository,
+    Random? random,
+  }) : _board = BoardComponent(
+         board: board,
+         random: random,
+         onChanged: repository == null
+             ? null
+             : (board) => _save(repository, board),
+       );
 
   static const routeName = 'board';
 

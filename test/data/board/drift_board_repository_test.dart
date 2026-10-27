@@ -10,6 +10,7 @@ import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
+import 'package:apiary/domain/resources/resource_type.dart';
 
 void main() {
   late AppDatabase database;
@@ -61,6 +62,33 @@ void main() {
     await repository.save(board);
 
     expect(await repository.load(), board);
+  });
+
+  test('keeps the resources, with their type and tier', () async {
+    final board = Board(
+      items: {
+        const BoardPosition(column: 0, row: 0): const BoardItem.resource(
+          type: ResourceType.comb,
+        ),
+        const BoardPosition(column: 1, row: 0): const BoardItem.resource(
+          type: ResourceType.pollen,
+          tier: 3,
+        ),
+      },
+    );
+
+    await repository.save(board);
+
+    expect(await repository.load(), board);
+  });
+
+  test('ignores a resource of an unknown type or of tier 0', () async {
+    await database.customStatement(
+      'INSERT INTO board_cells ("column", row, kind, family, level) VALUES '
+      "(0, 0, 'resource', 'unknown', 1), (1, 0, 'resource', 'comb', 0)",
+    );
+
+    expect((await repository.load())?.items ?? const {}, isEmpty);
   });
 
   test('replaces the previous board on each save', () async {

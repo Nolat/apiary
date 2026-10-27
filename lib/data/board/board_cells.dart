@@ -9,15 +9,15 @@ class BoardCells extends Table {
   IntColumn get column => integer()();
   IntColumn get row => integer()();
 
-  /// `queen`, `larva`, `bee` or `hive`.
+  /// `queen`, `larva`, `bee`, `hive`, `housed_hive` or `resource`.
   TextColumn get kind => text()();
 
   /// A `Family` name; empty for an empty hive, which has none. A hive that
-  /// holds a bee has the bee's.
+  /// holds a bee has the bee's. A `ResourceType` name for a resource.
   TextColumn get family => text()();
 
-  /// The level of a bee, or of the bee a hive holds; 1 for the other items,
-  /// which have none to speak of.
+  /// The level of a bee, or of the bee a hive holds, or the tier of a
+  /// resource; 1 for the other items, which have none to speak of.
   IntColumn get level => integer().withDefault(const Constant(1))();
 
   @override

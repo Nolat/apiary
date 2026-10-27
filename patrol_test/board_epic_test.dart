@@ -27,6 +27,7 @@ int _worth(BoardItem item) => switch (item) {
   Queen() || Hive() => 0,
   Larva() => 1,
   Bee(:final level) => 1 << level,
+  Resource() => 0,
 };
 
 void main() {

@@ -320,6 +320,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       final Bee bee => _speciesOf(bee),
       Hive(bee: null) => 'item.hive.name'.tr(),
       Hive() => 'item.hive.name_occupied'.tr(),
+      Resource(:final type) => 'resource.${type.name}'.tr(),
     };
     final level = item.level;
     return level == null
@@ -342,6 +343,10 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
     Hive(:final bee?) => 'item.hive.tip_occupied'.tr(
       namedArgs: {'species': _speciesOf(bee)},
     ),
+    Resource(:final type, :final tier) =>
+      tier == type.maxTier
+          ? 'item.resource.tip_max'.tr()
+          : 'item.resource.tip'.tr(),
   };
 
   /// Covers [area], in the parent's coordinates.

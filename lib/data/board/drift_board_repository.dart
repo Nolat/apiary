@@ -9,6 +9,7 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
+import 'package:apiary/domain/resources/resource_type.dart';
 
 /// Keeps the board in the local SQLite database, one row per item.
 class DriftBoardRepository implements BoardRepository {
@@ -22,6 +23,7 @@ class DriftBoardRepository implements BoardRepository {
   static const _bee = 'bee';
   static const _hive = 'hive';
   static const _housedHive = 'housed_hive';
+  static const _resource = 'resource';
 
   // A hive belongs to no family, but the column is not nullable: stored
   // as-is rather than through a migration. An empty hive (`hive`) stores no
@@ -66,18 +68,21 @@ class DriftBoardRepository implements BoardRepository {
   });
 
   static BoardCellsCompanion _rowOf(BoardPosition position, BoardItem item) {
-    final (kind, family) = switch (item) {
-      Queen(:final family) => (_queen, family),
-      Larva(:final family) => (_larva, family),
-      Bee(:final family) => (_bee, family),
-      Hive(bee: null) => (_hive, null),
-      Hive(:final bee?) => (_housedHive, bee.family),
+    // The name of the family, or of the resource type, that goes with the
+    // kind; empty for an empty hive.
+    final (kind, name) = switch (item) {
+      Queen(:final family) => (_queen, family.name),
+      Larva(:final family) => (_larva, family.name),
+      Bee(:final family) => (_bee, family.name),
+      Hive(bee: null) => (_hive, _noFamily),
+      Hive(:final bee?) => (_housedHive, bee.family.name),
+      Resource(:final type) => (_resource, type.name),
     };
     return BoardCellsCompanion.insert(
       column: position.column,
       row: position.row,
       kind: kind,
-      family: family?.name ?? _noFamily,
+      family: name,
       level: Value(switch (item) {
         Hive(:final bee?) => bee.level,
         _ => item.level ?? 1,
@@ -86,6 +91,12 @@ class DriftBoardRepository implements BoardRepository {
   }
 
   static BoardItem? _itemOf(BoardCell row) {
+    if (row.kind == _resource) {
+      final type = ResourceType.values.asNameMap()[row.family];
+      return type == null || row.level < 1 || row.level > type.maxTier
+          ? null
+          : BoardItem.resource(type: type, tier: row.level);
+    }
     final family = Family.values.asNameMap()[row.family];
     // A hive is never lost: one whose bee cannot be read comes back empty.
     if (row.kind == _hive || (row.kind == _housedHive && family == null)) {

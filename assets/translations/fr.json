@@ -50,6 +50,14 @@
     "larva": {
       "name": "Larve {family}",
       "tip": "FUSIONNEZ avec une autre larve pour obtenir une abeille"
+    },
+    "resource": {
+      "tip": "FUSIONNEZ pour atteindre le niveau suivant.",
+      "tip_max": "Niveau maximal : cette ressource ne fusionne plus"
     }
+  },
+  "resource": {
+    "comb": "Rayon",
+    "pollen": "Pollen"
   }
 }
