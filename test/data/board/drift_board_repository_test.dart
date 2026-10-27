@@ -91,6 +91,45 @@ void main() {
     expect((await repository.load())?.items ?? const {}, isEmpty);
   });
 
+  test('keeps the life a hive bee has left', () async {
+    final board = Board(
+      items: {
+        Board.startingHivePosition: const BoardItem.hive(
+          bee: Bee(family: Family.common, level: 2),
+          remainingLife: 2,
+        ),
+      },
+    );
+
+    await repository.save(board);
+
+    expect(await repository.load(), board);
+  });
+
+  test('caps the life left at the lifespan of the species', () async {
+    await database.customStatement(
+      'INSERT INTO board_cells ("column", row, kind, family, level, '
+      "remaining_life) VALUES (0, 0, 'housed_hive', 'common', 1, 99)",
+    );
+
+    expect(
+      (await repository.load())!.itemAt(const BoardPosition(column: 0, row: 0)),
+      const BoardItem.hive(bee: Bee(family: Family.common)),
+    );
+  });
+
+  test('empties a hive whose life left cannot be read', () async {
+    await database.customStatement(
+      'INSERT INTO board_cells ("column", row, kind, family, level, '
+      "remaining_life) VALUES (0, 0, 'housed_hive', 'common', 1, 0)",
+    );
+
+    expect(
+      (await repository.load())!.itemAt(const BoardPosition(column: 0, row: 0)),
+      const BoardItem.hive(),
+    );
+  });
+
   test('replaces the previous board on each save', () async {
     await repository.save(Board.initial());
     const moved = BoardPosition(column: 1, row: 1);

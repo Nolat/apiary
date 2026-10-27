@@ -55,8 +55,27 @@ class $BoardCellsTable extends BoardCells
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
+  static const VerificationMeta _remainingLifeMeta = const VerificationMeta(
+    'remainingLife',
+  );
   @override
-  List<GeneratedColumn> get $columns => [column, row, kind, family, level];
+  late final GeneratedColumn<int> remainingLife = GeneratedColumn<int>(
+    'remaining_life',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    column,
+    row,
+    kind,
+    family,
+    level,
+    remainingLife,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -107,6 +126,15 @@ class $BoardCellsTable extends BoardCells
         level.isAcceptableOrUnknown(data['level']!, _levelMeta),
       );
     }
+    if (data.containsKey('remaining_life')) {
+      context.handle(
+        _remainingLifeMeta,
+        remainingLife.isAcceptableOrUnknown(
+          data['remaining_life']!,
+          _remainingLifeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -136,6 +164,10 @@ class $BoardCellsTable extends BoardCells
         DriftSqlType.int,
         data['${effectivePrefix}level'],
       )!,
+      remainingLife: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}remaining_life'],
+      )!,
     );
   }
 
@@ -159,12 +191,17 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
   /// The level of a bee, or of the bee a hive holds, or the tier of a
   /// resource; 1 for the other items, which have none to speak of.
   final int level;
+
+  /// How many resources the bee of a hive has left to make; 1 for the other
+  /// items, which have none to speak of.
+  final int remainingLife;
   const BoardCell({
     required this.column,
     required this.row,
     required this.kind,
     required this.family,
     required this.level,
+    required this.remainingLife,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -174,6 +211,7 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
     map['kind'] = Variable<String>(kind);
     map['family'] = Variable<String>(family);
     map['level'] = Variable<int>(level);
+    map['remaining_life'] = Variable<int>(remainingLife);
     return map;
   }
 
@@ -184,6 +222,7 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
       kind: Value(kind),
       family: Value(family),
       level: Value(level),
+      remainingLife: Value(remainingLife),
     );
   }
 
@@ -198,6 +237,7 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
       kind: serializer.fromJson<String>(json['kind']),
       family: serializer.fromJson<String>(json['family']),
       level: serializer.fromJson<int>(json['level']),
+      remainingLife: serializer.fromJson<int>(json['remainingLife']),
     );
   }
   @override
@@ -209,6 +249,7 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
       'kind': serializer.toJson<String>(kind),
       'family': serializer.toJson<String>(family),
       'level': serializer.toJson<int>(level),
+      'remainingLife': serializer.toJson<int>(remainingLife),
     };
   }
 
@@ -218,12 +259,14 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
     String? kind,
     String? family,
     int? level,
+    int? remainingLife,
   }) => BoardCell(
     column: column ?? this.column,
     row: row ?? this.row,
     kind: kind ?? this.kind,
     family: family ?? this.family,
     level: level ?? this.level,
+    remainingLife: remainingLife ?? this.remainingLife,
   );
   BoardCell copyWithCompanion(BoardCellsCompanion data) {
     return BoardCell(
@@ -232,6 +275,9 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
       kind: data.kind.present ? data.kind.value : this.kind,
       family: data.family.present ? data.family.value : this.family,
       level: data.level.present ? data.level.value : this.level,
+      remainingLife: data.remainingLife.present
+          ? data.remainingLife.value
+          : this.remainingLife,
     );
   }
 
@@ -242,13 +288,15 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
           ..write('row: $row, ')
           ..write('kind: $kind, ')
           ..write('family: $family, ')
-          ..write('level: $level')
+          ..write('level: $level, ')
+          ..write('remainingLife: $remainingLife')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(column, row, kind, family, level);
+  int get hashCode =>
+      Object.hash(column, row, kind, family, level, remainingLife);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -257,7 +305,8 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
           other.row == this.row &&
           other.kind == this.kind &&
           other.family == this.family &&
-          other.level == this.level);
+          other.level == this.level &&
+          other.remainingLife == this.remainingLife);
 }
 
 class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
@@ -266,6 +315,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
   final Value<String> kind;
   final Value<String> family;
   final Value<int> level;
+  final Value<int> remainingLife;
   final Value<int> rowid;
   const BoardCellsCompanion({
     this.column = const Value.absent(),
@@ -273,6 +323,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
     this.kind = const Value.absent(),
     this.family = const Value.absent(),
     this.level = const Value.absent(),
+    this.remainingLife = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BoardCellsCompanion.insert({
@@ -281,6 +332,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
     required String kind,
     required String family,
     this.level = const Value.absent(),
+    this.remainingLife = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : column = Value(column),
        row = Value(row),
@@ -292,6 +344,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
     Expression<String>? kind,
     Expression<String>? family,
     Expression<int>? level,
+    Expression<int>? remainingLife,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -300,6 +353,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
       if (kind != null) 'kind': kind,
       if (family != null) 'family': family,
       if (level != null) 'level': level,
+      if (remainingLife != null) 'remaining_life': remainingLife,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -310,6 +364,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
     Value<String>? kind,
     Value<String>? family,
     Value<int>? level,
+    Value<int>? remainingLife,
     Value<int>? rowid,
   }) {
     return BoardCellsCompanion(
@@ -318,6 +373,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
       kind: kind ?? this.kind,
       family: family ?? this.family,
       level: level ?? this.level,
+      remainingLife: remainingLife ?? this.remainingLife,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -340,6 +396,9 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
     if (level.present) {
       map['level'] = Variable<int>(level.value);
     }
+    if (remainingLife.present) {
+      map['remaining_life'] = Variable<int>(remainingLife.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -354,6 +413,7 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
           ..write('kind: $kind, ')
           ..write('family: $family, ')
           ..write('level: $level, ')
+          ..write('remainingLife: $remainingLife, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -377,6 +437,7 @@ typedef $$BoardCellsTableCreateCompanionBuilder = BoardCellsCompanion Function({
   required String kind,
   required String family,
   Value<int> level,
+  Value<int> remainingLife,
   Value<int> rowid,
 });
 typedef $$BoardCellsTableUpdateCompanionBuilder = BoardCellsCompanion Function({
@@ -385,6 +446,7 @@ typedef $$BoardCellsTableUpdateCompanionBuilder = BoardCellsCompanion Function({
   Value<String> kind,
   Value<String> family,
   Value<int> level,
+  Value<int> remainingLife,
   Value<int> rowid,
 });
 
@@ -419,6 +481,11 @@ class $$BoardCellsTableFilterComposer
 
   ColumnFilters<int> get level => $composableBuilder(
     column: $table.level,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get remainingLife => $composableBuilder(
+    column: $table.remainingLife,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -456,6 +523,11 @@ class $$BoardCellsTableOrderingComposer
     column: $table.level,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get remainingLife => $composableBuilder(
+    column: $table.remainingLife,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$BoardCellsTableAnnotationComposer
@@ -481,6 +553,11 @@ class $$BoardCellsTableAnnotationComposer
 
   GeneratedColumn<int> get level =>
       $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<int> get remainingLife => $composableBuilder(
+    column: $table.remainingLife,
+    builder: (column) => column,
+  );
 }
 
 class $$BoardCellsTableTableManager
@@ -519,6 +596,7 @@ class $$BoardCellsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<String> family = const Value.absent(),
                 Value<int> level = const Value.absent(),
+                Value<int> remainingLife = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BoardCellsCompanion(
                 column: column,
@@ -526,6 +604,7 @@ class $$BoardCellsTableTableManager
                 kind: kind,
                 family: family,
                 level: level,
+                remainingLife: remainingLife,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -535,6 +614,7 @@ class $$BoardCellsTableTableManager
                 required String kind,
                 required String family,
                 Value<int> level = const Value.absent(),
+                Value<int> remainingLife = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BoardCellsCompanion.insert(
                 column: column,
@@ -542,6 +622,7 @@ class $$BoardCellsTableTableManager
                 kind: kind,
                 family: family,
                 level: level,
+                remainingLife: remainingLife,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

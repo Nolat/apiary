@@ -6,6 +6,7 @@ import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
@@ -13,6 +14,7 @@ import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/resources/resource_catalogue.dart';
 import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
+import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/components/board/resource_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
@@ -68,7 +70,13 @@ void main() {
         final made = board.board.itemAt(firstResource);
         expect(made, isA<Resource>());
         expect((made! as Resource).tier, 1);
-        expect(board.board.itemAt(hive), occupied);
+        expect(
+          board.board.itemAt(hive),
+          const BoardItem.hive(
+            bee: Bee(family: Family.common),
+            remainingLife: BeeLifespan.provisional - 1,
+          ),
+        );
         expect(board.children.whereType<ResourceComponent>(), hasLength(1));
         expect(board.selection.value, hive);
       },
@@ -178,6 +186,39 @@ void main() {
         await board.undoRemoval();
         await game.ready();
         expect(board.board.itemAt(firstResource), made);
+      },
+    );
+
+    testWithGame<ApiaryGame>(
+      'empties the hive once the bee has made all its resources',
+      () => gameWith(starting),
+      (game) async {
+        final board = await boardOf(game);
+        final info = game.world
+            .descendants()
+            .whereType<ItemInfoComponent>()
+            .single;
+
+        tapCell(game, board, hive);
+        for (var made = 0; made < BeeLifespan.provisional; made++) {
+          tapCell(game, board, hive);
+          await game.ready();
+        }
+
+        expect(board.board.itemAt(hive), const BoardItem.hive());
+        expect(board.children.whereType<HiveComponent>().single.bee, isNull);
+        expect(
+          board.children.whereType<ResourceComponent>(),
+          hasLength(BeeLifespan.provisional),
+        );
+        expect(info.titleText, 'Ruche vide');
+        // An empty hive no longer makes anything.
+        tapCell(game, board, hive);
+        await game.ready();
+        expect(
+          board.children.whereType<ResourceComponent>(),
+          hasLength(BeeLifespan.provisional),
+        );
       },
     );
   });

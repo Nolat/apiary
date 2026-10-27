@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
@@ -133,7 +134,8 @@ abstract class Board with _$Board {
   /// What tapping the hive on [hive] does: a tier-1 resource of one of the
   /// types its bee's species makes, picked with [random] when there are two,
   /// on the nearest free cell, or nothing when the board is full. The bee
-  /// stays in the hive. [hive] must hold an occupied hive.
+  /// has one resource less to make, and the hive is empty again when that was
+  /// its last. [hive] must hold an occupied hive.
   ResourceProduction produceResource(BoardPosition hive, Random random) {
     final item = itemAt(hive);
     assert(item is Hive && item.bee != null, 'No occupied hive on $hive');
@@ -147,6 +149,9 @@ abstract class Board with _$Board {
         items: {
           ...items,
           cell: BoardItem.resource(type: types[random.nextInt(types.length)]),
+          hive: item.remainingLife == 1
+              ? const BoardItem.hive()
+              : item.copyWith(remainingLife: item.remainingLife - 1),
         },
       ),
       position: cell,
@@ -268,7 +273,10 @@ abstract class Board with _$Board {
       items: {
         for (final MapEntry(:key, :value) in items.entries)
           if (key != from) key: value,
-        onto: BoardItem.hive(bee: dragged),
+        onto: BoardItem.hive(
+          bee: dragged,
+          remainingLife: BeeLifespan.of(dragged.family),
+        ),
       },
     );
   }

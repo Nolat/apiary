@@ -20,6 +20,10 @@ class BoardCells extends Table {
   /// resource; 1 for the other items, which have none to speak of.
   IntColumn get level => integer().withDefault(const Constant(1))();
 
+  /// How many resources the bee of a hive has left to make; 1 for the other
+  /// items, which have none to speak of.
+  IntColumn get remainingLife => integer().withDefault(const Constant(1))();
+
   @override
   Set<Column> get primaryKey => {column, row};
 }

@@ -2,6 +2,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/resources/resource_type.dart';
 
@@ -29,8 +30,19 @@ sealed class BoardItem with _$BoardItem {
   }) = Bee;
 
   /// A hive, which belongs to no family. It starts empty and takes one [bee]
-  /// at a time (see `Board.placeInHive`); `null` while it is empty.
-  const factory BoardItem.hive({Bee? bee}) = Hive;
+  /// at a time (see `Board.placeInHive`); `null` while it is empty. The bee
+  /// has [remainingLife] resources left to make, and is spent at zero: the
+  /// hive is empty again. It only means something while [bee] is set; an
+  /// empty hive keeps the default, so that all empty hives are equal.
+  @Assert('remainingLife >= 1', 'remainingLife must be at least 1')
+  @Assert(
+    'bee != null || remainingLife == BeeLifespan.provisional',
+    'an empty hive keeps the default remainingLife',
+  )
+  const factory BoardItem.hive({
+    Bee? bee,
+    @Default(BeeLifespan.provisional) int remainingLife,
+  }) = Hive;
 
   /// A resource of a [type], made by a hive from its bee: tier 1, then one
   /// tier higher per merge of two identical resources. The upper bound is not

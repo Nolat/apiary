@@ -78,6 +78,11 @@ class BoardComponent extends PositionComponent
   /// ends, so that a sudden close right after it loses nothing.
   final void Function(Board board)? onChanged;
 
+  /// Bumped when the item of a cell changes under a selection that stays, a
+  /// hive whose bee is spent for instance: what shows the selected item (the
+  /// info panel) refreshes from it.
+  final itemChanged = ValueNotifier<int>(0);
+
   /// The selected cell, or `null` when nothing is selected, as at launch.
   final selection = ValueNotifier<BoardPosition?>(null);
 
@@ -229,6 +234,7 @@ class BoardComponent extends PositionComponent
       ..removeListener(_bounceSelected)
       ..dispose();
     removal.dispose();
+    itemChanged.dispose();
     super.onRemove();
   }
 
@@ -510,7 +516,17 @@ class BoardComponent extends PositionComponent
         board = updated;
         onChanged?.call(board);
         unawaited(HapticFeedback.lightImpact());
-        unawaited(_bounce(_itemComponents[hive]!, itemPosition(hive)));
+        if ((board.itemAt(hive)! as Hive).bee == null) {
+          // The bee is spent: the hive is drawn empty, and what shows the
+          // selected item follows.
+          _itemComponents[hive]?.removeFromParent();
+          final spent = _componentFor(hive, board.itemAt(hive)!);
+          await add(spent);
+          itemChanged.value++;
+          unawaited(_bounce(spent, itemPosition(hive)));
+        } else {
+          unawaited(_bounce(_itemComponents[hive]!, itemPosition(hive)));
+        }
         await add(_componentFor(position, board.itemAt(position)!));
       case ResourceBoardFull():
         await _signalBoardFull(hive);

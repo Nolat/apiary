@@ -3,7 +3,9 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/core/logging/talker_service.dart';
 import 'package:apiary/data/board/board_cells.dart';
+import 'package:apiary/data/local/app_database.steps.dart';
 
 part 'app_database.g.dart';
 
@@ -14,15 +16,36 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
       if (from < 2) {
+        // Version 1 had no table: the board table is created as it is today,
+        // so there is no step left to run.
         await m.createTable(boardCells);
+        return;
       }
+      await stepByStep(
+        from2To3: (m, schema) async {
+          final cells = schema.boardCells;
+          try {
+            await m.addColumn(cells, cells.remainingLife);
+            // A bee already in a hive keeps the whole lifespan it had (5, the
+            // provisional one of every species), not the column's default.
+            await m.database.customStatement(
+              'UPDATE ${cells.aliasedName} '
+              'SET ${cells.remainingLife.name} = 5 '
+              "WHERE ${cells.kind.name} = 'housed_hive'",
+            );
+          } on Object catch (error, stackTrace) {
+            talker.handle(error, stackTrace, 'Migrating the board v2 to v3');
+            rethrow;
+          }
+        },
+      )(m, from, to);
     },
   );
 

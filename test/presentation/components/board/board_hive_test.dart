@@ -72,7 +72,10 @@ void main() {
             .whereType<ItemInfoComponent>()
             .single;
         expect(info.titleText, 'Ruche occupée');
-        expect(info.tipText, 'Abrite : Abeille domestique');
+        expect(
+          info.tipText,
+          'Abrite : Abeille domestique',
+        );
       },
     );
 

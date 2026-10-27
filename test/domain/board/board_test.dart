@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:glados/glados.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_drop.dart';
@@ -797,6 +798,31 @@ void _hiveTests() {
 
       expect(result, isA<ItemsSwapped>());
       expect(result!.board.itemAt(cell), const BoardItem.hive(bee: held));
+    });
+
+    test('keeps the life left of its bee when moved or swapped', () {
+      const worn = BoardItem.hive(
+        bee: Bee(family: Family.common),
+        remainingLife: 2,
+      );
+      final board = withBee(
+        const BoardItem.bee(family: Family.common),
+        worn,
+      );
+      const empty = BoardPosition(column: 5, row: 5);
+
+      expect(board.drop(hive, empty)!.board.itemAt(empty), worn);
+      expect(board.drop(hive, cell)!.board.itemAt(cell), worn);
+    });
+
+    test('gives a bee its whole lifespan when it goes in', () {
+      const bee = Bee(family: Family.common, level: 2);
+      final board = withBee(bee);
+
+      expect(
+        board.drop(cell, hive)!.board.itemAt(hive),
+        BoardItem.hive(bee: bee, remainingLife: BeeLifespan.of(bee.family)),
+      );
     });
 
     test('keeps an occupied hive from being removed', () {

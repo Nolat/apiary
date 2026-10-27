@@ -40,6 +40,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
     await addAll([_decor, _board, _info]);
     _board.selection.addListener(_showSelectedItem);
     _board.removal.addListener(_showSelectedItem);
+    _board.itemChanged.addListener(_showSelectedItem);
     _info
       ..onRemovePressed = _board.removeSelected
       ..onUndoPressed = () => unawaited(_board.undoRemoval());
@@ -49,6 +50,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
   void onRemove() {
     _board.selection.removeListener(_showSelectedItem);
     _board.removal.removeListener(_showSelectedItem);
+    _board.itemChanged.removeListener(_showSelectedItem);
     super.onRemove();
   }
 
