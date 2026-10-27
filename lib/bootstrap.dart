@@ -15,8 +15,11 @@ import 'package:apiary/app.dart';
 import 'package:apiary/core/auth/auth_service.dart';
 import 'package:apiary/core/crash_reporting/crash_reporting_service.dart';
 import 'package:apiary/core/crash_reporting/sentry_config.dart';
+import 'package:apiary/core/dev/dev_tools.dart';
+import 'package:apiary/core/dev/shake_detector.dart';
 import 'package:apiary/core/di/injection.dart';
 import 'package:apiary/core/platform/system_ui.dart';
+import 'package:apiary/data/local/app_database.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/firebase_options.dart';
 
@@ -52,7 +55,14 @@ Future<void> bootstrap() async {
         path: 'assets/translations',
         fallbackLocale: const Locale('fr'),
         child: ProviderScope(
-          child: ApiaryApp(boardRepository: getIt<BoardRepository>()),
+          child: ApiaryApp(
+            boardRepository: getIt<BoardRepository>(),
+            // Also in release builds, for now (see docs/STACK.md).
+            devTools: DevTools(
+              resetDatabase: getIt<AppDatabase>().reset,
+              shakes: ShakeDetector().shakes,
+            ),
+          ),
         ),
       ),
     ),

@@ -124,6 +124,12 @@
 - Piloter les transitions via les inputs des State Machines plutôt que de recharger des animations à chaque changement d'état.
 - Éviter de multiplier les `RiveAnimation`/artboards simultanés à l'écran (perf Android).
 
+## Écran de dev — secousse / Cmd+Shift+D (ajouté le 2026-10-26)
+
+- **En place** : dans **tous les builds, release compris, pour l'instant** (à restreindre au debug avant une vraie publication : `bootstrap()` branche `DevTools`, mettre `null` hors `kDebugMode` suffit), secouer le téléphone ou presser **Cmd+Shift+D** (clavier matériel, simulateur) ouvre la scène Flame `DevScene` (`lib/presentation/scenes/dev_scene.dart`) ; le même geste la referme. Les actions viennent d'un objet `DevTools` (`lib/core/dev/dev_tools.dart`) donné à `ApiaryGame` : pour ajouter une action, l'ajouter à `DevTools`, puis un `DevButtonComponent` dans la scène. Première action : **Reset database** (`AppDatabase.reset()` vide toutes les tables, puis le jeu repart d'un plateau de départ).
+- **Paquet ajouté : `sensors_plus`** (accéléromètre sans gravité). `ShakeDetector` (`lib/core/dev/shake_detector.dart`) compte 3 secousses fortes (> 15 m/s²) en 0,8 s, puis attend 1,5 s. Aucun paquet déjà présent ne lisait les capteurs. Le simulateur iOS n'émet pas d'accéléromètre : y utiliser le raccourci clavier.
+- Les textes de l'écran de dev sont en anglais en dur, sans clé de traduction : les joueurs ne le voient jamais.
+
 ## Audio — audioplayers (musique & effets)
 
 `audioplayers` supporte nativement plusieurs instances simultanées, donc séparer musique et effets en deux pistes distinctes.

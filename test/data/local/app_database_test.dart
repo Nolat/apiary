@@ -34,4 +34,21 @@ void main() {
 
     expect(rows, isEmpty);
   });
+
+  test('reset empties every table', () async {
+    await database
+        .into(database.boardCells)
+        .insert(
+          BoardCellsCompanion.insert(
+            column: 1,
+            row: 2,
+            kind: 'queen',
+            family: 'common',
+          ),
+        );
+
+    await database.reset();
+
+    expect(await database.select(database.boardCells).get(), isEmpty);
+  });
 }

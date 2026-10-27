@@ -26,6 +26,14 @@ class AppDatabase extends _$AppDatabase {
     },
   );
 
+  /// Empties every table, all or nothing, keeping the schema. For the dev
+  /// screen: the next launch is a first game.
+  Future<void> reset() => transaction(() async {
+    for (final table in allTables) {
+      await delete(table).go();
+    }
+  });
+
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'apiary');
   }
