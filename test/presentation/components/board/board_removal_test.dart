@@ -10,9 +10,7 @@ import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../../helpers/board_tap.dart';
-
 import '../../../helpers/game_text.dart';
 
 // Lets the components added and removed by an action reach their parents.

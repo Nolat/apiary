@@ -15,66 +15,30 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BoardItem {
 
- Family get family;
-/// Create a copy of BoardItem
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$BoardItemCopyWith<BoardItem> get copyWith => _$BoardItemCopyWithImpl<BoardItem>(this as BoardItem, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  final _this = this as BoardItem;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BoardItem&&(identical(other.family, _this.family) || other.family == _this.family));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is BoardItem);
 }
 
 
 @override
-int get hashCode {
-  final _this = this as BoardItem;
-  return Object.hash(runtimeType,_this.family);
-}
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  final _this = this as BoardItem;
-  return 'BoardItem(family: ${_this.family})';
+    return 'BoardItem()';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $BoardItemCopyWith<$Res>  {
-  factory $BoardItemCopyWith(BoardItem value, $Res Function(BoardItem) _then) = _$BoardItemCopyWithImpl;
-@useResult
-$Res call({
- Family family
-});
-
-
-
-
-}
-/// @nodoc
-class _$BoardItemCopyWithImpl<$Res>
-    implements $BoardItemCopyWith<$Res> {
-  _$BoardItemCopyWithImpl(this._self, this._then);
-
-  final BoardItem _self;
-  final $Res Function(BoardItem) _then;
-
-/// Create a copy of BoardItem
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? family = null,}) {
-  return _then(_self.copyWith(
-family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
-as Family,
-  ));
-}
-
+class $BoardItemCopyWith<$Res>  {
+$BoardItemCopyWith(BoardItem _, $Res Function(BoardItem) __);
 }
 
 
@@ -92,13 +56,14 @@ extension BoardItemPatterns on BoardItem {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,TResult Function( Bee value)?  bee,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Queen value)?  queen,TResult Function( Larva value)?  larva,TResult Function( Bee value)?  bee,TResult Function( Hive value)?  hive,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that);case Larva() when larva != null:
 return larva(_that);case Bee() when bee != null:
-return bee(_that);case _:
+return bee(_that);case Hive() when hive != null:
+return hive(_that);case _:
   return orElse();
 
 }
@@ -116,13 +81,14 @@ return bee(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,required TResult Function( Bee value)  bee,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Queen value)  queen,required TResult Function( Larva value)  larva,required TResult Function( Bee value)  bee,required TResult Function( Hive value)  hive,}){
 final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that);case Larva():
 return larva(_that);case Bee():
-return bee(_that);}
+return bee(_that);case Hive():
+return hive(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -136,13 +102,14 @@ return bee(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,TResult? Function( Bee value)?  bee,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Queen value)?  queen,TResult? Function( Larva value)?  larva,TResult? Function( Bee value)?  bee,TResult? Function( Hive value)?  hive,}){
 final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that);case Larva() when larva != null:
 return larva(_that);case Bee() when bee != null:
-return bee(_that);case _:
+return bee(_that);case Hive() when hive != null:
+return hive(_that);case _:
   return null;
 
 }
@@ -159,12 +126,13 @@ return bee(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function()?  hive,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
-return bee(_that.family,_that.level);case _:
+return bee(_that.family,_that.level);case Hive() when hive != null:
+return hive();case _:
   return orElse();
 
 }
@@ -182,12 +150,13 @@ return bee(_that.family,_that.level);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function()  hive,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
 return larva(_that.family);case Bee():
-return bee(_that.family,_that.level);}
+return bee(_that.family,_that.level);case Hive():
+return hive();}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -201,12 +170,13 @@ return bee(_that.family,_that.level);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function()?  hive,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
-return bee(_that.family,_that.level);case _:
+return bee(_that.family,_that.level);case Hive() when hive != null:
+return hive();case _:
   return null;
 
 }
@@ -221,11 +191,11 @@ class Queen implements BoardItem {
   const Queen({required this.family});
   
 
-@override final  Family family;
+ final  Family family;
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $QueenCopyWith<Queen> get copyWith => _$QueenCopyWithImpl<Queen>(this, _$identity);
 
@@ -253,7 +223,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $QueenCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
   factory $QueenCopyWith(Queen value, $Res Function(Queen) _then) = _$QueenCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  Family family
 });
@@ -272,7 +242,7 @@ class _$QueenCopyWithImpl<$Res>
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
   return _then(Queen(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
@@ -289,11 +259,11 @@ class Larva implements BoardItem {
   const Larva({required this.family});
   
 
-@override final  Family family;
+ final  Family family;
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $LarvaCopyWith<Larva> get copyWith => _$LarvaCopyWithImpl<Larva>(this, _$identity);
 
@@ -321,7 +291,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $LarvaCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
   factory $LarvaCopyWith(Larva value, $Res Function(Larva) _then) = _$LarvaCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  Family family
 });
@@ -340,7 +310,7 @@ class _$LarvaCopyWithImpl<$Res>
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? family = null,}) {
   return _then(Larva(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,
@@ -357,12 +327,12 @@ class Bee implements BoardItem {
   const Bee({required this.family, this.level = 1}): assert(level >= 1, 'level must be at least 1');
   
 
-@override final  Family family;
+ final  Family family;
 @JsonKey() final  int level;
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $BeeCopyWith<Bee> get copyWith => _$BeeCopyWithImpl<Bee>(this, _$identity);
 
@@ -390,7 +360,7 @@ String toString() {
 /// @nodoc
 abstract mixin class $BeeCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
   factory $BeeCopyWith(Bee value, $Res Function(Bee) _then) = _$BeeCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  Family family, int level
 });
@@ -409,7 +379,7 @@ class _$BeeCopyWithImpl<$Res>
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? family = null,Object? level = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? family = null,Object? level = null,}) {
   return _then(Bee(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as Family,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
@@ -419,5 +389,37 @@ as int,
 
 
 }
+
+/// @nodoc
+
+
+class Hive implements BoardItem {
+  const Hive();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Hive);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+    return 'BoardItem.hive()';
+}
+
+
+}
+
+
+
 
 // dart format on

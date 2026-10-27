@@ -149,10 +149,10 @@ class BoardCell extends DataClass implements Insertable<BoardCell> {
   final int column;
   final int row;
 
-  /// `queen`, `larva` or `bee`.
+  /// `queen`, `larva`, `bee` or `hive`.
   final String kind;
 
-  /// A `Family` name.
+  /// A `Family` name; empty for a hive, which has none.
   final String family;
 
   /// The level of a bee; 1 for the other items, which have none to speak of.

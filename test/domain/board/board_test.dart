@@ -22,14 +22,28 @@ extension AnyBoardPosition on Any {
 
 void main() {
   _removeTests();
+  _hiveTests();
   group('Board.initial', () {
-    test('holds a single Common queen', () {
+    test('holds a Common queen and an empty hive', () {
       final board = Board.initial();
 
-      expect(board.items, hasLength(1));
+      expect(board.items, hasLength(2));
       expect(board.items.values, [
         const BoardItem.queen(family: Family.common),
+        const BoardItem.hive(),
       ]);
+    });
+
+    test('puts the hive on its own starting cell', () {
+      expect(Board.initial().contains(Board.startingHivePosition), isTrue);
+      expect(
+        Board.startingHivePosition,
+        isNot(Board.startingQueenPosition),
+      );
+      expect(
+        Board.initial().itemAt(Board.startingHivePosition),
+        const BoardItem.hive(),
+      );
     });
 
     test('puts the queen on the same starting cell every time', () {
@@ -49,7 +63,8 @@ void main() {
 
       expect(
         board.itemAt(position) == null,
-        position != Board.startingQueenPosition,
+        position != Board.startingQueenPosition &&
+            position != Board.startingHivePosition,
       );
     });
   });
@@ -224,7 +239,7 @@ void main() {
         LarvaSpawn.created(
           board: Board(
             items: {
-              queen: const BoardItem.queen(family: Family.common),
+              ...Board.initial().items,
               const BoardPosition(column: 3, row: 3): const BoardItem.larva(
                 family: Family.common,
               ),
@@ -248,7 +263,7 @@ void main() {
         final result = board.spawnLarva(queen) as LarvaCreated;
         board = result.board;
 
-        expect(board.items, hasLength(1 + taps));
+        expect(board.items, hasLength(2 + taps));
         expect(
           board.itemAt(queen),
           const BoardItem.queen(family: Family.common),
@@ -259,7 +274,7 @@ void main() {
 
     test('creates nothing on a full board, until the last free cell', () {
       var board = Board.initial();
-      for (var free = Board.columns * Board.rows - 1; free > 0; free--) {
+      for (var free = Board.columns * Board.rows - 2; free > 0; free--) {
         board = (board.spawnLarva(queen) as LarvaCreated).board;
       }
 
@@ -686,9 +701,44 @@ void _removeTests() {
       expect(board.remove(bee)!.items, hasLength(2));
     });
 
-    test('refuses a queen and an empty cell', () {
+    test('refuses a queen, a hive and an empty cell', () {
       expect(board.remove(queen), isNull);
+      expect(Board.initial().remove(Board.startingHivePosition), isNull);
       expect(board.remove(const BoardPosition(column: 6, row: 8)), isNull);
+    });
+  });
+}
+
+void _hiveTests() {
+  group('A hive', () {
+    final board = Board.initial();
+    const hive = Board.startingHivePosition;
+    const empty = BoardPosition(column: 0, row: 0);
+
+    test('moves to an empty cell', () {
+      final moved = board.drop(hive, empty);
+
+      expect(moved, isA<ItemMoved>());
+      expect(moved!.board.itemAt(empty), const BoardItem.hive());
+      expect(moved.board.itemAt(hive), isNull);
+    });
+
+    test('swaps with a different item', () {
+      final swapped = board.drop(hive, Board.startingQueenPosition);
+
+      expect(swapped, isA<ItemsSwapped>());
+      expect(
+        swapped!.board.itemAt(hive),
+        board.itemAt(Board.startingQueenPosition),
+      );
+      expect(
+        swapped.board.itemAt(Board.startingQueenPosition),
+        const BoardItem.hive(),
+      );
+    });
+
+    test('is selected by a tap, like any item', () {
+      expect(board.selectionAfterTap(null, hive), hive);
     });
   });
 }

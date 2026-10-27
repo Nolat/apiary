@@ -41,6 +41,10 @@
       "tip": "MERGE with an identical bee to level up",
       "tip_max": "Maximum level: this bee no longer merges"
     },
+    "hive": {
+      "name": "Empty hive",
+      "tip": "DROP a bee to produce resources"
+    },
     "larva": {
       "name": "{family} larva",
       "tip": "MERGE with another larva to get a bee"

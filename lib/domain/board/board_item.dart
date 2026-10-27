@@ -6,8 +6,8 @@ import 'package:apiary/domain/bees/family.dart';
 
 part 'board_item.freezed.dart';
 
-/// What can sit in a cell of the board. Resources and hives join the union as
-/// their stories land.
+/// What can sit in a cell of the board. Resources join the union as their
+/// stories land.
 @freezed
 sealed class BoardItem with _$BoardItem {
   /// A queen, level 1: creates the larvae of its [family].
@@ -27,6 +27,10 @@ sealed class BoardItem with _$BoardItem {
     required Family family,
     @Default(1) int level,
   }) = Bee;
+
+  /// A hive, which belongs to no family. It starts empty; taking a bee is up
+  /// to a later story.
+  const factory BoardItem.hive() = Hive;
 }
 
 extension BoardItemLevel on BoardItem {
@@ -35,14 +39,15 @@ extension BoardItemLevel on BoardItem {
     Queen() => 1,
     Larva() => null,
     Bee(:final level) => level,
+    Hive() => null,
   };
 }
 
 extension BoardItemRemoval on BoardItem {
   /// Whether the player can remove the item from the board: larvae and bees
-  /// can, queens cannot.
+  /// can, queens and hives cannot.
   bool get removable => switch (this) {
-    Queen() => false,
+    Queen() || Hive() => false,
     Larva() || Bee() => true,
   };
 }

@@ -39,6 +39,7 @@ void main() {
           family: Family.common,
           level: 3,
         ),
+        Board.startingHivePosition: const BoardItem.hive(),
       },
     );
 
@@ -63,7 +64,7 @@ void main() {
     await repository.save(Board.initial());
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level) VALUES '
-      "(0, 0, 'bee', 'common', 99), (1, 0, 'hive', 'common', 1), "
+      "(0, 0, 'bee', 'common', 99), (1, 0, 'cocoon', 'common', 1), "
       "(2, 0, 'larva', 'unknown', 1), (50, 0, 'larva', 'common', 1)",
     );
 

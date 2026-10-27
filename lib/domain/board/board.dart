@@ -22,12 +22,13 @@ abstract class Board with _$Board {
   }) = _Board;
 
   /// The board of a first game: a single Common queen on
-  /// [startingQueenPosition].
+  /// [startingQueenPosition] and an empty hive on [startingHivePosition].
   factory Board.initial() => Board(
     items: {
       startingQueenPosition: const BoardItem.queen(
         family: Family.common,
       ),
+      startingHivePosition: const BoardItem.hive(),
     },
   );
 
@@ -39,6 +40,11 @@ abstract class Board with _$Board {
   /// Where the starting queen is. Provisional, until the layout of all the
   /// starting objects (hive, incubator) is settled — see `docs/DESIGN.md`.
   static const startingQueenPosition = BoardPosition(column: 3, row: 4);
+
+  /// Where the starting hive is. Provisional like [startingQueenPosition],
+  /// and kept out of the first rings around the queen so that her first
+  /// larvae do not depend on it.
+  static const startingHivePosition = BoardPosition(column: 3, row: 7);
 
   /// Whether [position] lies on the grid.
   bool contains(BoardPosition position) =>

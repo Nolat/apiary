@@ -20,6 +20,11 @@ class DriftBoardRepository implements BoardRepository {
   static const _queen = 'queen';
   static const _larva = 'larva';
   static const _bee = 'bee';
+  static const _hive = 'hive';
+
+  // A hive belongs to no family, but the column is not nullable: stored
+  // as-is rather than through a migration.
+  static const _noFamily = '';
 
   @override
   Future<Board?> load() async {
@@ -62,17 +67,21 @@ class DriftBoardRepository implements BoardRepository {
       Queen(:final family) => (_queen, family),
       Larva(:final family) => (_larva, family),
       Bee(:final family) => (_bee, family),
+      Hive() => (_hive, null),
     };
     return BoardCellsCompanion.insert(
       column: position.column,
       row: position.row,
       kind: kind,
-      family: family.name,
+      family: family?.name ?? _noFamily,
       level: Value(item.level ?? 1),
     );
   }
 
   static BoardItem? _itemOf(BoardCell row) {
+    if (row.kind == _hive) {
+      return const BoardItem.hive();
+    }
     final family = Family.values.asNameMap()[row.family];
     if (family == null) {
       return null;

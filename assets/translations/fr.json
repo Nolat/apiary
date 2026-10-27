@@ -41,6 +41,10 @@
       "tip": "FUSIONNEZ avec une autre abeille identique pour monter de niveau",
       "tip_max": "Niveau maximal : cette abeille ne fusionne plus"
     },
+    "hive": {
+      "name": "Ruche vide",
+      "tip": "DÉPOSEZ une abeille pour produire des ressources"
+    },
     "larva": {
       "name": "Larve {family}",
       "tip": "FUSIONNEZ avec une autre larve pour obtenir une abeille"

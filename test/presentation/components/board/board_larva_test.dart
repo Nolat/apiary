@@ -14,7 +14,6 @@ import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../../helpers/board_tap.dart';
 import '../../../helpers/game_text.dart';
 
@@ -119,7 +118,7 @@ void main() {
           await game.ready();
 
           expect(larvaeOf(board), hasLength(taps));
-          expect(board.board.items, hasLength(1 + taps));
+          expect(board.board.items, hasLength(2 + taps));
           expect(board.selection.value, queen);
           expect(
             board.board.itemAt(queen),
@@ -163,6 +162,7 @@ void main() {
 
         expect(board.board.items.keys.toSet(), {
           queen,
+          Board.startingHivePosition,
           const BoardPosition(column: 3, row: 3),
           const BoardPosition(column: 4, row: 3),
           const BoardPosition(column: 4, row: 4),
@@ -188,7 +188,7 @@ void main() {
         game.update(BoardComponent.shakeStep);
 
         expect(board.board, full);
-        expect(larvaeOf(board), hasLength(Board.columns * Board.rows - 1));
+        expect(larvaeOf(board), hasLength(Board.columns * Board.rows - 2));
         expect(queenComponent.position.x, greaterThan(home.x));
         expect(queenComponent.position.y, home.y);
 
@@ -238,7 +238,7 @@ void main() {
         await game.ready();
 
         expect(board.selection.value, firstLarva);
-        expect(board.board.items, hasLength(2));
+        expect(board.board.items, hasLength(3));
         final info = game.world
             .descendants()
             .whereType<ItemInfoComponent>()

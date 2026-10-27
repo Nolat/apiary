@@ -16,7 +16,6 @@ import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../../helpers/board_tap.dart';
 import '../../../helpers/game_text.dart';
 
@@ -70,7 +69,7 @@ void main() {
           board.board.itemAt(second),
           const BoardItem.bee(family: Family.common),
         );
-        expect(board.board.items, hasLength(2));
+        expect(board.board.items, hasLength(3));
         expect(board.children.whereType<LarvaComponent>(), isEmpty);
         expect(board.children.whereType<BeeComponent>(), hasLength(1));
         expect(board.selection.value, second);
@@ -147,7 +146,7 @@ void main() {
 
         expect(board.board.itemAt(first), isNull);
         expect(board.board.itemAt(target), larva);
-        expect(board.board.items, hasLength(3));
+        expect(board.board.items, hasLength(4));
         expect(board.selection.value, target);
         expect(
           board.children.whereType<LarvaComponent>().map((c) => c.position),
@@ -180,7 +179,7 @@ void main() {
           board.board.itemAt(second),
           const BoardItem.bee(family: Family.common),
         );
-        expect(board.board.items, hasLength(2));
+        expect(board.board.items, hasLength(3));
       },
     );
   });
@@ -203,7 +202,7 @@ void main() {
           ..end();
         await game.ready();
 
-        expect(board.board.items, hasLength(1));
+        expect(board.board.items, hasLength(2));
         expect(
           board.board.itemAt(target),
           const BoardItem.queen(family: Family.common),
@@ -314,7 +313,7 @@ void main() {
 
         expect(board.board.itemAt(first), bee);
         expect(board.board.itemAt(second), larva);
-        expect(board.board.items, hasLength(3));
+        expect(board.board.items, hasLength(4));
         expect(board.selection.value, second);
         expect(
           board.children.whereType<LarvaComponent>().single.position,
@@ -354,7 +353,7 @@ void main() {
         tapCell(game, board, first);
         await game.ready();
 
-        expect(board.board.items, hasLength(4));
+        expect(board.board.items, hasLength(5));
         expect(
           board.board.itemAt(const BoardPosition(column: 3, row: 2)),
           larva,

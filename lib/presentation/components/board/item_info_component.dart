@@ -308,6 +308,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       // Placeholder species names, until the game data defines the real ones.
       Bee(:final family, :final level) =>
         'species.${family.name}.level_$level'.tr(),
+      Hive() => 'item.hive.name'.tr(),
     };
     final level = item.level;
     return level == null
@@ -322,6 +323,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
     Larva() => 'item.larva.tip'.tr(),
     Bee(:final family, :final level) =>
       level == family.maxLevel ? 'item.bee.tip_max'.tr() : 'item.bee.tip'.tr(),
+    Hive() => 'item.hive.tip'.tr(),
   };
 
   /// Covers [area], in the parent's coordinates.

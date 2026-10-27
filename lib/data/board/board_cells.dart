@@ -9,10 +9,10 @@ class BoardCells extends Table {
   IntColumn get column => integer()();
   IntColumn get row => integer()();
 
-  /// `queen`, `larva` or `bee`.
+  /// `queen`, `larva`, `bee` or `hive`.
   TextColumn get kind => text()();
 
-  /// A `Family` name.
+  /// A `Family` name; empty for a hive, which has none.
   TextColumn get family => text()();
 
   /// The level of a bee; 1 for the other items, which have none to speak of.

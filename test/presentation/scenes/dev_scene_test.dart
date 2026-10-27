@@ -17,7 +17,6 @@ import 'package:apiary/presentation/components/dev/dev_button_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
 import 'package:apiary/presentation/scenes/dev_scene.dart';
-
 import '../../helpers/board_tap.dart';
 import '../../helpers/game_text.dart';
 
@@ -144,8 +143,8 @@ void main() {
       newGame,
       (game) async {
         final played = await boardOf(game);
-        tapCell(game, played, Board.initial().items.keys.single);
-        tapCell(game, played, Board.initial().items.keys.single);
+        tapCell(game, played, Board.startingQueenPosition);
+        tapCell(game, played, Board.startingQueenPosition);
         await game.ready();
         expect(played.board, isNot(Board.initial()));
         game.toggleDevScreen();

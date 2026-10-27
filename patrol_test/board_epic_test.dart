@@ -15,6 +15,7 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
+import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
 
@@ -23,7 +24,7 @@ import 'common.dart';
 
 /// What a merge conserves: a larva is worth 1, a bee of level n is worth 2^n.
 int _worth(BoardItem item) => switch (item) {
-  Queen() => 0,
+  Queen() || Hive() => 0,
   Larva() => 1,
   Bee(:final level) => 1 << level,
 };
@@ -39,6 +40,7 @@ void main() {
       final driver = BoardDriver($, game);
       final repository = getIt<BoardRepository>();
       const start = Board.startingQueenPosition;
+      const hive = Board.startingHivePosition;
       const common = Family.common;
 
       // --- Empty state: a first game on the starting board (APY-1, APY-2).
@@ -48,11 +50,16 @@ void main() {
 
       expect(game.router.currentRoute.name, BoardScene.routeName);
       expect(driver.board, Board.initial());
-      expect(driver.board.items, hasLength(1));
+      expect(driver.board.items, hasLength(2), reason: 'the queen and a hive');
       expect(driver.selection, isNull);
       expect(await repository.load(), isNull, reason: 'nothing saved yet');
       expect(
         driver.boardComponent.children.whereType<QueenComponent>(),
+        hasLength(1),
+      );
+      expect(driver.board.itemAt(hive), const BoardItem.hive());
+      expect(
+        driver.boardComponent.children.whereType<HiveComponent>(),
         hasLength(1),
       );
 
@@ -70,6 +77,17 @@ void main() {
         reason: 'selecting creates nothing',
       );
 
+      // A hive can be inspected, but never removed (APY-11).
+      await driver.tapCell(hive);
+      expect(driver.selection, hive);
+      expect(driver.info.titleText, isNotEmpty);
+      expect(driver.info.hasRemoveButton, isFalse, reason: 'hives stay');
+      expect(
+        driver.board,
+        Board.initial(),
+        reason: 'selecting changes nothing',
+      );
+
       // --- A selected queen creates larvae on the nearest free cells (APY-3).
       expect(
         await driver.newLarva(),
@@ -82,7 +100,7 @@ void main() {
       );
       expect(await driver.newLarva(), const BoardPosition(column: 4, row: 3));
       expect(await driver.newLarva(), const BoardPosition(column: 4, row: 4));
-      expect(driver.board.items, hasLength(4));
+      expect(driver.board.items, hasLength(5));
       expect(
         await repository.load(),
         driver.board,
@@ -133,7 +151,7 @@ void main() {
       await driver.drag(corner, start);
       expect(driver.board.itemAt(start), const BoardItem.larva(family: common));
       expect(driver.queen, corner);
-      expect(driver.board.items, hasLength(3));
+      expect(driver.board.items, hasLength(4));
       await driver.drag(corner, start);
       expect(driver.queen, start, reason: 'swapped back');
       expect(
@@ -148,7 +166,7 @@ void main() {
         reason: 'the larva above the queen and the one in the corner',
       );
       await driver.drag(corner, const BoardPosition(column: 3, row: 3));
-      expect(driver.board.items, hasLength(2));
+      expect(driver.board.items, hasLength(3));
       expect(
         driver.board.itemAt(const BoardPosition(column: 3, row: 3)),
         const BoardItem.bee(family: common),

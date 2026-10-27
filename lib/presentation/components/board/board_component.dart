@@ -23,6 +23,7 @@ import 'package:apiary/presentation/components/board/bee_component.dart';
 import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/bounce_effect.dart';
 import 'package:apiary/presentation/components/board/centered_scale_effect.dart';
+import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
@@ -446,6 +447,7 @@ class BoardComponent extends PositionComponent
           level: level,
           position: position,
         ),
+        Hive() => HiveComponent(position: position),
       };
 
   PositionComponent _componentFor(BoardPosition position, BoardItem item) =>
