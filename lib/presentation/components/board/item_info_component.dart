@@ -18,6 +18,7 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/hud/caption_button_component.dart';
 import 'package:apiary/presentation/components/hud/close_button_component.dart';
+import 'package:apiary/presentation/components/hud/pixel_panel_component.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// The panel of the bottom bar that tells what the selected item is: its name
@@ -70,7 +71,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   static final TextPaint _titleText = _renderer(AppColors.honey);
   static final TextPaint _bodyText = _renderer(AppColors.paper);
 
-  late final NineTileBoxComponent _panel;
+  late final PixelPanelComponent _panel;
   late final NineTileBox _panelBox;
   final List<TextComponent> _lineLabels = [
     for (var i = 0; i < _maxLines; i++)
@@ -82,7 +83,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   BoardItem? _item;
   final _shownButtons = <CaptionButtonComponent>{};
   BoardItem? _removed;
-  NineTileBoxComponent? _removedFrame;
+  PixelPanelComponent? _removedFrame;
   BoardItem? _frameItem;
   late final CaptionButtonComponent _removeButton;
   late final CaptionButtonComponent _undoButton;
@@ -307,7 +308,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
     if (removed == null) {
       return;
     }
-    final frame = NineTileBoxComponent(
+    final frame = PixelPanelComponent(
       nineTileBox: _panelBox,
       position: Vector2(_textLeft, top),
       size: Vector2.all(_removedFrameSize),
@@ -416,7 +417,7 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       tileSize: _panelTileSize,
       destTileSize: _panelTileSize,
     );
-    _panel = NineTileBoxComponent(nineTileBox: _panelBox, size: size);
+    _panel = PixelPanelComponent(nineTileBox: _panelBox, size: size);
     _removeButton = CaptionButtonComponent(
       normalImage: 'ui/delete_button.png',
       pressedImage: 'ui/delete_button_pressed.png',

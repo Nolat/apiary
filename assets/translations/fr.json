@@ -21,6 +21,9 @@
       "removed": "a été retiré(e)."
     }
   },
+  "energy": {
+    "missing": "Plus d'énergie !"
+  },
   "family": {
     "common": "commune"
   },

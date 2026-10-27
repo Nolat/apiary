@@ -2,8 +2,19 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Deny-all par défaut : pas de collection définie tant qu'aucune feature
-    // ne persiste de données (voir docs/STACK.md — sécurité Firestore).
+    // Heure serveur de l'énergie (voir docs/STACK.md) : chaque joueur écrit
+    // sur son seul document un horodatage fourni par le serveur, qu'il relit
+    // ensuite. Aucune valeur de jeu n'y transite.
+    match /server_times/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['at'])
+        && request.resource.data.at == request.time;
+    }
+
+    // Deny-all par défaut : toute autre collection est interdite tant qu'une
+    // feature n'ouvre pas ses règles (voir docs/STACK.md — sécurité Firestore).
     match /{document=**} {
       allow read, write: if false;
     }

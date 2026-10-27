@@ -87,6 +87,10 @@ class ScreenLayout {
   static const hudHeight = 12.0;
   static const ordersHeight = 16.0;
 
+  /// How far from the safe area's left edge the HUD's content starts, which
+  /// keeps it off the rounded screen corners.
+  static const hudPadding = 2.0;
+
   /// The bottom bar holds the panels, [bottomBarPanelHeight] tall, with
   /// [bottomBarPadding] of room above them, which keeps them off the board,
   /// and on each side, which keeps them clear of the rounded screen corners.

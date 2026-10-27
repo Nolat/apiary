@@ -11,6 +11,7 @@ import 'package:flame/events.dart';
 // 🌎 Project imports:
 import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
+import 'package:apiary/presentation/components/hud/pixel_panel_component.dart';
 
 /// A tappable 9-slice panel with a label, for the dev screen: one sprite per
 /// state, normal, pressed while a finger is down on it, and disabled (no taps
@@ -42,7 +43,7 @@ class DevButtonComponent extends PositionComponent
 
   final FutureOr<void> Function() onPressed;
   final TextComponent _label;
-  final NineTileBoxComponent _panel = NineTileBoxComponent();
+  final PixelPanelComponent _panel = PixelPanelComponent();
   late final NineTileBox _normal;
   late final NineTileBox _pressed;
   late final NineTileBox _disabled;

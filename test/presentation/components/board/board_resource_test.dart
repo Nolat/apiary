@@ -14,7 +14,6 @@ import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/resources/resource_branch.dart';
 import 'package:apiary/domain/resources/resource_catalogue.dart';
-import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/components/board/resource_component.dart';
@@ -145,7 +144,7 @@ void main() {
 
         expect(board.board, before);
         expect(
-          board.children.whereType<BoardFullBannerComponent>().single.isShown,
+          board.fullBanner.isShown,
           isTrue,
         );
       },

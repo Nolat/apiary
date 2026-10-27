@@ -445,6 +445,7 @@ void main() {
       final bee = BoardItem.bee(family: Family.common, level: level);
       final board = BoardComponent(
         board: Board(items: {from: bee, onto: bee}),
+        energy: game.energy,
       )..position.setFrom(scene.position);
       scene.removeFromParent();
       await game.world.add(board);

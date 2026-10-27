@@ -13,17 +13,21 @@ import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
+import 'package:apiary/presentation/components/hud/energy_gauge_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
+import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 class BoardScene extends Component with HasGameReference<ApiaryGame> {
   BoardScene({
     required Board board,
+    required EnergyNotifier energy,
     BoardRepository? repository,
     Random? random,
   }) : _board = BoardComponent(
          board: board,
          random: random,
+         energy: energy,
          onChanged: repository == null
              ? null
              : (board) => _save(repository, board),
@@ -34,13 +38,15 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
   final _decor = DecorComponent();
   final BoardComponent _board;
   final _info = ItemInfoComponent();
+  final _gauge = EnergyGaugeComponent();
 
   @override
   Future<void> onLoad() async {
-    await addAll([_decor, _board, _info]);
+    await addAll([_decor, _board, _info, _gauge]);
     _board.selection.addListener(_showSelectedItem);
     _board.removal.addListener(_showSelectedItem);
     _board.itemChanged.addListener(_showSelectedItem);
+    _board.energyMissing.addListener(_gauge.flashMissing);
     _info
       ..onRemovePressed = _board.removeSelected
       ..onUndoPressed = (() => unawaited(_board.undoRemoval()))
@@ -52,6 +58,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
     _board.selection.removeListener(_showSelectedItem);
     _board.removal.removeListener(_showSelectedItem);
     _board.itemChanged.removeListener(_showSelectedItem);
+    _board.energyMissing.removeListener(_gauge.flashMissing);
     super.onRemove();
   }
 
@@ -78,6 +85,10 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
     // Decor: the whole screen, under the system UI too.
     _decor.cover(layout.screen, board: layout.board);
     _board.position.setValues(layout.board.left, layout.board.top);
+    _gauge.position.setValues(
+      layout.hud.left + ScreenLayout.hudPadding,
+      layout.hud.top,
+    );
     final bar = layout.bottomBar;
     _info.place(
       Rect.fromLTRB(

@@ -8,7 +8,7 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
-import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
+import 'package:apiary/presentation/components/board/board_banner_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 
@@ -23,6 +23,11 @@ class BoardDriver {
   /// Replaced by the new game when the app is relaunched.
   ApiaryGame game;
 
+  /// Whether the driver refills the gauge when it runs low, so that epics
+  /// which play long games are not about energy. The energy epic turns it
+  /// off.
+  bool refillEnergy = true;
+
   /// How long the animations of a merge (land, then pop in) take, with a
   /// margin; any other action settles faster.
   static const _settle = Duration(milliseconds: 450);
@@ -31,8 +36,10 @@ class BoardDriver {
   BoardComponent get boardComponent =>
       game.world.descendants().whereType<BoardComponent>().single;
 
-  BoardFullBannerComponent get fullBanner =>
-      boardComponent.children.whereType<BoardFullBannerComponent>().single;
+  BoardBannerComponent get fullBanner => boardComponent.fullBanner;
+
+  BoardBannerComponent get missingEnergyBanner =>
+      boardComponent.missingEnergyBanner;
 
   Board get board => boardComponent.board;
 
@@ -66,6 +73,9 @@ class BoardDriver {
 
   /// Taps the middle of [cell].
   Future<void> tapCell(BoardPosition cell) async {
+    if (refillEnergy && !game.energy.canAfford(10)) {
+      game.energy.reset();
+    }
     await $.tester.tapAt(centerOf(cell));
     await settle(const Duration(milliseconds: 120));
   }

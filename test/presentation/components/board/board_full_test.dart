@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/board/board.dart';
+import 'package:apiary/presentation/components/board/board_banner_component.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
-import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 
 import '../../../helpers/board_tap.dart';
@@ -18,8 +18,7 @@ void main() {
   group('Tapping a queen on a full board', () {
     const queen = Board.startingQueenPosition;
 
-    BoardFullBannerComponent bannerOf(BoardComponent board) =>
-        board.children.whereType<BoardFullBannerComponent>().single;
+    BoardBannerComponent bannerOf(BoardComponent board) => board.fullBanner;
 
     // Taps the queen until the board is full.
     Future<void> fillBoard(ApiaryGame game, BoardComponent board) async {
@@ -59,14 +58,14 @@ void main() {
         expect(banner.position.x, board.size.x / 2);
         expect(banner.scale.x, lessThan(1));
 
-        game.update(BoardFullBannerComponent.popDuration);
+        game.update(BoardBannerComponent.popDuration);
         expect(banner.scale.x, closeTo(1, 0.001));
         expect(banner.opacity, 1);
 
-        game.update(BoardFullBannerComponent.holdDuration);
+        game.update(BoardBannerComponent.holdDuration);
         expect(banner.isShown, isTrue);
 
-        game.update(BoardFullBannerComponent.fadeDuration + 0.05);
+        game.update(BoardBannerComponent.fadeDuration + 0.05);
         expect(banner.isShown, isFalse);
       },
     );
@@ -80,7 +79,7 @@ void main() {
         tapCell(game, board, queen);
         await game.ready();
         final banner = bannerOf(board);
-        game.update(BoardFullBannerComponent.popDuration + 1.5);
+        game.update(BoardBannerComponent.popDuration + 1.5);
 
         tapCell(game, board, queen);
         await game.ready();
@@ -88,7 +87,7 @@ void main() {
 
         expect(banner.opacity, 1);
         expect(banner.scale.x, lessThan(1));
-        game.update(BoardFullBannerComponent.popDuration + 1.5);
+        game.update(BoardBannerComponent.popDuration + 1.5);
         expect(banner.isShown, isTrue);
       },
     );

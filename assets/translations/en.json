@@ -21,6 +21,9 @@
       "removed": "has been removed."
     }
   },
+  "energy": {
+    "missing": "Out of energy!"
+  },
   "family": {
     "common": "Common"
   },

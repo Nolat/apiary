@@ -15,13 +15,13 @@ import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 
-/// The message that tells the board is full: honey-colored pixel text with a
-/// dark outline, centered on the middle of its parent. [show] pops it in
+/// A short message over the board (that it is full, that the energy is
+/// missing): honey-colored pixel text with a dark outline, centered on the middle of its parent. [show] pops it in
 /// small and overshooting, keeps it for [holdDuration], then fades it out.
 /// Showing it again while it is up starts over.
-class BoardFullBannerComponent extends PositionComponent
+class BoardBannerComponent extends PositionComponent
     implements OpacityProvider {
-  BoardFullBannerComponent({required this.message})
+  BoardBannerComponent({required this.message})
     : super(anchor: Anchor.center, priority: BoardComponent.bannerPriority) {
     _measure();
   }
@@ -67,8 +67,10 @@ class BoardFullBannerComponent extends PositionComponent
 
   void _measure() {
     final width = _renderer(AppColors.honey).getLineMetrics(message).width;
-    // Room for the outline all around.
-    size = Vector2(width.ceilToDouble() + 6, 12);
+    // Room for the outline all around, and an even width: centered on a whole
+    // pixel, the banner then sits on the pixel grid.
+    final wide = width.ceilToDouble() + 6;
+    size = Vector2(wide + wide % 2, 12);
   }
 
   /// Pops the banner in, at the middle of [center], in its parent's
@@ -79,7 +81,7 @@ class BoardFullBannerComponent extends PositionComponent
         ..pause()
         ..removeFromParent();
     }
-    position.setFrom(center);
+    position.setValues(center.x.roundToDouble(), center.y.roundToDouble());
     opacity = 1;
     scale.setAll(popStartScale);
     unawaited(

@@ -86,6 +86,11 @@ Chaque commande remplie rapporte des **pièces** (voir [Pièces](#pièces)).
 
 Consomment de l'énergie : taper une reine (une larve) ; taper une ruche (une ressource, plus une unité de durée de vie).
 
+- Seuls les taps qui produisent coûtent : sélectionner, déplacer, fusionner, supprimer, livrer et loger une abeille en ruche sont gratuits, comme un tap sur un plateau plein (rien n'est produit). Coût provisoire : 1 énergie par larve et par ressource.
+- Sans assez d'énergie, un tap sur une reine ou une ruche ne produit rien et ne coûte rien (ni énergie ni durée de vie) : le bandeau « Plus d'énergie ! » apparaît, la jauge du HUD gonfle, le générateur tremble et une vibration forte se fait sentir. Ce retour visuel est provisoire, comme celui du plateau plein ; l'achat d'énergie en gemmes y sera proposé.
+- La recharge se mesure sur l'heure des serveurs (voir `docs/STACK.md`) : avancer l'heure du téléphone ne recharge pas plus vite, la reculer n'enlève rien. Hors ligne au lancement, la recharge reprend dès qu'on retrouve l'heure fiable.
+- Le HUD reprend le rendu de Flambé : un panneau en bois avec la valeur au centre (sans le plafond, qui peut être dépassé par un achat), un éclair qui déborde à gauche et un « + » à cheval sur le bord droit, qui ne fait encore rien. Sous 100, une pastille sombre sous la valeur affiche le temps avant la prochaine unité (`mm:ss`) et le panneau s'agrandit pour la loger, sur le haut de la bande des commandes (provisoire : le HUD ne fait que 12 px).
+
 Ordres de grandeur (hypothèse : 1 énergie par larve et par ressource, durée de vie de 5) : 1 abeille = 2 larves = 2 énergie ; 1 ressource de palier 4 ≈ 12 énergie ; une jauge pleine couvre environ 8 commandes de palier 4. Point de départ pour calibrer la taille des journées (ex. 1,5 jauge au début, 2 plus tard).
 
 ## Plateau persistant et encombrement

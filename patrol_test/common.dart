@@ -55,6 +55,7 @@ Future<ApiaryGame> relaunchApiary(PatrolIntegrationTester $) async {
       path: 'assets/translations',
       fallbackLocale: const Locale('fr'),
       child: ProviderScope(
+        overrides: appOverrides(),
         child: ApiaryApp(boardRepository: getIt<BoardRepository>()),
       ),
     ),

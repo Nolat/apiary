@@ -420,15 +420,278 @@ class BoardCellsCompanion extends UpdateCompanion<BoardCell> {
   }
 }
 
+class $EnergyStatesTable extends EnergyStates
+    with TableInfo<$EnergyStatesTable, EnergyState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EnergyStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<int> value = GeneratedColumn<int>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _countedFromMsMeta = const VerificationMeta(
+    'countedFromMs',
+  );
+  @override
+  late final GeneratedColumn<int> countedFromMs = GeneratedColumn<int>(
+    'counted_from_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, value, countedFromMs];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'energy_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EnergyState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('counted_from_ms')) {
+      context.handle(
+        _countedFromMsMeta,
+        countedFromMs.isAcceptableOrUnknown(
+          data['counted_from_ms']!,
+          _countedFromMsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EnergyState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EnergyState(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}value'],
+      )!,
+      countedFromMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}counted_from_ms'],
+      ),
+    );
+  }
+
+  @override
+  $EnergyStatesTable createAlias(String alias) {
+    return $EnergyStatesTable(attachedDatabase, alias);
+  }
+}
+
+class EnergyState extends DataClass implements Insertable<EnergyState> {
+  final int id;
+  final int value;
+
+  /// The trusted instant the next unit is counted from, in milliseconds since
+  /// the epoch; `null` while the gauge is full or no trusted time was known.
+  final int? countedFromMs;
+  const EnergyState({
+    required this.id,
+    required this.value,
+    this.countedFromMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['value'] = Variable<int>(value);
+    if (!nullToAbsent || countedFromMs != null) {
+      map['counted_from_ms'] = Variable<int>(countedFromMs);
+    }
+    return map;
+  }
+
+  EnergyStatesCompanion toCompanion(bool nullToAbsent) {
+    return EnergyStatesCompanion(
+      id: Value(id),
+      value: Value(value),
+      countedFromMs: countedFromMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(countedFromMs),
+    );
+  }
+
+  factory EnergyState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EnergyState(
+      id: serializer.fromJson<int>(json['id']),
+      value: serializer.fromJson<int>(json['value']),
+      countedFromMs: serializer.fromJson<int?>(json['countedFromMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'value': serializer.toJson<int>(value),
+      'countedFromMs': serializer.toJson<int?>(countedFromMs),
+    };
+  }
+
+  EnergyState copyWith({
+    int? id,
+    int? value,
+    Value<int?> countedFromMs = const Value.absent(),
+  }) => EnergyState(
+    id: id ?? this.id,
+    value: value ?? this.value,
+    countedFromMs: countedFromMs.present
+        ? countedFromMs.value
+        : this.countedFromMs,
+  );
+  EnergyState copyWithCompanion(EnergyStatesCompanion data) {
+    return EnergyState(
+      id: data.id.present ? data.id.value : this.id,
+      value: data.value.present ? data.value.value : this.value,
+      countedFromMs: data.countedFromMs.present
+          ? data.countedFromMs.value
+          : this.countedFromMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EnergyState(')
+          ..write('id: $id, ')
+          ..write('value: $value, ')
+          ..write('countedFromMs: $countedFromMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, value, countedFromMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EnergyState &&
+          other.id == this.id &&
+          other.value == this.value &&
+          other.countedFromMs == this.countedFromMs);
+}
+
+class EnergyStatesCompanion extends UpdateCompanion<EnergyState> {
+  final Value<int> id;
+  final Value<int> value;
+  final Value<int?> countedFromMs;
+  const EnergyStatesCompanion({
+    this.id = const Value.absent(),
+    this.value = const Value.absent(),
+    this.countedFromMs = const Value.absent(),
+  });
+  EnergyStatesCompanion.insert({
+    this.id = const Value.absent(),
+    required int value,
+    this.countedFromMs = const Value.absent(),
+  }) : value = Value(value);
+  static Insertable<EnergyState> custom({
+    Expression<int>? id,
+    Expression<int>? value,
+    Expression<int>? countedFromMs,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (value != null) 'value': value,
+      if (countedFromMs != null) 'counted_from_ms': countedFromMs,
+    });
+  }
+
+  EnergyStatesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? value,
+    Value<int?>? countedFromMs,
+  }) {
+    return EnergyStatesCompanion(
+      id: id ?? this.id,
+      value: value ?? this.value,
+      countedFromMs: countedFromMs ?? this.countedFromMs,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<int>(value.value);
+    }
+    if (countedFromMs.present) {
+      map['counted_from_ms'] = Variable<int>(countedFromMs.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EnergyStatesCompanion(')
+          ..write('id: $id, ')
+          ..write('value: $value, ')
+          ..write('countedFromMs: $countedFromMs')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $BoardCellsTable boardCells = $BoardCellsTable(this);
+  late final $EnergyStatesTable energyStates = $EnergyStatesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [boardCells];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    boardCells,
+    energyStates,
+  ];
 }
 
 typedef $$BoardCellsTableCreateCompanionBuilder = BoardCellsCompanion Function({
@@ -656,10 +919,179 @@ typedef $$BoardCellsTableProcessedTableManager =
       BoardCell,
       PrefetchHooks Function()
     >;
+typedef $$EnergyStatesTableCreateCompanionBuilder =
+    EnergyStatesCompanion Function({
+      Value<int> id,
+      required int value,
+      Value<int?> countedFromMs,
+    });
+typedef $$EnergyStatesTableUpdateCompanionBuilder =
+    EnergyStatesCompanion Function({
+      Value<int> id,
+      Value<int> value,
+      Value<int?> countedFromMs,
+    });
+
+class $$EnergyStatesTableFilterComposer
+    extends Composer<_$AppDatabase, $EnergyStatesTable> {
+  $$EnergyStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get countedFromMs => $composableBuilder(
+    column: $table.countedFromMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EnergyStatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $EnergyStatesTable> {
+  $$EnergyStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get countedFromMs => $composableBuilder(
+    column: $table.countedFromMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EnergyStatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EnergyStatesTable> {
+  $$EnergyStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get countedFromMs => $composableBuilder(
+    column: $table.countedFromMs,
+    builder: (column) => column,
+  );
+}
+
+class $$EnergyStatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EnergyStatesTable,
+          EnergyState,
+          $$EnergyStatesTableFilterComposer,
+          $$EnergyStatesTableOrderingComposer,
+          $$EnergyStatesTableAnnotationComposer,
+          $$EnergyStatesTableCreateCompanionBuilder,
+          $$EnergyStatesTableUpdateCompanionBuilder,
+          (
+            EnergyState,
+            BaseReferences<_$AppDatabase, $EnergyStatesTable, EnergyState>,
+          ),
+          EnergyState,
+          PrefetchHooks Function()
+        > {
+  $$EnergyStatesTableTableManager(_$AppDatabase db, $EnergyStatesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EnergyStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EnergyStatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EnergyStatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> value = const Value.absent(),
+                Value<int?> countedFromMs = const Value.absent(),
+              }) => EnergyStatesCompanion(
+                id: id,
+                value: value,
+                countedFromMs: countedFromMs,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int value,
+                Value<int?> countedFromMs = const Value.absent(),
+              }) => EnergyStatesCompanion.insert(
+                id: id,
+                value: value,
+                countedFromMs: countedFromMs,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EnergyStatesTable, EnergyState>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $EnergyStatesTable,
+                    EnergyState
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EnergyStatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EnergyStatesTable,
+      EnergyState,
+      $$EnergyStatesTableFilterComposer,
+      $$EnergyStatesTableOrderingComposer,
+      $$EnergyStatesTableAnnotationComposer,
+      $$EnergyStatesTableCreateCompanionBuilder,
+      $$EnergyStatesTableUpdateCompanionBuilder,
+      (
+        EnergyState,
+        BaseReferences<_$AppDatabase, $EnergyStatesTable, EnergyState>,
+      ),
+      EnergyState,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$BoardCellsTableTableManager get boardCells =>
       $$BoardCellsTableTableManager(_db, _db.boardCells);
+  $$EnergyStatesTableTableManager get energyStates =>
+      $$EnergyStatesTableTableManager(_db, _db.energyStates);
 }

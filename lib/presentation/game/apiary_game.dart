@@ -4,12 +4,13 @@ import 'dart:math';
 
 // 🐦 Flutter imports:
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart' show KeyEventResult;
+import 'package:flutter/widgets.dart' show AppLifecycleState, KeyEventResult;
 
 // 📦 Package imports:
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/core/dev/dev_tools.dart';
@@ -19,6 +20,8 @@ import 'package:apiary/core/startup/startup_step.dart';
 import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_repository.dart';
+import 'package:apiary/domain/energy/energy.dart';
+import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/game_viewport.dart';
 import 'package:apiary/presentation/game/layout_debug_overlay.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
@@ -32,7 +35,10 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
     this._devTools,
     this.startup,
     this._random,
-  }) : super(
+    ProviderContainer? container,
+  }) : _ownsContainer = container == null,
+       container = container ?? ProviderContainer(),
+       super(
          camera: CameraComponent(
            viewport: GameViewport(minimumSize: minimumSize),
          ),
@@ -42,6 +48,21 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
   /// brings the board repository and the dev tools, once it is done. `null`
   /// opens straight on the board (most tests).
   final Startup? startup;
+
+  /// The Riverpod state the game shares with the app (the energy gauge): the
+  /// app's own container, or a private one when none is given (tests).
+  final ProviderContainer container;
+  final bool _ownsContainer;
+
+  /// The energy gauge, which the board spends and the HUD shows.
+  EnergyNotifier get energy => container.read(energyProvider.notifier);
+
+  /// What the energy gauge holds now.
+  Energy get energyValue => container.read(energyProvider);
+
+  // Whether the energy may be read: not before the launch has registered the
+  // services it saves and recharges with.
+  var _energyReady = false;
 
   // Seeds the hives' draws; `null` for an unseeded one (tests seed it).
   final Random? _random;
@@ -107,6 +128,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
               board: _board,
               repository: _boardRepository,
               random: _random,
+              energy: energy,
             ),
           ),
           if (startup case final startup?)
@@ -136,6 +158,11 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
       _listenToShakes();
       startup.step.value = StartupStep.board;
       _board = await _loadBoard() ?? Board.initial();
+      _energyReady = true;
+      await energy.load();
+      // The trusted time can take a while (or never come, offline): the game
+      // opens without it and credits the recharge when it arrives.
+      unawaited(energy.sync());
       startup.step.value = StartupStep.ready;
       // Any failure of the launch, whatever its type, is shown the same way.
       // ignore: avoid_catches_without_on_clauses
@@ -159,6 +186,9 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
     } else {
       // Only a first game starts on the starting board.
       _board = await _loadBoard() ?? Board.initial();
+      _energyReady = true;
+      await energy.load();
+      unawaited(energy.sync());
       await _mountRouter(initialRoute: BoardScene.routeName);
       _listenToShakes();
     }
@@ -167,9 +197,31 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
     }
   }
 
+  // A phone that slept in the background may not have counted that time on the
+  // stopwatch the trusted clock runs on: coming back, ask the server again, so
+  // the recharge of the time away is credited in full.
+  @override
+  void lifecycleStateChange(AppLifecycleState state) {
+    super.lifecycleStateChange(state);
+    if (state == AppLifecycleState.resumed && _energyReady) {
+      unawaited(energy.sync());
+    }
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (_energyReady) {
+      energy.update(dt);
+    }
+  }
+
   @override
   void onRemove() {
     unawaited(_shakes?.cancel());
+    if (_ownsContainer) {
+      container.dispose();
+    }
     super.onRemove();
   }
 
@@ -192,6 +244,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
   Future<void> restartFromScratch() async {
     router.removeFromParent();
     _board = Board.initial();
+    energy.reset();
     await _mountRouter(initialRoute: BoardScene.routeName);
   }
 

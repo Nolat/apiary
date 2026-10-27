@@ -1,12 +1,10 @@
-// 🎯 Dart imports:
-import 'dart:ui';
-
 // 📦 Package imports:
 import 'package:flame/components.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/presentation/components/board/family_sprites.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// A hive (provisional sprites), whose outline is white while it is empty, like
@@ -34,7 +32,7 @@ class HiveComponent extends PositionComponent with HasGameReference {
     ]);
     // Nearest-neighbor, so pixels stay sharp at fractional scales. The
     // outline goes first: it never covers the hive.
-    final paint = Paint()..filterQuality = FilterQuality.none;
+    final paint = pixelPaint();
     // The hive's outline takes the family's color once a bee lives in it.
     final outlinePaint = bee?.family.borderPaint ?? paint;
     for (final (image, layerPaint) in [

@@ -14,7 +14,7 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
-import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
+import 'package:apiary/presentation/components/board/board_banner_component.dart';
 import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/scenes/board_scene.dart';
@@ -212,9 +212,9 @@ void main() {
 
       // It holds for a moment, then fades out on its own.
       const bannerSeconds =
-          BoardFullBannerComponent.popDuration +
-          BoardFullBannerComponent.holdDuration +
-          BoardFullBannerComponent.fadeDuration;
+          BoardBannerComponent.popDuration +
+          BoardBannerComponent.holdDuration +
+          BoardBannerComponent.fadeDuration;
       await driver.settle(
         Duration(milliseconds: (bannerSeconds * 1000).round() + 300),
       );

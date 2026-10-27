@@ -4,6 +4,10 @@ import 'dart:ui';
 // 📦 Package imports:
 import 'package:flame/components.dart';
 
+// 🌎 Project imports:
+import 'package:apiary/presentation/components/hud/pixel_panel_component.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
+
 /// A loading bar: a frame with a hollow groove, and a fill growing from the
 /// left inside it. Both are sprites, so the edges stay sharp at fractional
 /// scales, and the fill grows by whole pixels.
@@ -51,10 +55,10 @@ class ProgressBarComponent extends PositionComponent with HasGameReference {
       position: Vector2.all(_groove),
       size: Vector2(0, _fillSource.height),
       // Nearest-neighbor, so pixels stay sharp at fractional scales.
-      paint: Paint()..filterQuality = FilterQuality.none,
+      paint: pixelPaint(),
     );
     await addAll([
-      NineTileBoxComponent(
+      PixelPanelComponent(
         nineTileBox: NineTileBox(
           Sprite(frame),
           tileSize: _frameTileSize,

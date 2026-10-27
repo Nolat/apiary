@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 // 🌎 Project imports:
@@ -24,7 +25,11 @@ import 'package:apiary/core/startup/startup.dart';
 import 'package:apiary/core/startup/startup_step.dart';
 import 'package:apiary/data/local/app_database.dart';
 import 'package:apiary/domain/board/board_repository.dart';
+import 'package:apiary/domain/energy/energy_repository.dart';
+import 'package:apiary/domain/energy/trusted_clock.dart';
 import 'package:apiary/firebase_options.dart';
+import 'package:apiary/presentation/game/energy_repository_provider.dart';
+import 'package:apiary/presentation/game/trusted_clock_provider.dart';
 
 Future<void> bootstrap() async {
   // Sentry's binding variant enables slow/frozen frame tracking.
@@ -45,6 +50,7 @@ Future<void> bootstrap() async {
         path: 'assets/translations',
         fallbackLocale: const Locale('fr'),
         child: ProviderScope(
+          overrides: appOverrides(),
           // The rest of the launch runs behind the splash screen.
           child: ApiaryApp(startup: Startup(_startServices)),
         ),
@@ -52,6 +58,15 @@ Future<void> bootstrap() async {
     ),
   );
 }
+
+/// The services the app's Riverpod providers stand on, resolved from `getIt`
+/// on first read: the launch registers them behind the splash screen, and a
+/// read before then fails loudly. Tests leave them out and play without
+/// saving or recharging.
+List<Override> appOverrides() => [
+  energyRepositoryProvider.overrideWith((ref) => getIt<EnergyRepository>()),
+  trustedClockProvider.overrideWith((ref) => getIt<TrustedClock>()),
+];
 
 Future<GameServices> _startServices(ValueNotifier<StartupStep> step) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

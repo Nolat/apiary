@@ -1,12 +1,10 @@
-// 🎯 Dart imports:
-import 'dart:ui';
-
 // 📦 Package imports:
 import 'package:flame/components.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/resources/resource_branch.dart';
 import 'package:apiary/presentation/components/board/resource_sprites.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// A resource, drawn as the resource of its [branch] and [tier]. Its sprite
@@ -24,7 +22,7 @@ class ResourceComponent extends PositionComponent with HasGameReference {
   Future<void> onLoad() async {
     final image = await game.images.load(branch.imageAt(tier));
     // Nearest-neighbor, so pixels stay sharp at fractional scales.
-    final paint = Paint()..filterQuality = FilterQuality.none;
+    final paint = pixelPaint();
     await add(
       SpriteComponent(sprite: Sprite(image), paint: paint, size: size),
     );

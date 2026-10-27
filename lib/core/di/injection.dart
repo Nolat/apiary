@@ -10,8 +10,12 @@ import 'package:apiary/core/auth/auth_service.dart';
 import 'package:apiary/core/crash_reporting/crash_reporting_service.dart';
 import 'package:apiary/core/logging/talker_service.dart';
 import 'package:apiary/data/board/drift_board_repository.dart';
+import 'package:apiary/data/energy/drift_energy_repository.dart';
 import 'package:apiary/data/local/app_database.dart';
+import 'package:apiary/data/time/firestore_trusted_clock.dart';
 import 'package:apiary/domain/board/board_repository.dart';
+import 'package:apiary/domain/energy/energy_repository.dart';
+import 'package:apiary/domain/energy/trusted_clock.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -24,6 +28,10 @@ void configureDependencies() {
     () => DriftBoardRepository(getIt<AppDatabase>(), getIt<Talker>()),
   );
 
+  getIt.registerLazySingleton<EnergyRepository>(
+    () => DriftEnergyRepository(getIt<AppDatabase>()),
+  );
+
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
   );
@@ -32,6 +40,13 @@ void configureDependencies() {
 
   getIt.registerLazySingleton<AuthService>(
     () => AuthService(getIt<FirebaseAuth>()),
+  );
+
+  getIt.registerLazySingleton<TrustedClock>(
+    () => FirestoreTrustedClock(
+      getIt<FirebaseFirestore>(),
+      () => getIt<AuthService>().currentUserId,
+    ),
   );
 
   getIt.registerLazySingleton<FirebaseCrashlytics>(

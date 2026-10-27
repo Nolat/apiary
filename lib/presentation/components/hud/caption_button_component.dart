@@ -1,6 +1,5 @@
 // 🎯 Dart imports:
 import 'dart:math';
-import 'dart:ui';
 
 // 🐦 Flutter imports:
 import 'package:flutter/painting.dart' show TextStyle;
@@ -12,6 +11,7 @@ import 'package:flame/events.dart';
 // 🌎 Project imports:
 import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
 
 /// A square icon button, one sprite per state (normal, and pressed while a
 /// finger is down on it), with a [caption] right above it, centered on it and
@@ -95,7 +95,7 @@ class CaptionButtonComponent extends PositionComponent
     _icon
       ..sprite = _normal
       // Nearest-neighbor, so pixels stay sharp at fractional scales.
-      ..paint = (Paint()..filterQuality = FilterQuality.none);
+      ..paint = (pixelPaint());
     await addAll([_icon, _caption]);
   }
 

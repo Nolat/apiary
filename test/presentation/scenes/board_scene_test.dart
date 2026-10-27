@@ -6,12 +6,16 @@ import 'package:flutter_test/flutter_test.dart';
 // 🌎 Project imports:
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_position.dart';
+import 'package:apiary/domain/energy/energy.dart';
+import 'package:apiary/presentation/components/board/board_banner_component.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
-import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
+import 'package:apiary/presentation/game/energy_notifier.dart';
 
 import '../../helpers/board_tap.dart';
+import '../../helpers/energy_container.dart';
+import '../../helpers/fake_trusted_clock.dart';
 import '../../helpers/game_golden.dart';
 
 void main() {
@@ -19,6 +23,23 @@ void main() {
     testGameGolden(
       'renders the starting board',
       goldenFile: 'goldens/board_scene_start.png',
+    );
+
+    testGameGolden(
+      'renders the energy gauge recharging, with its countdown',
+      goldenFile: 'goldens/board_scene_energy.png',
+      newGame: () {
+        final start = DateTime.utc(2026, 10, 27, 8);
+        final now = start.add(const Duration(seconds: 25));
+        return ApiaryGame(
+          container: energyContainer(
+            clock: FakeTrustedClock(time: now)..serverTime = now,
+            saved: Energy(value: 42, countedFrom: start),
+          ),
+        );
+      },
+      arrange: (game, tester) async =>
+          game.update(EnergyNotifier.refreshInterval),
     );
 
     testGameGolden(
@@ -53,7 +74,7 @@ void main() {
         await game.ready();
         game
           ..update(0)
-          ..update(BoardFullBannerComponent.popDuration + 0.5)
+          ..update(BoardBannerComponent.popDuration + 0.5)
           ..update(0);
       },
     );

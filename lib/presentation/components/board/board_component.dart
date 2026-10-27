@@ -1,7 +1,6 @@
 // 🎯 Dart imports:
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 // 🐦 Flutter imports:
 import 'package:flutter/animation.dart' show Curves;
@@ -22,14 +21,17 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/larva_spawn.dart';
 import 'package:apiary/domain/board/resource_production.dart';
+import 'package:apiary/domain/energy/energy.dart';
 import 'package:apiary/presentation/components/board/bee_component.dart';
-import 'package:apiary/presentation/components/board/board_full_banner_component.dart';
+import 'package:apiary/presentation/components/board/board_banner_component.dart';
 import 'package:apiary/presentation/components/board/bounce_effect.dart';
 import 'package:apiary/presentation/components/board/centered_scale_effect.dart';
 import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/components/board/resource_component.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
+import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// The 7×9 grid of [ScreenLayout.cellSize] cells: a checkerboard of light and
@@ -50,7 +52,7 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// its cell.
 ///
 /// Tapping a queen on a full board also pops up a banner on the top row (see
-/// [BoardFullBannerComponent]) and is felt as a heavy haptic impact.
+/// [BoardBannerComponent]) and is felt as a heavy haptic impact.
 ///
 /// A larva born and a merge are felt as a light and a medium haptic impact.
 ///
@@ -58,17 +60,24 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// visuel").
 class BoardComponent extends PositionComponent
     with HasGameReference, TapCallbacks, DragCallbacks {
-  BoardComponent({required this.board, this.onChanged, Random? random})
-    : _random = random ?? Random(),
-      super(
-        size: Vector2(
-          ScreenLayout.boardSize.width,
-          ScreenLayout.boardSize.height,
-        ),
-      );
+  BoardComponent({
+    required this.board,
+    required this.energy,
+    this.onChanged,
+    Random? random,
+  }) : _random = random ?? Random(),
+       super(
+         size: Vector2(
+           ScreenLayout.boardSize.width,
+           ScreenLayout.boardSize.height,
+         ),
+       );
 
   // Picks which of two resources a hive makes. Injected so tests can seed it.
   final Random _random;
+
+  /// Where the energy a larva or a resource costs is taken from.
+  final EnergyNotifier energy;
 
   /// What to draw on the grid. The component replaces it as the player acts;
   /// nothing else observes it yet.
@@ -83,6 +92,9 @@ class BoardComponent extends PositionComponent
   /// hive that has just made a resource or let its bee go for instance: what
   /// shows the selected item (the info panel) refreshes from it.
   final itemChanged = ValueNotifier<int>(0);
+
+  /// Bumped each time a tap could not produce for lack of energy.
+  final energyMissing = ValueNotifier<int>(0);
 
   /// The selected cell, or `null` when nothing is selected, as at launch.
   final selection = ValueNotifier<BoardPosition?>(null);
@@ -110,7 +122,14 @@ class BoardComponent extends PositionComponent
   }
 
   late final SpriteComponent _selectionFrame;
-  late final BoardFullBannerComponent _fullBanner;
+  late final BoardBannerComponent _fullBanner;
+  late final BoardBannerComponent _missingEnergyBanner;
+
+  /// The banner of a tap that finds the board full.
+  BoardBannerComponent get fullBanner => _fullBanner;
+
+  /// The banner of a tap that finds the energy missing.
+  BoardBannerComponent get missingEnergyBanner => _missingEnergyBanner;
   final _itemComponents = <BoardPosition, PositionComponent>{};
 
   // The queen or occupied hive the current tap started on while it was already
@@ -190,7 +209,7 @@ class BoardComponent extends PositionComponent
     final darkSprite = Sprite(darkCell);
     // One paint for every cell: nearest-neighbor, so pixels stay sharp at
     // fractional scales.
-    final paint = Paint()..filterQuality = FilterQuality.none;
+    final paint = pixelPaint();
     for (var row = 0; row < Board.rows; row++) {
       for (var column = 0; column < Board.columns; column++) {
         await add(
@@ -215,13 +234,18 @@ class BoardComponent extends PositionComponent
       priority: 1,
       sprite: Sprite(frame),
       // Its own paint: the opacity must not reach the cells.
-      paint: Paint()..filterQuality = FilterQuality.none,
+      paint: pixelPaint(),
       size: Vector2.all(ScreenLayout.cellSize),
     )..opacity = 0;
     await add(_selectionFrame);
     // Invisible until the board is full and tapped.
     await add(
-      _fullBanner = BoardFullBannerComponent(message: 'board.full'.tr()),
+      _fullBanner = BoardBannerComponent(message: 'board.full'.tr()),
+    );
+    await add(
+      _missingEnergyBanner = BoardBannerComponent(
+        message: 'energy.missing'.tr(),
+      ),
     );
     selection
       ..addListener(_updateSelectionFrame)
@@ -236,6 +260,7 @@ class BoardComponent extends PositionComponent
       ..dispose();
     removal.dispose();
     itemChanged.dispose();
+    energyMissing.dispose();
     super.onRemove();
   }
 
@@ -519,8 +544,13 @@ class BoardComponent extends PositionComponent
       );
 
   Future<void> _spawnLarva(BoardPosition queen) async {
+    if (!energy.canAfford(Energy.productionCost)) {
+      await _signalMissingEnergy(queen);
+      return;
+    }
     switch (board.spawnLarva(queen)) {
       case LarvaCreated(board: final updated, :final position):
+        energy.trySpend(Energy.productionCost);
         board = updated;
         onChanged?.call(board);
         unawaited(HapticFeedback.lightImpact());
@@ -532,8 +562,13 @@ class BoardComponent extends PositionComponent
   }
 
   Future<void> _produceResource(BoardPosition hive) async {
+    if (!energy.canAfford(Energy.productionCost)) {
+      await _signalMissingEnergy(hive);
+      return;
+    }
     switch (board.produceResource(hive, _random)) {
       case ResourceCreated(board: final updated, :final position):
+        energy.trySpend(Energy.productionCost);
         board = updated;
         onChanged?.call(board);
         unawaited(HapticFeedback.lightImpact());
@@ -562,6 +597,16 @@ class BoardComponent extends PositionComponent
     unawaited(HapticFeedback.heavyImpact());
     // The middle of the top row, where the eye is not on a finger.
     _fullBanner.show(Vector2(size.x / 2, ScreenLayout.cellSize / 2));
+    await _shake(position);
+  }
+
+  // The generator at [position] cannot make anything for lack of energy: a
+  // heavy impact, the banner, the gauge and the generator shakes. Nothing is
+  // spent and the board is as it was.
+  Future<void> _signalMissingEnergy(BoardPosition position) async {
+    unawaited(HapticFeedback.heavyImpact());
+    _missingEnergyBanner.show(Vector2(size.x / 2, ScreenLayout.cellSize / 2));
+    energyMissing.value++;
     await _shake(position);
   }
 

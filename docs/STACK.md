@@ -8,7 +8,7 @@
 | ---------------------------- | ------------------------------------------------------------------------- |
 | Moteur de rendu / jeu        | **Flame** — 100% de l'architecture app (Flutter ne sert que d'hôte via `GameWidget`) |
 | Navigation                   | **Flame `RouterComponent`**                                               |
-| State management             | **Riverpod** (déjà en place, à ponter vers les composants Flame)          |
+| State management             | **Riverpod** (le pont vers Flame : `ApiaryGame.container`, voir `docs/CONVENTIONS.md`)          |
 | Stockage local               | **Drift** (SQLite typé)                                                   |
 | Stockage cloud               | **Firestore** (cache local + mode offline)                                |
 | Authentification             | **Firebase Auth** lié au Game Service (Game Center / Play Games Services) |
@@ -63,9 +63,19 @@
   - **Drift** : état de la grille du plateau en cours, préférences UI
   - **Firestore** : tout ce qui doit survivre à une réinstall / se synchroniser entre appareils (reines débloquées, espèces découvertes, monnaie, cosmétiques achetés)
 
+### Heure fiable pour l'énergie (2026-10-27)
+
+L'énergie se recharge de 1 par minute, application ouverte ou fermée, sans que changer l'heure du téléphone ne l'accélère (APY-26). Elle se mesure donc sur l'heure **des serveurs Firestore**, pas sur `DateTime.now()`.
+
+- `TrustedClock` (`lib/domain/energy/`) est l'interface ; `FirestoreTrustedClock` (`lib/data/time/`) l'implémente : le joueur écrit un `serverTimestamp()` sur son seul document `server_times/{uid}` puis le relit depuis le serveur (`Source.server`). Pas de Cloud Function : le document ne contient aucune valeur de jeu, et la règle n'accepte que `{at: request.time}` sur son propre UID.
+- L'heure obtenue continue de courir sur un `Stopwatch` (monotone) : changer la date du téléphone en cours de session ne change rien, et la synchro suivante corrige la dérive. Elle est demandée au lancement, au retour dans l'appli (un téléphone endormi ne compte pas forcément ce temps sur son chronomètre), puis toutes les 30 s tant qu'elle manque ; hors ligne, une seule écriture reste en attente (les tentatives la réutilisent au lieu d'en empiler), et la panne n'est loguée qu'une fois.
+- **Hors ligne au lancement** : aucune heure fiable, donc aucune recharge ; l'énergie hors ligne est créditée dès que la synchro réussit. Dépenser de l'énergie sans heure fiable fonctionne (la jauge baisse), le décompte démarre à la première synchro.
+- L'état est sauvé en local (Drift, table `EnergyStates`, une ligne) avec l'instant fiable d'où l'on compte la prochaine unité. Le reculer (heure serveur antérieure) ne retire rien.
+- **À déployer** : les règles de `server_times` (`firestore.rules`) avant le premier build qui s'en sert ; sans elles, la synchro échoue (loguée en avertissement) et l'énergie ne se recharge pas.
+
 ### Sécurité Firestore
 
-- **En place** : règles deny-all (`allow read, write: if false`) actives sur la base tant qu'aucune collection n'est définie ; `firestore.rules` est la source de vérité, déclarée avec `firestore.indexes.json` dans la section `firestore` de `firebase.json`. Redéployer après modification via `npx -y firebase-tools@15.34.1 deploy --only firestore:rules` (vérifier d'abord avec `--dry-run`, qui compile les règles ; attention, sur un projet sans base, ce dry-run active l'API et crée la base `(default)` en `nam5`).
+- **En place** : règles deny-all (`allow read, write: if false`) par défaut, avec une seule exception : `server_times/{uid}` (heure fiable de l'énergie, voir ci-dessus) ; `firestore.rules` est la source de vérité, déclarée avec `firestore.indexes.json` dans la section `firestore` de `firebase.json`. Redéployer après modification via `npx -y firebase-tools@15.34.1 deploy --only firestore:rules` (vérifier d'abord avec `--dry-run`, qui compile les règles ; attention, sur un projet sans base, ce dry-run active l'API et crée la base `(default)` en `nam5`).
 - Écrire les règles de sécurité dès le début du projet, pas à la fin.
 - Ne jamais laisser le client écrire directement des valeurs à valeur économique (monnaie, déblocages payants) — passer par des Cloud Functions ; le client ne doit que lire.
 - Règles basées sur l'UID Firebase Auth comme clé de document par utilisateur.

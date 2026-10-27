@@ -19,10 +19,10 @@ void main() {
     final result = await database.customSelect('SELECT 1 AS one').getSingle();
 
     expect(result.read<int>('one'), 1);
-    expect(database.schemaVersion, 3);
+    expect(database.schemaVersion, 4);
   });
 
-  test('upgrades a version 1 database with the board table', () async {
+  test('upgrades a version 1 database with every table', () async {
     final upgraded = AppDatabase(
       NativeDatabase.memory(
         setup: (db) => db.execute('PRAGMA user_version = 1'),
@@ -30,9 +30,8 @@ void main() {
     );
     addTearDown(upgraded.close);
 
-    final rows = await upgraded.select(upgraded.boardCells).get();
-
-    expect(rows, isEmpty);
+    expect(await upgraded.select(upgraded.boardCells).get(), isEmpty);
+    expect(await upgraded.select(upgraded.energyStates).get(), isEmpty);
   });
 
   test('reset empties every table', () async {
@@ -47,8 +46,13 @@ void main() {
           ),
         );
 
+    await database
+        .into(database.energyStates)
+        .insert(EnergyStatesCompanion.insert(value: 40));
+
     await database.reset();
 
     expect(await database.select(database.boardCells).get(), isEmpty);
+    expect(await database.select(database.energyStates).get(), isEmpty);
   });
 }

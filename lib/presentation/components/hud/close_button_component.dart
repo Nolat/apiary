@@ -1,9 +1,9 @@
-// 🎯 Dart imports:
-import 'dart:ui';
-
 // 📦 Package imports:
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
+
+// 🌎 Project imports:
+import 'package:apiary/presentation/components/pixel_paint.dart';
 
 /// A round red badge with a white cross, which fades while a finger is down on
 /// it. It carries no caption: the item it sits on says what it closes. The
@@ -39,7 +39,7 @@ class CloseButtonComponent extends PositionComponent
     _icon
       ..sprite = Sprite(await game.images.load(image))
       // Nearest-neighbor, so pixels stay sharp at fractional scales.
-      ..paint = (Paint()..filterQuality = FilterQuality.none);
+      ..paint = (pixelPaint());
     await add(_icon);
   }
 

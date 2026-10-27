@@ -11,6 +11,7 @@ import 'package:apiary/data/local/app_database.dart';
 import 'generated/schema.dart';
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
+import 'generated/schema_v4.dart' as v4;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -93,6 +94,48 @@ void main() {
           expectedNewBoardCellsData,
           await newDb.select(newDb.boardCells).get(),
         );
+      },
+    );
+  });
+
+  // The board survives the new energy table, which starts empty.
+  test('migration from v3 to v4 keeps the board and adds energy', () async {
+    final oldBoardCellsData = <v3.BoardCellsData>[
+      const v3.BoardCellsData(
+        column: 3,
+        row: 7,
+        kind: 'housed_hive',
+        family: 'common',
+        level: 2,
+        remainingLife: 4,
+      ),
+    ];
+    final expectedNewBoardCellsData = <v4.BoardCellsData>[
+      const v4.BoardCellsData(
+        column: 3,
+        row: 7,
+        kind: 'housed_hive',
+        family: 'common',
+        level: 2,
+        remainingLife: 4,
+      ),
+    ];
+
+    await verifier.testWithDataIntegrity(
+      oldVersion: 3,
+      newVersion: 4,
+      createOld: v3.DatabaseAtV3.new,
+      createNew: v4.DatabaseAtV4.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch.insertAll(oldDb.boardCells, oldBoardCellsData);
+      },
+      validateItems: (newDb) async {
+        expect(
+          expectedNewBoardCellsData,
+          await newDb.select(newDb.boardCells).get(),
+        );
+        expect(await newDb.select(newDb.energyStates).get(), isEmpty);
       },
     );
   });

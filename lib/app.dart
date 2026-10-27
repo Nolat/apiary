@@ -50,6 +50,7 @@ class ApiaryApp extends ConsumerWidget {
           boardRepository: boardRepository,
           devTools: devTools,
           startup: startup,
+          container: ProviderScope.containerOf(context),
         ),
       ),
     );

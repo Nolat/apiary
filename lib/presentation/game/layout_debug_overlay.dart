@@ -9,6 +9,7 @@ import 'package:flame/components.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/core/theme/app_colors.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
@@ -39,7 +40,7 @@ class LayoutDebugOverlay extends Component with HasGameReference<ApiaryGame> {
 
   final _boardPaint = Paint()..color = AppColors.honey;
   final _bandPaint = Paint()..color = AppColors.accent;
-  final _imagePaint = Paint()..filterQuality = FilterQuality.none;
+  final Paint _imagePaint = pixelPaint();
   final TextComponent _label = TextComponent(
     textRenderer: TextPaint(
       style: const TextStyle(color: AppColors.accent, fontSize: 8),

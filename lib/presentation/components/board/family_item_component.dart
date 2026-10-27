@@ -1,12 +1,10 @@
-// 🎯 Dart imports:
-import 'dart:ui';
-
 // 📦 Package imports:
 import 'package:flame/components.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/presentation/components/board/family_sprites.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// An item of the board drawn in the colors of its [family]: the family's
@@ -38,7 +36,7 @@ abstract class FamilyItemComponent extends PositionComponent
       ...overlayImages,
     ]);
     // Nearest-neighbor, so pixels stay sharp at fractional scales.
-    final paint = Paint()..filterQuality = FilterQuality.none;
+    final paint = pixelPaint();
     // Bottom to top: the outline never covers the item.
     for (final (image, layerPaint) in [
       (border, family.borderPaint),

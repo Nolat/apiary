@@ -3,6 +3,7 @@ import 'dart:ui';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/family.dart';
+import 'package:apiary/presentation/components/pixel_paint.dart';
 
 /// How a [Family] looks on the board: its sprites and its outline.
 ///
@@ -43,7 +44,7 @@ extension FamilySprites on Family {
   /// A paint drawing an outline sprite in [borderColor], nearest-neighbor so
   /// pixels stay sharp at fractional scales. The tint multiplies the white of
   /// the sprite. Create it once per component, never per frame.
-  Paint get borderPaint => Paint()
-    ..filterQuality = FilterQuality.none
-    ..colorFilter = ColorFilter.mode(borderColor, BlendMode.modulate);
+  Paint get borderPaint =>
+      pixelPaint()
+        ..colorFilter = ColorFilter.mode(borderColor, BlendMode.modulate);
 }

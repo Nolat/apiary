@@ -210,6 +210,10 @@ Règles :
 - Un golden par **état visuel significatif** (plateau vide, plateau plein, abeille sélectionnée, commande remplie…), pas un par test.
 - Les animations : figer le temps avec `game.update(dt)` à un instant précis avant la capture.
 
+### Grille de pixels
+
+Tous les pixels de l'écran doivent avoir la même taille et tomber sur la même grille (voir `docs/CONVENTIONS.md`). Deux gardes automatiques : `test/assets/pixel_grid_test.dart` vérifie chaque PNG de `assets/images/` (pas de bords semi-transparents, pas de sprite exporté agrandi ×2 à ×4) ; `offPixelGrid(game)` (`test/helpers/pixel_grid.dart`) liste les composants d'une scène dont le coin ou la taille n'est pas un nombre entier de pixels de jeu (les textes : leur position seulement) et ceux dont la peinture est lissée ou anti-aliasée (`pixelPaint()` obligatoire). `board_scene_pixel_grid_test.dart` l'appelle sur plusieurs états du plateau ; **toute nouvelle scène ou tout nouveau composant d'affichage ajoute le sien**. `energy_gauge_scale_test.dart` rend le HUD à l'échelle d'un iPhone (1206 px physiques pour 140 pixels de jeu) et mesure les rangs de bordure : 8 ou 9 pixels physiques, jamais moins (panneau écrasé). Ce que ces tests ne voient pas : le lissage du texte, et l'écart inévitable de 1 pixel physique entre deux pixels de jeu à une échelle fractionnaire (voir `docs/STACK.md`).
+
 ### Mise en page multi-écrans : `tool/screenshots/ios.sh`
 
 Les goldens tournent à 140×248 / DPR 1, où le viewport est trivial (×1). Pour vérifier le `GameViewport` et `ScreenLayout` sur de vrais écrans, `tool/screenshots/ios.sh` compile l'app pour simulateur avec `--dart-define=APIARY_LAYOUT_DEBUG=true`, qui affiche une mire par-dessus les scènes (`LayoutDebugOverlay` : contour de chaque bande, miel pour le plateau, damier de pixels de jeu dessiné comme un sprite, échelle). Le script la lance sur des simulateurs extrêmes (iPhone SE 16:9 à DPR 2, mini, Pro, Pro Max, pliable, iPad mini, iPad Pro 13"), qu'il crée et démarre au besoin. Puis `tool/screenshots/check_layout.py` mesure chaque capture, pour une échelle s : plateau de 140s×180s pixels physiques, bord à bord sur iPhone, centré sur les écrans marqués `centered` (iPad, pliable) ; contours des bandes rencontrés dans l'ordre (HUD, commandes, plateau, barre du bas) sans chevauchement ; damier à ⌊s⌋ ou ⌈s⌉ px par pixel de jeu (rendu « nearest », sans flou).
@@ -249,6 +253,8 @@ patrolTest('cold start signs in anonymously and opens the board', ($) async {
 Contrairement aux tests `testWithGame`, les gestes passent par le vrai pipeline de pointeurs (`WidgetTester.tapAt`, `startGesture`), via `BoardDriver`. C'est volontairement redondant avec les tests rapides : il vérifie que les règles, les gestes, l'animation et Drift tiennent ensemble sur un appareil. À étendre avec chaque nouvelle épopée.
 
 `patrol_test/hives_epic_test.dart` fait de même pour l'épopée « Ruches et ressources » (APY-11 à APY-15, plus la reprise d'une abeille qui n'a rien produit, APY-49), dans une seule partie depuis une app vide : une abeille déposée dans la ruche vide (et échangée avec une autre), reprise par la croix de l'encart tant que la ruche n'a rien produit, la ressource créée sur la case libre la plus proche, la durée de vie qui baisse d'une unité par ressource et qui survit à la réouverture de l'app (donc à la migration Drift v2 → v3 sur un appareil), l'abeille épuisée qui vide la ruche, puis la fusion de deux rayons en miel, le miel et le pollen qui ne fusionnent plus, et enfin la réouverture qui restaure le plateau. Le tirage du type de ressource n'est pas semé sur appareil : le test fait passer des abeilles par la ruche jusqu'à avoir deux rayons. Un fichier par épopée, un test par fichier. Durée : ~1 min 30 sur simulateur. Le fichier ignore le lint `invalid_use_of_visible_for_testing_member` (`patrol_test/` n'est pas reconnu comme un dossier de tests).
+
+`patrol_test/energy_epic_test.dart` couvre l'épopée « Énergie » (APY-24 à APY-26) : la jauge pleine dans le HUD, une larve et une ressource qui coûtent 1 unité (sélectionner, déplacer, fusionner et loger une abeille restent gratuits), la jauge sauvegardée et retrouvée à la réouverture, puis l'unité de trop qui ne produit rien et affiche « Plus d'énergie ! ». La recharge dans le temps n'y est pas : une minute réelle rallongerait le test, et elle est couverte par les tests rapides sur une `FakeTrustedClock` que le test fait avancer. Les autres épopées jouent de longues parties : `BoardDriver` remplit la jauge quand elle baisse (`refillEnergy`), pour qu'elles ne parlent pas d'énergie.
 
 **Quoi tester en E2E** : uniquement ce qui ne peut pas l'être plus bas, c'est-à-dire l'intégration réelle avec la plateforme et les services. Candidats : démarrage à froid et connexion, persistance après redémarrage de l'app, permission de notifications pour les commandes du jour, achat in-app en sandbox, liaison Game Center / Play Games. Une règle de jeu testée en E2E est une règle mal placée.
 
@@ -306,15 +312,14 @@ Les minutes macOS sont décomptées ×10 par GitHub sur un dépôt privé. Si le
 | `flame_test` | dev | `testWithGame`, faux événements d'entrée, matchers Flame |
 | `firebase_auth_mocks` | dev | faux `FirebaseAuth` |
 | `patrol` | dev | E2E sur appareil (+ CLI `patrol_cli`, installée globalement) |
-| `fake_cloud_firestore` | dev, **à ajouter** | faux Firestore, dès la première collection |
+| `fake_cloud_firestore` | dev | faux Firestore (`FirestoreTrustedClock`) |
 
 Note : `glados`, `flame_test` et `firebase_auth_mocks` tirent `package:test`, dont la version est bornée par le `test_api` du SDK Flutter. Cela contraint `analyzer` et a fait redescendre `freezed` de 4.0.3 à 4.0.1 (patch). Sans impact aujourd'hui ; à garder en tête si une montée de version de freezed ou de riverpod_generator bloque à la résolution.
 
 ## Reste à faire
 
 - [ ] Premiers tests de domaine (glados) avec la première règle de jeu, et `test/helpers/generators.dart`.
-- [ ] `fake_cloud_firestore` + tests des règles Firestore sur émulateur à la première collection.
-- [ ] Tests de migrations Drift à la première table.
+- [ ] Tests des règles Firestore (`server_times`) sur émulateur (`fake_cloud_firestore` est en place, mais ne vérifie pas les règles).
 - [ ] Environnement Firebase isolé pour les E2E (émulateur ou projet de test).
 - [ ] E2E en CI (Firebase Test Lab).
 - [ ] Mode « simulation » headless (voir `docs/STACK.md`), qui s'appuiera sur le domaine déterministe (`clock` + `Random` injecté).
