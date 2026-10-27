@@ -48,6 +48,21 @@ void main() {
     expect(await repository.load(), board);
   });
 
+  test('keeps the bee a hive holds', () async {
+    final board = Board(
+      items: {
+        Board.startingHivePosition: const BoardItem.hive(
+          bee: Bee(family: Family.common, level: 4),
+        ),
+        const BoardPosition(column: 0, row: 0): const BoardItem.hive(),
+      },
+    );
+
+    await repository.save(board);
+
+    expect(await repository.load(), board);
+  });
+
   test('replaces the previous board on each save', () async {
     await repository.save(Board.initial());
     const moved = BoardPosition(column: 1, row: 1);
@@ -65,9 +80,21 @@ void main() {
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level) VALUES '
       "(0, 0, 'bee', 'common', 99), (1, 0, 'cocoon', 'common', 1), "
-      "(2, 0, 'larva', 'unknown', 1), (50, 0, 'larva', 'common', 1)",
+      "(2, 0, 'larva', 'unknown', 1), (50, 0, 'larva', 'common', 1), "
+      "(3, 0, 'housed_hive', 'common', 99), "
+      "(4, 0, 'housed_hive', 'unknown', 1)",
     );
 
-    expect(await repository.load(), Board.initial());
+    // A hive whose bee cannot be read is kept, empty.
+    expect(
+      await repository.load(),
+      Board.initial().copyWith(
+        items: {
+          ...Board.initial().items,
+          const BoardPosition(column: 3, row: 0): const BoardItem.hive(),
+          const BoardPosition(column: 4, row: 0): const BoardItem.hive(),
+        },
+      ),
+    );
   });
 }

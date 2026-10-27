@@ -21,9 +21,12 @@ class DriftBoardRepository implements BoardRepository {
   static const _larva = 'larva';
   static const _bee = 'bee';
   static const _hive = 'hive';
+  static const _housedHive = 'housed_hive';
 
   // A hive belongs to no family, but the column is not nullable: stored
-  // as-is rather than through a migration.
+  // as-is rather than through a migration. An empty hive (`hive`) stores no
+  // family; one that holds a bee (`housed_hive`) stores the bee's family and
+  // level.
   static const _noFamily = '';
 
   @override
@@ -67,33 +70,46 @@ class DriftBoardRepository implements BoardRepository {
       Queen(:final family) => (_queen, family),
       Larva(:final family) => (_larva, family),
       Bee(:final family) => (_bee, family),
-      Hive() => (_hive, null),
+      Hive(bee: null) => (_hive, null),
+      Hive(:final bee?) => (_housedHive, bee.family),
     };
     return BoardCellsCompanion.insert(
       column: position.column,
       row: position.row,
       kind: kind,
       family: family?.name ?? _noFamily,
-      level: Value(item.level ?? 1),
+      level: Value(switch (item) {
+        Hive(:final bee?) => bee.level,
+        _ => item.level ?? 1,
+      }),
     );
   }
 
   static BoardItem? _itemOf(BoardCell row) {
-    if (row.kind == _hive) {
+    final family = Family.values.asNameMap()[row.family];
+    // A hive is never lost: one whose bee cannot be read comes back empty.
+    if (row.kind == _hive || (row.kind == _housedHive && family == null)) {
       return const BoardItem.hive();
     }
-    final family = Family.values.asNameMap()[row.family];
     if (family == null) {
       return null;
     }
     return switch (row.kind) {
       _queen => BoardItem.queen(family: family),
       _larva => BoardItem.larva(family: family),
-      _bee when row.level >= 1 && row.level <= family.maxLevel => BoardItem.bee(
+      _bee when _levelFits(row, family) => BoardItem.bee(
         family: family,
         level: row.level,
+      ),
+      _housedHive => BoardItem.hive(
+        bee: _levelFits(row, family)
+            ? Bee(family: family, level: row.level)
+            : null,
       ),
       _ => null,
     };
   }
+
+  static bool _levelFits(BoardCell row, Family family) =>
+      row.level >= 1 && row.level <= family.maxLevel;
 }

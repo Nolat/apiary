@@ -741,4 +741,69 @@ void _hiveTests() {
       expect(board.selectionAfterTap(null, hive), hive);
     });
   });
+
+  group('Dropping a bee on a hive', () {
+    const hive = Board.startingHivePosition;
+    const cell = BoardPosition(column: 0, row: 0);
+
+    Board withBee(
+      BoardItem bee, [
+      BoardItem hiveItem = const BoardItem.hive(),
+    ]) => Board(items: {hive: hiveItem, cell: bee});
+
+    for (final level in [1, Family.common.maxLevel]) {
+      test('houses a level $level bee in an empty hive', () {
+        final bee = BoardItem.bee(family: Family.common, level: level);
+        final result = withBee(bee).drop(cell, hive);
+
+        expect(result, isA<BeeHoused>());
+        expect(result!.board.itemAt(cell), isNull);
+        expect(
+          result.board.itemAt(hive),
+          BoardItem.hive(bee: bee as Bee),
+        );
+        expect(result.board.items, hasLength(1));
+      });
+    }
+
+    test('swaps with a hive that already holds a bee', () {
+      const held = Bee(family: Family.common, level: 2);
+      const bee = BoardItem.bee(family: Family.common);
+      final board = withBee(bee, const BoardItem.hive(bee: held));
+      final result = board.drop(cell, hive);
+
+      expect(board.placeInHive(cell, hive), isNull);
+      expect(result, isA<ItemsSwapped>());
+      expect(result!.board.itemAt(hive), bee);
+      expect(result.board.itemAt(cell), const BoardItem.hive(bee: held));
+    });
+
+    test('does not take a larva, which swaps with the hive', () {
+      final board = withBee(const BoardItem.larva(family: Family.common));
+      final result = board.drop(cell, hive);
+
+      expect(result, isA<ItemsSwapped>());
+      expect(result!.board.itemAt(hive), isA<Larva>());
+      expect(result.board.itemAt(cell), const BoardItem.hive());
+    });
+
+    test('swaps an occupied hive with a bee dragged onto it', () {
+      const held = Bee(family: Family.common, level: 3);
+      final board = withBee(
+        const BoardItem.bee(family: Family.common),
+        const BoardItem.hive(bee: held),
+      );
+      final result = board.drop(hive, cell);
+
+      expect(result, isA<ItemsSwapped>());
+      expect(result!.board.itemAt(cell), const BoardItem.hive(bee: held));
+    });
+
+    test('keeps an occupied hive from being removed', () {
+      const held = Bee(family: Family.common);
+      final board = Board(items: {hive: const BoardItem.hive(bee: held)});
+
+      expect(board.remove(hive), isNull);
+    });
+  });
 }

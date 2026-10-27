@@ -39,7 +39,9 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// the tap. Any item can be dragged: it follows the finger and is selected.
 /// Dropped on a larva of the same family, a larva merges into a bee; a bee
 /// dropped on an identical one (unless of the family's last level) merges into
-/// the bee of the next level; dropped on an empty cell, an item moves there;
+/// the bee of the next level; a bee dropped on an empty hive goes into it; a
+/// bee dropped on a hive that holds one swaps places with it; dropped on an
+/// empty cell, an item moves there;
 /// dropped on a different item, the two swap places; otherwise it goes back to
 /// its cell.
 ///
@@ -367,31 +369,45 @@ class BoardComponent extends PositionComponent
         unawaited(_slide(other, itemPosition(from)));
         item.position.setFrom(itemPosition(onto));
         selection.value = onto;
+      case BeeHoused():
+        // The bee lands on the hive, then both give way to the hive that
+        // holds it.
+        await _landAndReplace(from, onto, item);
       case ItemsMerged():
-        _itemComponents.remove(from);
         // The held item lands on the other one, which is still there; only
-        // then do both give way to the result, which pops in.
-        await _land(item, itemPosition(onto));
-        unawaited(HapticFeedback.mediumImpact());
-        item.removeFromParent();
-        _itemComponents[onto]?.removeFromParent();
-        final merged = _componentFor(onto, board.itemAt(onto)!);
-        await add(merged);
-        unawaited(
-          _play(
-            merged,
-            CenteredScaleEffect(
-              from: popStartScale,
-              to: 1,
-              duration: popDuration,
-              curve: Curves.easeOutBack,
-            ),
-          ),
-        );
-        // The frame grows on its own; the item has just popped in.
-        _bouncedAlready = onto;
-        selection.value = onto;
+        // then do both give way to the result.
+        await _landAndReplace(from, onto, item);
     }
+  }
+
+  /// The dragged [item] lands on the one at [onto], then both give way to the
+  /// item the board now holds there, which pops in and is selected.
+  Future<void> _landAndReplace(
+    BoardPosition from,
+    BoardPosition onto,
+    PositionComponent item,
+  ) async {
+    _itemComponents.remove(from);
+    await _land(item, itemPosition(onto));
+    unawaited(HapticFeedback.mediumImpact());
+    item.removeFromParent();
+    _itemComponents[onto]?.removeFromParent();
+    final replacement = _componentFor(onto, board.itemAt(onto)!);
+    await add(replacement);
+    unawaited(
+      _play(
+        replacement,
+        CenteredScaleEffect(
+          from: popStartScale,
+          to: 1,
+          duration: popDuration,
+          curve: Curves.easeOutBack,
+        ),
+      ),
+    );
+    // The frame grows on its own; the item has just popped in.
+    _bouncedAlready = onto;
+    selection.value = onto;
   }
 
   /// Removes the selected item, if the player can: its cell is freed and
@@ -447,7 +463,7 @@ class BoardComponent extends PositionComponent
           level: level,
           position: position,
         ),
-        Hive() => HiveComponent(position: position),
+        Hive(:final bee) => HiveComponent(bee: bee, position: position),
       };
 
   PositionComponent _componentFor(BoardPosition position, BoardItem item) =>

@@ -43,7 +43,9 @@
     },
     "hive": {
       "name": "Ruche vide",
-      "tip": "DÉPOSEZ une abeille pour produire des ressources"
+      "name_occupied": "Ruche occupée",
+      "tip": "DÉPOSEZ une abeille pour produire des ressources",
+      "tip_occupied": "Abrite : {species}"
     },
     "larva": {
       "name": "Larve {family}",

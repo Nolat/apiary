@@ -141,9 +141,13 @@ abstract class Board with _$Board {
     if (itemAt(onto) == null) {
       return BoardDrop.moved(board: move(from, onto)!);
     }
-    if (interacts(from, onto)) {
-      final merged = mergeLarvae(from, onto) ?? mergeBees(from, onto);
-      return merged == null ? null : BoardDrop.merged(board: merged);
+    final housed = placeInHive(from, onto);
+    if (housed != null) {
+      return BoardDrop.housed(board: housed);
+    }
+    final merged = mergeLarvae(from, onto) ?? mergeBees(from, onto);
+    if (merged != null) {
+      return BoardDrop.merged(board: merged);
     }
     return BoardDrop.swapped(board: swap(from, onto)!);
   }
@@ -217,16 +221,37 @@ abstract class Board with _$Board {
   static bool _beesMerge(Bee a, Bee b) =>
       a.family == b.family && a.level == b.level && a.level < a.family.maxLevel;
 
+  /// What dropping the bee on [from] onto [onto] does when [onto] is an empty
+  /// hive: the bee leaves its cell, which is freed, and the hive holds it from
+  /// then on; `null` otherwise (not a bee, a hive that already holds one, the
+  /// same cell, or a cell off the board) and the board stays as it is.
+  Board? placeInHive(BoardPosition from, BoardPosition onto) {
+    final dragged = itemAt(from);
+    final target = itemAt(onto);
+    if (from == onto ||
+        dragged is! Bee ||
+        target is! Hive ||
+        target.bee != null) {
+      return null;
+    }
+    return copyWith(
+      items: {
+        for (final MapEntry(:key, :value) in items.entries)
+          if (key != from) key: value,
+        onto: BoardItem.hive(bee: dragged),
+      },
+    );
+  }
+
   /// Whether dropping the item on [from] onto the one on [onto] makes them
-  /// interact (a merge today; a hive or an incubator taking a bee will join
-  /// here) rather than trade places. `false` when either cell is empty.
+  /// interact (a merge, or a bee going into an empty hive; an incubator taking
+  /// a bee will join here) rather than trade places. `false` when either cell
+  /// is empty. Derived from the rules themselves, so a new one cannot be
+  /// forgotten here.
   bool interacts(BoardPosition from, BoardPosition onto) =>
-      switch ((itemAt(from), itemAt(onto))) {
-        (Larva(family: final a), Larva(family: final b)) => a == b,
-        // Two identical bees of the family's last level trade places.
-        (final Bee a, final Bee b) => _beesMerge(a, b),
-        _ => false,
-      };
+      placeInHive(from, onto) != null ||
+      mergeLarvae(from, onto) != null ||
+      mergeBees(from, onto) != null;
 
   /// What dropping the item on [from] onto [onto] does when both cells hold
   /// an item and the two do not [interacts]: they exchange their cells,

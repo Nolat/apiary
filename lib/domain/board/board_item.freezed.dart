@@ -126,13 +126,13 @@ return hive(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function()?  hive,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee)?  hive,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
 return bee(_that.family,_that.level);case Hive() when hive != null:
-return hive();case _:
+return hive(_that.bee);case _:
   return orElse();
 
 }
@@ -150,13 +150,13 @@ return hive();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function()  hive,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee)  hive,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
 return larva(_that.family);case Bee():
 return bee(_that.family,_that.level);case Hive():
-return hive();}
+return hive(_that.bee);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -170,13 +170,13 @@ return hive();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function()?  hive,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee)?  hive,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
 return larva(_that.family);case Bee() when bee != null:
 return bee(_that.family,_that.level);case Hive() when hive != null:
-return hive();case _:
+return hive(_that.bee);case _:
   return null;
 
 }
@@ -394,32 +394,68 @@ as int,
 
 
 class Hive implements BoardItem {
-  const Hive();
+  const Hive({this.bee});
   
 
+ final  Bee? bee;
 
-
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$HiveCopyWith<Hive> get copyWith => _$HiveCopyWithImpl<Hive>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is Hive);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is Hive&&const DeepCollectionEquality().equals(other.bee, bee));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(bee));
+}
 
 @override
 String toString() {
-    return 'BoardItem.hive()';
+    return 'BoardItem.hive(bee: $bee)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class $HiveCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
+  factory $HiveCopyWith(Hive value, $Res Function(Hive) _then) = _$HiveCopyWithImpl;
+@useResult
+$Res call({
+ Bee? bee
+});
 
 
+
+
+}
+/// @nodoc
+class _$HiveCopyWithImpl<$Res>
+    implements $HiveCopyWith<$Res> {
+  _$HiveCopyWithImpl(this._self, this._then);
+
+  final Hive _self;
+  final $Res Function(Hive) _then;
+
+/// Create a copy of BoardItem
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? bee = freezed,}) {
+  return _then(Hive(
+bee: freezed == bee ? _self.bee : bee // ignore: cast_nullable_to_non_nullable
+as Bee?,
+  ));
+}
+
+
+}
 
 // dart format on

@@ -43,7 +43,9 @@
     },
     "hive": {
       "name": "Empty hive",
-      "tip": "DROP a bee to produce resources"
+      "name_occupied": "Occupied hive",
+      "tip": "DROP a bee to produce resources",
+      "tip_occupied": "Shelters: {species}"
     },
     "larva": {
       "name": "{family} larva",

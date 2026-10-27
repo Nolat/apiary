@@ -16,6 +16,9 @@ sealed class BoardDrop with _$BoardDrop {
   /// The item and the one it was dropped on traded places.
   const factory BoardDrop.swapped({required Board board}) = ItemsSwapped;
 
+  /// The bee left the board for the empty hive it was dropped on.
+  const factory BoardDrop.housed({required Board board}) = BeeHoused;
+
   /// The item and the one it was dropped on merged into a new one, on the
   /// cell they were dropped on.
   const factory BoardDrop.merged({required Board board}) = ItemsMerged;

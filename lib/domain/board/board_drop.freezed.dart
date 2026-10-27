@@ -101,12 +101,13 @@ extension BoardDropPatterns on BoardDrop {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ItemMoved value)?  moved,TResult Function( ItemsSwapped value)?  swapped,TResult Function( ItemsMerged value)?  merged,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ItemMoved value)?  moved,TResult Function( ItemsSwapped value)?  swapped,TResult Function( BeeHoused value)?  housed,TResult Function( ItemsMerged value)?  merged,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case ItemMoved() when moved != null:
 return moved(_that);case ItemsSwapped() when swapped != null:
-return swapped(_that);case ItemsMerged() when merged != null:
+return swapped(_that);case BeeHoused() when housed != null:
+return housed(_that);case ItemsMerged() when merged != null:
 return merged(_that);case _:
   return orElse();
 
@@ -125,12 +126,13 @@ return merged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ItemMoved value)  moved,required TResult Function( ItemsSwapped value)  swapped,required TResult Function( ItemsMerged value)  merged,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ItemMoved value)  moved,required TResult Function( ItemsSwapped value)  swapped,required TResult Function( BeeHoused value)  housed,required TResult Function( ItemsMerged value)  merged,}){
 final _that = this;
 switch (_that) {
 case ItemMoved():
 return moved(_that);case ItemsSwapped():
-return swapped(_that);case ItemsMerged():
+return swapped(_that);case BeeHoused():
+return housed(_that);case ItemsMerged():
 return merged(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -145,12 +147,13 @@ return merged(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ItemMoved value)?  moved,TResult? Function( ItemsSwapped value)?  swapped,TResult? Function( ItemsMerged value)?  merged,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ItemMoved value)?  moved,TResult? Function( ItemsSwapped value)?  swapped,TResult? Function( BeeHoused value)?  housed,TResult? Function( ItemsMerged value)?  merged,}){
 final _that = this;
 switch (_that) {
 case ItemMoved() when moved != null:
 return moved(_that);case ItemsSwapped() when swapped != null:
-return swapped(_that);case ItemsMerged() when merged != null:
+return swapped(_that);case BeeHoused() when housed != null:
+return housed(_that);case ItemsMerged() when merged != null:
 return merged(_that);case _:
   return null;
 
@@ -168,11 +171,12 @@ return merged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Board board)?  moved,TResult Function( Board board)?  swapped,TResult Function( Board board)?  merged,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Board board)?  moved,TResult Function( Board board)?  swapped,TResult Function( Board board)?  housed,TResult Function( Board board)?  merged,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ItemMoved() when moved != null:
 return moved(_that.board);case ItemsSwapped() when swapped != null:
-return swapped(_that.board);case ItemsMerged() when merged != null:
+return swapped(_that.board);case BeeHoused() when housed != null:
+return housed(_that.board);case ItemsMerged() when merged != null:
 return merged(_that.board);case _:
   return orElse();
 
@@ -191,11 +195,12 @@ return merged(_that.board);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Board board)  moved,required TResult Function( Board board)  swapped,required TResult Function( Board board)  merged,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Board board)  moved,required TResult Function( Board board)  swapped,required TResult Function( Board board)  housed,required TResult Function( Board board)  merged,}) {final _that = this;
 switch (_that) {
 case ItemMoved():
 return moved(_that.board);case ItemsSwapped():
-return swapped(_that.board);case ItemsMerged():
+return swapped(_that.board);case BeeHoused():
+return housed(_that.board);case ItemsMerged():
 return merged(_that.board);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -210,11 +215,12 @@ return merged(_that.board);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Board board)?  moved,TResult? Function( Board board)?  swapped,TResult? Function( Board board)?  merged,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Board board)?  moved,TResult? Function( Board board)?  swapped,TResult? Function( Board board)?  housed,TResult? Function( Board board)?  merged,}) {final _that = this;
 switch (_that) {
 case ItemMoved() when moved != null:
 return moved(_that.board);case ItemsSwapped() when swapped != null:
-return swapped(_that.board);case ItemsMerged() when merged != null:
+return swapped(_that.board);case BeeHoused() when housed != null:
+return housed(_that.board);case ItemsMerged() when merged != null:
 return merged(_that.board);case _:
   return null;
 
@@ -360,6 +366,83 @@ class _$ItemsSwappedCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? board = null,}) {
   return _then(ItemsSwapped(
+board: null == board ? _self.board : board // ignore: cast_nullable_to_non_nullable
+as Board,
+  ));
+}
+
+/// Create a copy of BoardDrop
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$BoardCopyWith<$Res> get board {
+  
+  return $BoardCopyWith<$Res>(_self.board, (value) {
+    return _then(_self.copyWith(board: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class BeeHoused implements BoardDrop {
+  const BeeHoused({required this.board});
+  
+
+@override final  Board board;
+
+/// Create a copy of BoardDrop
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BeeHousedCopyWith<BeeHoused> get copyWith => _$BeeHousedCopyWithImpl<BeeHoused>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is BeeHoused&&(identical(other.board, board) || other.board == board));
+}
+
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,board);
+}
+
+@override
+String toString() {
+    return 'BoardDrop.housed(board: $board)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BeeHousedCopyWith<$Res> implements $BoardDropCopyWith<$Res> {
+  factory $BeeHousedCopyWith(BeeHoused value, $Res Function(BeeHoused) _then) = _$BeeHousedCopyWithImpl;
+@override @useResult
+$Res call({
+ Board board
+});
+
+
+@override $BoardCopyWith<$Res> get board;
+
+}
+/// @nodoc
+class _$BeeHousedCopyWithImpl<$Res>
+    implements $BeeHousedCopyWith<$Res> {
+  _$BeeHousedCopyWithImpl(this._self, this._then);
+
+  final BeeHoused _self;
+  final $Res Function(BeeHoused) _then;
+
+/// Create a copy of BoardDrop
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? board = null,}) {
+  return _then(BeeHoused(
 board: null == board ? _self.board : board // ignore: cast_nullable_to_non_nullable
 as Board,
   ));

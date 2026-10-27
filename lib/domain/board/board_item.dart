@@ -28,9 +28,9 @@ sealed class BoardItem with _$BoardItem {
     @Default(1) int level,
   }) = Bee;
 
-  /// A hive, which belongs to no family. It starts empty; taking a bee is up
-  /// to a later story.
-  const factory BoardItem.hive() = Hive;
+  /// A hive, which belongs to no family. It starts empty and takes one [bee]
+  /// at a time (see `Board.placeInHive`); `null` while it is empty.
+  const factory BoardItem.hive({Bee? bee}) = Hive;
 }
 
 extension BoardItemLevel on BoardItem {

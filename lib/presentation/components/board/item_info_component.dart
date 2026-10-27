@@ -29,6 +29,9 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// note in place of the item's details. The texts then leave room for the
 /// button.
 ///
+/// A hive holding a bee shows that bee in the same kind of frame, with its
+/// texts next to it.
+///
 /// Texts are in the pixel font: four lines fill the panel. The title is
 /// honey-colored, the invitation and tip off-white.
 class ItemInfoComponent extends PositionComponent with HasGameReference {
@@ -151,7 +154,8 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   @visibleForTesting
   bool get hasUndoButton => _shownButtons.contains(_undoButton);
 
-  /// Whether the frame of a removed item is on show.
+  /// Whether the frame of a removed item, or of the bee in the selected hive,
+  /// is on show.
   @visibleForTesting
   bool get hasRemovedFrame => _removedFrame != null;
 
@@ -186,7 +190,8 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
         : CaptionButtonComponent.widthWith(caption) +
               _buttonMargin +
               _buttonGap;
-    final inset = removed == null
+    final shown = _framedOf(item, removed);
+    final inset = shown == null
         ? _textLeft
         : _textLeft + _removedFrameSize + _textLeft;
     List<String> wrapped(String text, TextPaint paint) => wrap(
@@ -218,11 +223,12 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       );
     }
     final removed = _removed;
-    // The removal note sits next to the frame, centered on it.
-    final left = removed == null
+    final framed = _framedOf(_item, removed);
+    // The text sits next to the frame, centered on it.
+    final left = framed == null
         ? _textLeft
         : _textLeft + _removedFrameSize + _textLeft;
-    final top = removed == null
+    final top = framed == null
         ? _firstLineTop
         : ((size.y - lines.length * _lineHeight) / 2).floorToDouble();
     for (final (index, label) in _lineLabels.indexed) {
@@ -239,10 +245,15 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       shown: removed == null && (_item?.removable ?? false),
     );
     _setShown(_undoButton, shown: removed != null);
-    _showRemovedFrame(removed);
+    _showFrame(framed);
   }
 
-  void _showRemovedFrame(BoardItem? removed) {
+  // What the frame on the left of the texts shows: the item just removed, or
+  // the bee the selected hive holds. `null` for no frame.
+  static BoardItem? _framedOf(BoardItem? item, BoardItem? removed) =>
+      removed ?? (item is Hive ? item.bee : null);
+
+  void _showFrame(BoardItem? removed) {
     final top = ((size.y - _removedFrameSize) / 2).floorToDouble();
     // The frame is only rebuilt for another item: a refresh that changes
     // nothing for it just keeps it centered.
@@ -306,9 +317,9 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
         namedArgs: {'family': 'family.${family.name}'.tr()},
       ),
       // Placeholder species names, until the game data defines the real ones.
-      Bee(:final family, :final level) =>
-        'species.${family.name}.level_$level'.tr(),
-      Hive() => 'item.hive.name'.tr(),
+      final Bee bee => _speciesOf(bee),
+      Hive(bee: null) => 'item.hive.name'.tr(),
+      Hive() => 'item.hive.name_occupied'.tr(),
     };
     final level = item.level;
     return level == null
@@ -318,12 +329,19 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
           );
   }
 
+  // Placeholder species names, until the game data defines the real ones.
+  static String _speciesOf(Bee bee) =>
+      'species.${bee.family.name}.level_${bee.level}'.tr();
+
   static String _tipOf(BoardItem item) => switch (item) {
     Queen() => 'item.queen.tip'.tr(),
     Larva() => 'item.larva.tip'.tr(),
     Bee(:final family, :final level) =>
       level == family.maxLevel ? 'item.bee.tip_max'.tr() : 'item.bee.tip'.tr(),
-    Hive() => 'item.hive.tip'.tr(),
+    Hive(bee: null) => 'item.hive.tip'.tr(),
+    Hive(:final bee?) => 'item.hive.tip_occupied'.tr(
+      namedArgs: {'species': _speciesOf(bee)},
+    ),
   };
 
   /// Covers [area], in the parent's coordinates.
