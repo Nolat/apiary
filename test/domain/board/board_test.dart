@@ -21,6 +21,7 @@ extension AnyBoardPosition on Any {
 }
 
 void main() {
+  _removeTests();
   group('Board.initial', () {
     test('holds a single Common queen', () {
       final board = Board.initial();
@@ -659,6 +660,35 @@ void main() {
       expect(board.drop(a, a), isNull);
       expect(board.drop(a, const BoardPosition(column: -1, row: 0)), isNull);
       expect(board.drop(a, const BoardPosition(column: 7, row: 0)), isNull);
+    });
+  });
+}
+
+void _removeTests() {
+  group('Board.remove', () {
+    const larva = BoardPosition(column: 0, row: 0);
+    const bee = BoardPosition(column: 1, row: 0);
+    const queen = Board.startingQueenPosition;
+    final board = Board(
+      items: {
+        queen: const BoardItem.queen(family: Family.common),
+        larva: const BoardItem.larva(family: Family.common),
+        bee: const BoardItem.bee(family: Family.common, level: 3),
+      },
+    );
+
+    test('frees the cell of a larva or a bee and keeps the rest', () {
+      expect(board.remove(larva)!.items, {
+        for (final e in board.items.entries)
+          if (e.key != larva) e.key: e.value,
+      });
+      expect(board.remove(bee)!.itemAt(bee), isNull);
+      expect(board.remove(bee)!.items, hasLength(2));
+    });
+
+    test('refuses a queen and an empty cell', () {
+      expect(board.remove(queen), isNull);
+      expect(board.remove(const BoardPosition(column: 6, row: 8)), isNull);
     });
   });
 }

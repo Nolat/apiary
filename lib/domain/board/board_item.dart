@@ -37,3 +37,12 @@ extension BoardItemLevel on BoardItem {
     Bee(:final level) => level,
   };
 }
+
+extension BoardItemRemoval on BoardItem {
+  /// Whether the player can remove the item from the board: larvae and bees
+  /// can, queens cannot.
+  bool get removable => switch (this) {
+    Queen() => false,
+    Larva() || Bee() => true,
+  };
+}

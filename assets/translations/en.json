@@ -6,7 +6,10 @@
     "enter": "Board",
     "info": {
       "empty": "Tap an item to see its details here.",
-      "title_level": "{name} · Lv. {level}"
+      "title_level": "{name} · Lv. {level}",
+      "remove": "Remove",
+      "undo": "Undo",
+      "removed": "has been removed."
     }
   },
   "family": {

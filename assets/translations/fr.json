@@ -6,7 +6,10 @@
     "enter": "Plateau",
     "info": {
       "empty": "Touchez un objet pour consulter ses détails ici.",
-      "title_level": "{name} · Niv. {level}"
+      "title_level": "{name} · Niv. {level}",
+      "remove": "Retirer",
+      "undo": "Annuler",
+      "removed": "a été retiré(e)."
     }
   },
   "family": {

@@ -66,6 +66,22 @@ class BoardComponent extends PositionComponent
   /// The selected cell, or `null` when nothing is selected, as at launch.
   final selection = ValueNotifier<BoardPosition?>(null);
 
+  /// The last removal, while it can still be undone: the board and the cell
+  /// as they were before it. It lasts until the player does anything else on
+  /// the board; `null` otherwise.
+  final removal = ValueNotifier<({Board before, BoardPosition position})?>(
+    null,
+  );
+
+  /// Whether the last removal can still be undone.
+  bool get canUndo => removal.value != null;
+
+  /// The item the last removal took, while it can still be undone.
+  BoardItem? get removedItem {
+    final removal = this.removal.value;
+    return removal?.before.itemAt(removal.position);
+  }
+
   /// The selected item, if any.
   BoardItem? get selectedItem {
     final selected = selection.value;
@@ -188,11 +204,13 @@ class BoardComponent extends PositionComponent
       ..removeListener(_updateSelectionFrame)
       ..removeListener(_bounceSelected)
       ..dispose();
+    removal.dispose();
     super.onRemove();
   }
 
   @override
   void onTapDown(TapDownEvent event) {
+    _forgetRemoval();
     final tapped = cellAt(event.localPosition);
     if (!board.contains(tapped)) {
       return;
@@ -217,6 +235,7 @@ class BoardComponent extends PositionComponent
   @override
   void onDragStart(DragStartEvent event) {
     super.onDragStart(event);
+    _forgetRemoval();
     // Whatever the tap recognizer reports next, this gesture is a drag.
     _tappedQueen = null;
     // One item at a time: another finger cannot take over the drag.
@@ -361,24 +380,66 @@ class BoardComponent extends PositionComponent
     }
   }
 
-  PositionComponent _componentFor(BoardPosition position, BoardItem item) {
-    final component = switch (item) {
-      Queen(:final family) => QueenComponent(
-        family: family,
-        position: itemPosition(position),
-      ),
-      Larva(:final family) => LarvaComponent(
-        family: family,
-        position: itemPosition(position),
-      ),
-      Bee(:final family, :final level) => BeeComponent(
-        family: family,
-        level: level,
-        position: itemPosition(position),
-      ),
-    };
-    return _itemComponents[position] = component;
+  /// Removes the selected item, if the player can: its cell is freed and
+  /// nothing is selected any more. [undoRemoval] brings it back until the
+  /// player does something else on the board.
+  void removeSelected() {
+    final selected = selection.value;
+    if (selected == null || _dragged != null) {
+      return;
+    }
+    final removed = board.remove(selected);
+    if (removed == null) {
+      return;
+    }
+    // The undo is offered before the selection moves on: listeners see both.
+    final before = board;
+    board = removed;
+    onChanged?.call(board);
+    _itemComponents.remove(selected)?.removeFromParent();
+    removal.value = (before: before, position: selected);
+    selection.value = null;
   }
+
+  /// Puts back the item the last removal took, selected, as it was.
+  Future<void> undoRemoval() async {
+    final undone = removal.value;
+    if (undone == null) {
+      return;
+    }
+    final (:before, :position) = undone;
+    _forgetRemoval();
+    board = before;
+    onChanged?.call(board);
+    await add(_componentFor(position, board.itemAt(position)!));
+    selection.value = position;
+  }
+
+  void _forgetRemoval() => removal.value = null;
+
+  /// A component drawing [item], at [position] in its parent.
+  static PositionComponent componentOf(BoardItem item, {Vector2? position}) =>
+      switch (item) {
+        Queen(:final family) => QueenComponent(
+          family: family,
+          position: position,
+        ),
+        Larva(:final family) => LarvaComponent(
+          family: family,
+          position: position,
+        ),
+        Bee(:final family, :final level) => BeeComponent(
+          family: family,
+          level: level,
+          position: position,
+        ),
+      };
+
+  PositionComponent _componentFor(BoardPosition position, BoardItem item) =>
+      _itemComponents[position] = componentOf(
+        item,
+        position: itemPosition(position),
+      );
 
   Future<void> _spawnLarva(BoardPosition queen) async {
     switch (board.spawnLarva(queen)) {

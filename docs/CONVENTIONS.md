@@ -115,7 +115,7 @@ Deux outils, deux rôles, sans recouvrement :
 - Providers **toujours générés** (`@riverpod`) : `Notifier`/`AsyncNotifier`, pas de `StateNotifier` ni de `Provider(…)` écrit à la main. Un notifier délègue les règles au domaine : il orchestre (lire l'état, appeler une fonction pure, persister), il ne décide pas.
 - Séparer l'état de la **partie en cours** (plateau, local) de la **progression méta** (espèces découvertes, reines, synchronisée) : voir `docs/STACK.md`.
 - Le pont Riverpod → composants Flame n'est pas encore tranché (`docs/STACK.md`). Le premier composant qui en a besoin fixe le pattern, et ce document est mis à jour avec.
-  - En attendant, l'état purement visuel d'une scène (l'objet sélectionné du plateau, APY-9) est un `ValueNotifier` porté par le composant concerné (`BoardComponent.selection`) ; la scène l'écoute pour mettre à jour les autres composants (l'encart d'informations). La règle de sélection elle-même reste au domaine (`Board.selectionAfterTap`). À migrer vers Riverpod avec le premier état partagé avec le domaine ou persisté.
+  - En attendant, l'état purement visuel d'une scène (l'objet sélectionné du plateau, APY-9) est un `ValueNotifier` porté par le composant concerné (`BoardComponent.selection`, et `BoardComponent.removal` pour la dernière suppression annulable, APY-10) ; la scène les écoute pour mettre à jour les autres composants (l'encart d'informations). La règle de sélection elle-même reste au domaine (`Board.selectionAfterTap`). À migrer vers Riverpod avec le premier état partagé avec le domaine ou persisté.
 
 ## Présentation Flame
 

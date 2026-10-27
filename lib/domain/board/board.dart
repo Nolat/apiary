@@ -238,4 +238,20 @@ abstract class Board with _$Board {
     }
     return copyWith(items: {...items, from: target, onto: dragged});
   }
+
+  /// What removing the item on [position] does: the cell is freed and nothing
+  /// else changes, for no reward; `null` when there is nothing to remove (an
+  /// empty or off-board cell, a queen) and the board stays as it is.
+  Board? remove(BoardPosition position) {
+    final item = itemAt(position);
+    if (item == null || !item.removable) {
+      return null;
+    }
+    return copyWith(
+      items: {
+        for (final MapEntry(:key, :value) in items.entries)
+          if (key != position) key: value,
+      },
+    );
+  }
 }
