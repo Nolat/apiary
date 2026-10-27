@@ -7,6 +7,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 // 🌎 Project imports:
 import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
+import 'package:apiary/domain/board/bee_release.dart';
 import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
@@ -152,6 +153,32 @@ abstract class Board with _$Board {
           hive: item.remainingLife == 1
               ? const BoardItem.hive()
               : item.copyWith(remainingLife: item.remainingLife - 1),
+        },
+      ),
+      position: cell,
+    );
+  }
+
+  /// What taking the bee out of the hive on [hive] does, while it has made
+  /// nothing (see [HiveRelease.canReleaseBee]): the bee goes to the nearest
+  /// free cell and the hive is empty again, or nothing happens when the board
+  /// is full; `null` when [hive] is no hive, empty, or its bee has already
+  /// made a resource, and the board stays as it is.
+  BeeRelease? releaseBee(BoardPosition hive) {
+    final item = itemAt(hive);
+    if (item is! Hive || !item.canReleaseBee) {
+      return null;
+    }
+    final cell = nearestFreeCell(hive);
+    if (cell == null) {
+      return const BeeRelease.boardFull();
+    }
+    return BeeRelease.released(
+      board: copyWith(
+        items: {
+          ...items,
+          cell: item.bee!,
+          hive: const BoardItem.hive(),
         },
       ),
       position: cell,

@@ -66,6 +66,15 @@ extension BoardItemLevel on BoardItem {
   };
 }
 
+extension HiveRelease on Hive {
+  /// Whether the player can take the bee out: it is there and has made
+  /// nothing yet, so its whole lifespan is left.
+  bool get canReleaseBee {
+    final held = bee;
+    return held != null && remainingLife == BeeLifespan.of(held.family);
+  }
+}
+
 extension BoardItemRemoval on BoardItem {
   /// Whether the player can remove the item from the board: larvae, bees and
   /// resources can, queens and hives cannot.

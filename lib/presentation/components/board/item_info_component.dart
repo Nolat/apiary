@@ -17,6 +17,7 @@ import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/hud/caption_button_component.dart';
+import 'package:apiary/presentation/components/hud/close_button_component.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
 
 /// The panel of the bottom bar that tells what the selected item is: its name
@@ -30,7 +31,8 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// button.
 ///
 /// A hive holding a bee shows that bee in the same kind of frame, with its
-/// texts next to it.
+/// texts next to it. While the bee has made nothing, a cross on the frame
+/// takes it out of the hive.
 ///
 /// Texts are in the pixel font: four lines fill the panel. The title is
 /// honey-colored, the invitation and tip off-white.
@@ -84,10 +86,18 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   BoardItem? _frameItem;
   late final CaptionButtonComponent _removeButton;
   late final CaptionButtonComponent _undoButton;
+  late final CloseButtonComponent _releaseButton;
+  var _releaseShown = false;
 
-  /// Told when the player touches the remove or the undo button.
+  /// Told when the player touches the remove, the undo or the release button.
   VoidCallback? onRemovePressed;
   VoidCallback? onUndoPressed;
+  VoidCallback? onReleasePressed;
+
+  /// The badge's center, in from the top right corner of the bee's frame, so
+  /// it overlaps the corner without reaching the texts.
+  static const double _releaseInset = 2;
+  static const double _releaseHalf = CloseButtonComponent.touchSize / 2;
 
   static TextPaint _renderer(Color color) => TextPaint(
     style: TextStyle(
@@ -159,11 +169,17 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
   @visibleForTesting
   bool get hasRemovedFrame => _removedFrame != null;
 
+  /// Whether the cross that takes the bee out of the selected hive is on show.
+  @visibleForTesting
+  bool get hasReleaseButton => _releaseShown;
+
   /// The buttons, for tests to press.
   @visibleForTesting
   CaptionButtonComponent get removeButton => _removeButton;
   @visibleForTesting
   CaptionButtonComponent get undoButton => _undoButton;
+  @visibleForTesting
+  CloseButtonComponent get releaseButton => _releaseButton;
 
   /// How many lines [item]'s texts (the invitation when `null`) take in a
   /// panel [panelWidth] wide. The panel holds two.
@@ -246,6 +262,30 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
     );
     _setShown(_undoButton, shown: removed != null);
     _showFrame(framed);
+    final item = _item;
+    _showRelease(
+      shown: removed == null && item is Hive && item.canReleaseBee,
+    );
+  }
+
+  // The cross sits on the top right corner of the bee's frame.
+  void _showRelease({required bool shown}) {
+    if (shown && !_releaseShown) {
+      _mount(_releaseButton, on: this);
+    } else if (!shown && _releaseShown) {
+      _releaseButton.removeFromParent();
+    }
+    _releaseShown = shown;
+    if (shown) {
+      _releaseButton.position.setValues(
+        (_textLeft + _removedFrameSize - _releaseInset - _releaseHalf)
+            .floorToDouble(),
+        (((size.y - _removedFrameSize) / 2).floorToDouble() +
+                _releaseInset -
+                _releaseHalf)
+            .floorToDouble(),
+      );
+    }
   }
 
   // What the frame on the left of the texts shows: the item just removed, or
@@ -379,6 +419,9 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       pressedImage: 'ui/undo_button_pressed.png',
       caption: 'board.info.undo'.tr(),
       onPressed: () => onUndoPressed?.call(),
+    );
+    _releaseButton = CloseButtonComponent(
+      onPressed: () => onReleasePressed?.call(),
     );
     show(null);
     await addAll([_panel, ..._lineLabels]);

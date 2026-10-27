@@ -68,3 +68,6 @@ test/**/failures/
 # Ruby gems for the fastlane lanes (ios/ and android/ share it, see
 # ios/.bundle/config and android/.bundle/config)
 /vendor/bundle/
+
+# Assets refs
+/assets/refs/

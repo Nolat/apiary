@@ -15,6 +15,7 @@ import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 
 // 🌎 Project imports:
+import 'package:apiary/domain/board/bee_release.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_drop.dart';
 import 'package:apiary/domain/board/board_item.dart';
@@ -79,8 +80,8 @@ class BoardComponent extends PositionComponent
   final void Function(Board board)? onChanged;
 
   /// Bumped when the item of a cell changes under a selection that stays, a
-  /// hive whose bee is spent for instance: what shows the selected item (the
-  /// info panel) refreshes from it.
+  /// hive that has just made a resource or let its bee go for instance: what
+  /// shows the selected item (the info panel) refreshes from it.
   final itemChanged = ValueNotifier<int>(0);
 
   /// The selected cell, or `null` when nothing is selected, as at launch.
@@ -414,17 +415,7 @@ class BoardComponent extends PositionComponent
     _itemComponents[onto]?.removeFromParent();
     final replacement = _componentFor(onto, board.itemAt(onto)!);
     await add(replacement);
-    unawaited(
-      _play(
-        replacement,
-        CenteredScaleEffect(
-          from: popStartScale,
-          to: 1,
-          duration: popDuration,
-          curve: Curves.easeOutBack,
-        ),
-      ),
-    );
+    unawaited(_popIn(replacement));
     // The frame grows on its own; the item has just popped in.
     _bouncedAlready = onto;
     selection.value = onto;
@@ -449,6 +440,36 @@ class BoardComponent extends PositionComponent
     _itemComponents.remove(selected)?.removeFromParent();
     removal.value = (before: before, position: selected);
     selection.value = null;
+  }
+
+  /// Takes the bee out of the selected hive, if it has made nothing yet: it
+  /// pops out on the nearest free cell and the hive is empty again, or the
+  /// board shows it is full.
+  Future<void> releaseSelectedBee() async {
+    final hive = selection.value;
+    if (hive == null || _dragged != null) {
+      return;
+    }
+    switch (board.releaseBee(hive)) {
+      case BeeReleased(board: final updated, :final position):
+        _forgetRemoval();
+        board = updated;
+        onChanged?.call(board);
+        // The info panel follows now, not once the sprites have loaded.
+        itemChanged.value++;
+        unawaited(HapticFeedback.lightImpact());
+        _itemComponents[hive]?.removeFromParent();
+        await add(_componentFor(hive, board.itemAt(hive)!));
+        final bee = _componentFor(position, board.itemAt(position)!);
+        await add(bee);
+        unawaited(_popIn(bee));
+      case BeeReleaseBoardFull():
+        _forgetRemoval();
+        await _signalBoardFull(hive);
+      case null:
+        // Nothing to let go: whatever was undoable stays so.
+        break;
+    }
   }
 
   /// Puts back the item the last removal took, selected, as it was.
@@ -522,11 +543,13 @@ class BoardComponent extends PositionComponent
           _itemComponents[hive]?.removeFromParent();
           final spent = _componentFor(hive, board.itemAt(hive)!);
           await add(spent);
-          itemChanged.value++;
           unawaited(_bounce(spent, itemPosition(hive)));
         } else {
           unawaited(_bounce(_itemComponents[hive]!, itemPosition(hive)));
         }
+        // The hive is not what it was: it can no longer let its bee go, or
+        // it is empty.
+        itemChanged.value++;
         await add(_componentFor(position, board.itemAt(position)!));
       case ResourceBoardFull():
         await _signalBoardFull(hive);
@@ -608,6 +631,17 @@ class BoardComponent extends PositionComponent
     component.position.setFrom(home);
     await component.add(BounceEffect(duration: bounceDuration));
   }
+
+  // A new item grows into its cell from small, with a little overshoot.
+  Future<void> _popIn(PositionComponent component) => _play(
+    component,
+    CenteredScaleEffect(
+      from: popStartScale,
+      to: 1,
+      duration: popDuration,
+      curve: Curves.easeOutBack,
+    ),
+  );
 
   Future<void> _play(PositionComponent component, Effect effect) async {
     await component.add(effect);

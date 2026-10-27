@@ -43,7 +43,8 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
     _board.itemChanged.addListener(_showSelectedItem);
     _info
       ..onRemovePressed = _board.removeSelected
-      ..onUndoPressed = () => unawaited(_board.undoRemoval());
+      ..onUndoPressed = (() => unawaited(_board.undoRemoval()))
+      ..onReleasePressed = (() => unawaited(_board.releaseSelectedBee()));
   }
 
   @override
