@@ -32,7 +32,7 @@ void main() {
 
         final queens = board.children.whereType<QueenComponent>();
         expect(queens, hasLength(1));
-        expect(queens.single.family, Family.common);
+        expect(queens.single.family, Family.honeybee);
       },
     );
 
@@ -71,8 +71,8 @@ void main() {
           expect(layer.paint.filterQuality, FilterQuality.none);
         }
         for (final (index, path) in [
-          Family.common.beeBorderImage,
-          Family.common.beeImage,
+          Family.honeybee.beeBorderImage,
+          Family.honeybee.beeImage,
           QueenComponent.crownImage,
         ].indexed) {
           expect(

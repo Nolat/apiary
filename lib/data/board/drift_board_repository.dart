@@ -1,6 +1,3 @@
-// 🎯 Dart imports:
-import 'dart:math';
-
 // 📦 Package imports:
 import 'package:drift/drift.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -92,7 +89,7 @@ class DriftBoardRepository implements BoardRepository {
         _ => item.level ?? 1,
       }),
       remainingLife: Value(switch (item) {
-        Hive(bee: _?, :final remainingLife) => remainingLife,
+        final Hive hive when hive.bee != null => hive.lifeLeft,
         _ => 1,
       }),
     );
@@ -123,9 +120,12 @@ class DriftBoardRepository implements BoardRepository {
       _housedHive when _levelFits(row, family) && row.remainingLife >= 1 =>
         BoardItem.hive(
           bee: Bee(family: family, level: row.level),
-          // Never more than the species has today: a lifespan may have been
-          // cut since the save.
-          remainingLife: min(row.remainingLife, BeeLifespan.of(family)),
+          // The column always holds a number; a bee that has made nothing
+          // has its whole lifespan, and never more than the species has
+          // today: a lifespan may have been cut since the save.
+          remainingLife: row.remainingLife >= BeeLifespan.of(row.level)
+              ? null
+              : row.remainingLife,
         ),
       _housedHive => const BoardItem.hive(),
       _ => null,

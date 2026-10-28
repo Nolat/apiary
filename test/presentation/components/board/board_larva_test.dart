@@ -67,10 +67,10 @@ void main() {
 
         expect(
           board.board.itemAt(firstLarva),
-          const BoardItem.larva(family: Family.common),
+          const BoardItem.larva(family: Family.honeybee),
         );
         final larva = larvaeOf(board).single;
-        expect(larva.family, Family.common);
+        expect(larva.family, Family.honeybee);
         expect(larva.size, Vector2.all(16));
         expect(
           larva.position,
@@ -94,8 +94,8 @@ void main() {
             .toList();
         expect(layers, hasLength(2));
         for (final (index, path) in [
-          Family.common.larvaBorderImage,
-          Family.common.larvaImage,
+          Family.honeybee.larvaBorderImage,
+          Family.honeybee.larvaImage,
         ].indexed) {
           expect(layers[index].sprite!.image.width, 16);
           expect(layers[index].sprite!.image.height, 16);
@@ -123,7 +123,7 @@ void main() {
           expect(board.selection.value, queen);
           expect(
             board.board.itemAt(queen),
-            const BoardItem.queen(family: Family.common),
+            const BoardItem.queen(family: Family.honeybee),
           );
         }
         expect(board.children.whereType<QueenComponent>(), hasLength(1));
@@ -244,7 +244,7 @@ void main() {
             .descendants()
             .whereType<ItemInfoComponent>()
             .single;
-        expect(info.titleText, 'Larve commune');
+        expect(info.titleText, 'Larve mellifère');
         expect(
           info.tipText,
           'FUSIONNEZ avec une autre larve pour obtenir une abeille',

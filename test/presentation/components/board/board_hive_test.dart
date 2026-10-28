@@ -36,7 +36,7 @@ void main() {
   group('Dropping a bee on a hive', () {
     const hive = Board.startingHivePosition;
     const cell = BoardPosition(column: 1, row: 1);
-    const bee = Bee(family: Family.common, level: 3);
+    const bee = Bee(family: Family.honeybee, level: 3);
 
     ApiaryGame gameWith(Map<BoardPosition, BoardItem> items) =>
         ApiaryGame(boardRepository: _MemoryRepository(Board(items: items)));
@@ -74,7 +74,7 @@ void main() {
         expect(info.titleText, 'Ruche occupée');
         expect(
           info.tipText,
-          'Abrite : Abeille domestique',
+          'Abrite : Abeille cirière',
         );
       },
     );
@@ -83,7 +83,7 @@ void main() {
       'swaps a second bee with the occupied hive',
       () => gameWith({
         hive: const BoardItem.hive(bee: bee),
-        cell: const BoardItem.bee(family: Family.common),
+        cell: const BoardItem.bee(family: Family.honeybee),
       }),
       (game) async {
         final board = await boardOf(game);
@@ -93,7 +93,7 @@ void main() {
 
         expect(
           board.board.itemAt(hive),
-          const BoardItem.bee(family: Family.common),
+          const BoardItem.bee(family: Family.honeybee),
         );
         expect(board.board.itemAt(cell), const BoardItem.hive(bee: bee));
         expect(board.children.whereType<BeeComponent>(), hasLength(1));

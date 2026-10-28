@@ -55,7 +55,7 @@ class SplashScene extends Component with HasGameReference<ApiaryGame> {
   static const _labelHeight = 8.0;
   static const _labelGap = 6.0;
 
-  final BeeComponent _bee = BeeComponent(family: Family.common)
+  final BeeComponent _bee = BeeComponent(family: Family.honeybee)
     ..anchor = Anchor.center
     ..scale.setAll(restScale);
   final ProgressBarComponent _bar = ProgressBarComponent(width: barWidth);

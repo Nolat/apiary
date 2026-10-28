@@ -136,7 +136,7 @@ void main() {
         tapCell(game, board, queen);
 
         expect(info.titleText, isNot(invitation));
-        expect(info.titleText, 'Reine commune · Niv. 1');
+        expect(info.titleText, 'Reine mellifère · Niv. 1');
         expect(info.tipText, 'TOUCHEZ pour produire des abeilles');
       },
     );
@@ -208,8 +208,8 @@ void main() {
           }
         }
 
-        expect(titles, hasLength(Family.common.maxLevel));
-        info.show(const BoardItem.bee(family: Family.common));
+        expect(titles, hasLength(Family.honeybee.maxLevel));
+        info.show(const BoardItem.bee(family: Family.honeybee));
         expect(info.titleText, 'Abeille commune · Niv. 1');
       },
     );
@@ -220,11 +220,14 @@ void main() {
       (game) async {
         await game.ready();
         final info = infoOf(game)
-          ..show(const BoardItem.bee(family: Family.common));
+          ..show(const BoardItem.bee(family: Family.honeybee));
         final mergeable = info.tipText;
 
         info.show(
-          const BoardItem.bee(family: Family.common, level: 5),
+          BoardItem.bee(
+            family: Family.honeybee,
+            level: Family.honeybee.maxLevel,
+          ),
         );
 
         expect(info.tipText, isNotEmpty);

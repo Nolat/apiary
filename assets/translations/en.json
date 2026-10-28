@@ -25,15 +25,14 @@
     "missing": "Out of energy!"
   },
   "family": {
-    "common": "Common"
+    "honeybee": "Honeybee"
   },
   "species": {
-    "common": {
+    "honeybee": {
       "level_1": "Common bee",
-      "level_2": "Cultivated bee",
-      "level_3": "Domestic bee",
-      "level_4": "Royal bee",
-      "level_5": "Golden bee"
+      "level_2": "Worker bee",
+      "level_3": "Wax bee",
+      "level_4": "Golden bee"
     }
   },
   "item": {
@@ -61,12 +60,17 @@
     }
   },
   "resource": {
-    "comb": {
-      "tier_1": "Honeycomb",
-      "tier_2": "Honey"
+    "wax": {
+      "tier_1": "Wax drop",
+      "tier_2": "Raw wax",
+      "tier_3": "Refined wax",
+      "tier_4": "Candle"
     },
-    "pollen": {
-      "tier_1": "Pollen"
+    "honey": {
+      "tier_1": "Nectar",
+      "tier_2": "Light honey",
+      "tier_3": "Amber honey",
+      "tier_4": "Golden honey"
     }
   }
 }

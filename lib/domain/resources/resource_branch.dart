@@ -1,12 +1,14 @@
 /// A branch of resources, which a hive makes from a bee and the orders ask for
-/// (see `docs/DESIGN.md`, "Éléments du plateau"): tier 1 is what a hive makes,
-/// and two identical resources merge into the next tier of their branch. Each
-/// tier has its own name: the comb branch is the comb (tier 1) then honey
-/// (tier 2, its last), the pollen branch is pollen alone. Provisional, until
-/// the resources of each species are designed (see "Chantiers à part").
+/// (see `docs/CONTENT.md`, "Branches de ressources"): two identical resources
+/// merge into the next tier of their branch, and each tier has its own name
+/// (wax: wax drop, raw wax, refined wax, candle). Only the branches of the
+/// families that exist are listed.
 enum ResourceBranch {
-  comb(maxTier: 2),
-  pollen(maxTier: 1);
+  /// "Cire".
+  wax(maxTier: 4),
+
+  /// "Miel".
+  honey(maxTier: 4);
 
   const ResourceBranch({required this.maxTier});
 

@@ -13,55 +13,74 @@ void main() {
   const hive = Board.startingHivePosition;
 
   group('Board.mergeResources', () {
-    const comb = BoardItem.resource(branch: ResourceBranch.comb);
+    const waxDrop = BoardItem.resource(branch: ResourceBranch.wax);
     const from = BoardPosition(column: 1, row: 1);
     const onto = BoardPosition(column: 2, row: 1);
     Board boardOf(BoardItem a, BoardItem b) => Board(items: {from: a, onto: b});
 
-    test('turns two combs into honey, on the target cell', () {
-      final result = boardOf(comb, comb).drop(from, onto)!;
+    test('turns two wax drops into raw wax, on the target cell', () {
+      final result = boardOf(waxDrop, waxDrop).drop(from, onto)!;
 
       expect(result, isA<ItemsMerged>());
       expect(
         result.board.itemAt(onto),
-        const BoardItem.resource(branch: ResourceBranch.comb, tier: 2),
+        const BoardItem.resource(branch: ResourceBranch.wax, tier: 2),
       );
       expect(result.board.itemAt(from), isNull);
       expect(result.board.items, hasLength(1));
     });
 
+    for (final branch in ResourceBranch.values) {
+      test('goes up every tier of the ${branch.name} branch', () {
+        for (var tier = 1; tier < branch.maxTier; tier++) {
+          final item = BoardItem.resource(branch: branch, tier: tier);
+
+          expect(
+            boardOf(item, item).mergeResources(from, onto)!.itemAt(onto),
+            BoardItem.resource(branch: branch, tier: tier + 1),
+          );
+        }
+      });
+    }
+
     test('costs exactly two resources for one', () {
       final board = Board(
-        items: {from: comb, onto: comb, Board.startingHivePosition: comb},
+        items: {
+          from: waxDrop,
+          onto: waxDrop,
+          Board.startingHivePosition: waxDrop,
+        },
       );
 
       expect(board.mergeResources(from, onto)!.items, hasLength(2));
     });
 
-    test('does not merge honey, pollen, or resources that differ', () {
-      const honey = BoardItem.resource(branch: ResourceBranch.comb, tier: 2);
-      const pollen = BoardItem.resource(branch: ResourceBranch.pollen);
+    test('does not merge the last tier, or resources that differ', () {
+      for (final branch in ResourceBranch.values) {
+        final last = BoardItem.resource(branch: branch, tier: branch.maxTier);
+        expect(boardOf(last, last).mergeResources(from, onto), isNull);
+      }
+      const nectar = BoardItem.resource(branch: ResourceBranch.honey);
+      const rawWax = BoardItem.resource(branch: ResourceBranch.wax, tier: 2);
 
-      expect(boardOf(honey, honey).mergeResources(from, onto), isNull);
-      expect(boardOf(pollen, pollen).mergeResources(from, onto), isNull);
-      expect(boardOf(comb, pollen).mergeResources(from, onto), isNull);
-      expect(boardOf(comb, honey).mergeResources(from, onto), isNull);
+      expect(boardOf(waxDrop, nectar).mergeResources(from, onto), isNull);
+      expect(boardOf(waxDrop, rawWax).mergeResources(from, onto), isNull);
     });
 
     test('swaps what does not merge, leaving the board as it was', () {
-      const honey = BoardItem.resource(branch: ResourceBranch.comb, tier: 2);
-      final result = boardOf(honey, honey).drop(from, onto)!;
+      const candle = BoardItem.resource(branch: ResourceBranch.wax, tier: 4);
+      final result = boardOf(candle, candle).drop(from, onto)!;
 
       expect(result, isA<ItemsSwapped>());
-      expect(result.board, boardOf(honey, honey));
+      expect(result.board, boardOf(candle, candle));
     });
 
     test('does not merge a resource with itself or with another item', () {
-      expect(boardOf(comb, comb).mergeResources(from, from), isNull);
+      expect(boardOf(waxDrop, waxDrop).mergeResources(from, from), isNull);
       expect(
         boardOf(
-          comb,
-          const BoardItem.larva(family: Family.common),
+          waxDrop,
+          const BoardItem.larva(family: Family.honeybee),
         ).mergeResources(from, onto),
         isNull,
       );
@@ -69,7 +88,7 @@ void main() {
   });
 
   group('A resource', () {
-    const resource = BoardItem.resource(branch: ResourceBranch.comb);
+    const resource = BoardItem.resource(branch: ResourceBranch.wax);
     const from = BoardPosition(column: 1, row: 1);
     const onto = BoardPosition(column: 2, row: 1);
     final board = Board.initial().copyWith(
@@ -84,7 +103,7 @@ void main() {
       expect(board.move(from, onto)!.itemAt(onto), resource);
       expect(
         board.swap(from, Board.startingQueenPosition)!.itemAt(from),
-        const BoardItem.queen(family: Family.common),
+        const BoardItem.queen(family: Family.honeybee),
       );
     });
 

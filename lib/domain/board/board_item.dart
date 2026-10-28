@@ -30,19 +30,20 @@ sealed class BoardItem with _$BoardItem {
   }) = Bee;
 
   /// A hive, which belongs to no family. It starts empty and takes one [bee]
-  /// at a time (see `Board.placeInHive`); `null` while it is empty. The bee
-  /// has [remainingLife] resources left to make, and is spent at zero: the
-  /// hive is empty again. It only means something while [bee] is set; an
-  /// empty hive keeps the default, so that all empty hives are equal.
-  @Assert('remainingLife >= 1', 'remainingLife must be at least 1')
+  /// at a time (see `Board.placeInHive`); `null` while it is empty. Once the
+  /// bee has made a resource, [remainingLife] is how many it has left to
+  /// make, and it is spent at zero: the hive is empty again. `null` while the
+  /// hive is empty or its bee has made nothing yet, its whole lifespan (see
+  /// [HiveLife.lifeLeft]) being left, so that all such hives are equal.
   @Assert(
-    'bee != null || remainingLife == BeeLifespan.provisional',
-    'an empty hive keeps the default remainingLife',
+    'remainingLife == null || remainingLife >= 1',
+    'remainingLife must be at least 1',
   )
-  const factory BoardItem.hive({
-    Bee? bee,
-    @Default(BeeLifespan.provisional) int remainingLife,
-  }) = Hive;
+  @Assert(
+    'bee != null || remainingLife == null',
+    'an empty hive has no remainingLife',
+  )
+  const factory BoardItem.hive({Bee? bee, int? remainingLife}) = Hive;
 
   /// A resource of a [branch], made by a hive from its bee: tier 1, then one
   /// tier higher per merge of two identical resources, up to the branch's
@@ -68,13 +69,19 @@ extension BoardItemLevel on BoardItem {
   };
 }
 
+extension HiveLife on Hive {
+  /// How many resources the bee still has to make: its whole lifespan until
+  /// it makes one (see [BeeLifespan.of]); 0 for an empty hive.
+  int get lifeLeft {
+    final held = bee;
+    return held == null ? 0 : remainingLife ?? BeeLifespan.of(held.level);
+  }
+}
+
 extension HiveRelease on Hive {
   /// Whether the player can take the bee out: it is there and has made
   /// nothing yet, so its whole lifespan is left.
-  bool get canReleaseBee {
-    final held = bee;
-    return held != null && remainingLife == BeeLifespan.of(held.family);
-  }
+  bool get canReleaseBee => bee != null && remainingLife == null;
 }
 
 extension BoardItemRemoval on BoardItem {

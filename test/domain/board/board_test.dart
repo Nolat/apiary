@@ -30,7 +30,7 @@ void main() {
 
       expect(board.items, hasLength(2));
       expect(board.items.values, [
-        const BoardItem.queen(family: Family.common),
+        const BoardItem.queen(family: Family.honeybee),
         const BoardItem.hive(),
       ]);
     });
@@ -51,7 +51,7 @@ void main() {
       expect(Board.initial(), Board.initial());
       expect(
         Board.initial().itemAt(Board.startingQueenPosition),
-        const BoardItem.queen(family: Family.common),
+        const BoardItem.queen(family: Family.honeybee),
       );
     });
 
@@ -118,28 +118,28 @@ void main() {
 
   group('BoardItem.level', () {
     test('is the level of a bee', () {
-      expect(const BoardItem.bee(family: Family.common).level, 1);
-      expect(const BoardItem.bee(family: Family.common, level: 3).level, 3);
+      expect(const BoardItem.bee(family: Family.honeybee).level, 1);
+      expect(const BoardItem.bee(family: Family.honeybee, level: 3).level, 3);
     });
 
     test('is 1 for a queen', () {
-      expect(const BoardItem.queen(family: Family.common).level, 1);
+      expect(const BoardItem.queen(family: Family.honeybee).level, 1);
     });
 
     test('is absent for a larva', () {
-      expect(const BoardItem.larva(family: Family.common).level, isNull);
+      expect(const BoardItem.larva(family: Family.honeybee).level, isNull);
     });
   });
 
   group('Board.nearestFreeCell', () {
     const origin = BoardPosition(column: 3, row: 4);
-    const larva = BoardItem.larva(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
 
     // The board with a larva on each of [cells], plus the starting queen.
     Board filled(Iterable<BoardPosition> cells) => Board(
       items: {
         Board.startingQueenPosition: const BoardItem.queen(
-          family: Family.common,
+          family: Family.honeybee,
         ),
         for (final cell in cells) cell: larva,
       },
@@ -242,7 +242,7 @@ void main() {
             items: {
               ...Board.initial().items,
               const BoardPosition(column: 3, row: 3): const BoardItem.larva(
-                family: Family.common,
+                family: Family.honeybee,
               ),
             },
           ),
@@ -267,7 +267,7 @@ void main() {
         expect(board.items, hasLength(2 + taps));
         expect(
           board.itemAt(queen),
-          const BoardItem.queen(family: Family.common),
+          const BoardItem.queen(family: Family.honeybee),
         );
         expect(board.itemAt(result.position), isA<Larva>());
       }
@@ -285,7 +285,7 @@ void main() {
   });
 
   group('Board.mergeLarvae', () {
-    const larva = BoardItem.larva(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
     const from = BoardPosition(column: 1, row: 1);
     const onto = BoardPosition(column: 2, row: 1);
     final board = Board.initial().copyWith(
@@ -300,7 +300,7 @@ void main() {
       final merged = board.mergeLarvae(from, onto)!;
 
       expect(merged.itemAt(from), isNull);
-      expect(merged.itemAt(onto), const BoardItem.bee(family: Family.common));
+      expect(merged.itemAt(onto), const BoardItem.bee(family: Family.honeybee));
       expect(merged.items, hasLength(board.items.length - 1));
       expect(
         merged.itemAt(Board.startingQueenPosition),
@@ -324,7 +324,7 @@ void main() {
         items: {
           ...board.items,
           const BoardPosition(column: 5, row: 5): const BoardItem.bee(
-            family: Family.common,
+            family: Family.honeybee,
           ),
         },
       );
@@ -355,12 +355,12 @@ void main() {
       items: {...Board.initial().items, from: a, onto: b},
     );
     BoardItem bee(int level) =>
-        BoardItem.bee(family: Family.common, level: level);
+        BoardItem.bee(family: Family.honeybee, level: level);
 
     test(
       'replaces two bees of level N by one of level N + 1 on the target',
       () {
-        for (var level = 1; level < Family.common.maxLevel; level++) {
+        for (var level = 1; level < Family.honeybee.maxLevel; level++) {
           final board = boardWith(bee(level), bee(level));
 
           final merged = board.mergeBees(from, onto)!;
@@ -377,7 +377,7 @@ void main() {
     );
 
     test('does not merge bees of the last level', () {
-      final last = bee(Family.common.maxLevel);
+      final last = bee(Family.honeybee.maxLevel);
 
       expect(boardWith(last, last).mergeBees(from, onto), isNull);
     });
@@ -397,7 +397,7 @@ void main() {
     });
 
     test('does not merge something that is not a bee', () {
-      const larva = BoardItem.larva(family: Family.common);
+      const larva = BoardItem.larva(family: Family.honeybee);
 
       expect(boardWith(larva, bee(1)).mergeBees(from, onto), isNull);
       expect(boardWith(bee(1), larva).mergeBees(from, onto), isNull);
@@ -412,7 +412,7 @@ void main() {
   });
 
   group('Board.move', () {
-    const larva = BoardItem.larva(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
     const from = BoardPosition(column: 1, row: 1);
     const empty = BoardPosition(column: 5, row: 6);
     final board = Board.initial().copyWith(
@@ -471,8 +471,8 @@ void main() {
   });
 
   group('Board.interacts', () {
-    const larva = BoardItem.larva(family: Family.common);
-    const bee = BoardItem.bee(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
+    const bee = BoardItem.bee(family: Family.honeybee);
     const queen = Board.startingQueenPosition;
     const larvaCell = BoardPosition(column: 1, row: 1);
     const otherLarvaCell = BoardPosition(column: 0, row: 8);
@@ -497,7 +497,7 @@ void main() {
     });
 
     test('does not hold between bees of the last level or of two levels', () {
-      const last = BoardItem.bee(family: Family.common, level: 5);
+      const last = BoardItem.bee(family: Family.honeybee, level: 4);
       final withLast = board.copyWith(
         items: {...board.items, beeCell: last, otherBeeCell: last},
       );
@@ -524,8 +524,8 @@ void main() {
   });
 
   group('Board.swap', () {
-    const larva = BoardItem.larva(family: Family.common);
-    const bee = BoardItem.bee(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
+    const bee = BoardItem.bee(family: Family.honeybee);
     const queen = Board.startingQueenPosition;
     const larvaCell = BoardPosition(column: 1, row: 1);
     const beeCell = BoardPosition(column: 5, row: 6);
@@ -561,8 +561,8 @@ void main() {
     test('exchanges two bees of the last level, which cannot merge', () {
       const otherBeeCell = BoardPosition(column: 6, row: 6);
       final last = BoardItem.bee(
-        family: Family.common,
-        level: Family.common.maxLevel,
+        family: Family.honeybee,
+        level: Family.honeybee.maxLevel,
       );
       final twoBees = board.copyWith(
         items: {...board.items, beeCell: last, otherBeeCell: last},
@@ -605,7 +605,7 @@ void main() {
       final twoQueens = board.copyWith(
         items: {
           ...board.items,
-          otherQueenCell: const BoardItem.queen(family: Family.common),
+          otherQueenCell: const BoardItem.queen(family: Family.honeybee),
         },
       );
 
@@ -636,8 +636,8 @@ void main() {
   });
 
   group('Board.drop', () {
-    const larva = BoardItem.larva(family: Family.common);
-    const bee = BoardItem.bee(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
+    const bee = BoardItem.bee(family: Family.honeybee);
     const a = BoardPosition(column: 1, row: 1);
     const b = BoardPosition(column: 2, row: 1);
     const empty = BoardPosition(column: 5, row: 6);
@@ -663,8 +663,8 @@ void main() {
       expect(boardWith(larva, bee).drop(a, b), isA<ItemsSwapped>());
       expect(boardWith(larva, bee).drop(a, queen), isA<ItemsSwapped>());
       final last = BoardItem.bee(
-        family: Family.common,
-        level: Family.common.maxLevel,
+        family: Family.honeybee,
+        level: Family.honeybee.maxLevel,
       );
       expect(boardWith(last, last).drop(a, b), isA<ItemsSwapped>());
     });
@@ -687,9 +687,9 @@ void _removeTests() {
     const queen = Board.startingQueenPosition;
     final board = Board(
       items: {
-        queen: const BoardItem.queen(family: Family.common),
-        larva: const BoardItem.larva(family: Family.common),
-        bee: const BoardItem.bee(family: Family.common, level: 3),
+        queen: const BoardItem.queen(family: Family.honeybee),
+        larva: const BoardItem.larva(family: Family.honeybee),
+        bee: const BoardItem.bee(family: Family.honeybee, level: 3),
       },
     );
 
@@ -752,9 +752,9 @@ void _hiveTests() {
       BoardItem hiveItem = const BoardItem.hive(),
     ]) => Board(items: {hive: hiveItem, cell: bee});
 
-    for (final level in [1, Family.common.maxLevel]) {
+    for (final level in [1, Family.honeybee.maxLevel]) {
       test('houses a level $level bee in an empty hive', () {
-        final bee = BoardItem.bee(family: Family.common, level: level);
+        final bee = BoardItem.bee(family: Family.honeybee, level: level);
         final result = withBee(bee).drop(cell, hive);
 
         expect(result, isA<BeeHoused>());
@@ -768,8 +768,8 @@ void _hiveTests() {
     }
 
     test('swaps with a hive that already holds a bee', () {
-      const held = Bee(family: Family.common, level: 2);
-      const bee = BoardItem.bee(family: Family.common);
+      const held = Bee(family: Family.honeybee, level: 2);
+      const bee = BoardItem.bee(family: Family.honeybee);
       final board = withBee(bee, const BoardItem.hive(bee: held));
       final result = board.drop(cell, hive);
 
@@ -780,7 +780,7 @@ void _hiveTests() {
     });
 
     test('does not take a larva, which swaps with the hive', () {
-      final board = withBee(const BoardItem.larva(family: Family.common));
+      final board = withBee(const BoardItem.larva(family: Family.honeybee));
       final result = board.drop(cell, hive);
 
       expect(result, isA<ItemsSwapped>());
@@ -789,9 +789,9 @@ void _hiveTests() {
     });
 
     test('swaps an occupied hive with a bee dragged onto it', () {
-      const held = Bee(family: Family.common, level: 3);
+      const held = Bee(family: Family.honeybee, level: 3);
       final board = withBee(
-        const BoardItem.bee(family: Family.common),
+        const BoardItem.bee(family: Family.honeybee),
         const BoardItem.hive(bee: held),
       );
       final result = board.drop(hive, cell);
@@ -802,11 +802,11 @@ void _hiveTests() {
 
     test('keeps the life left of its bee when moved or swapped', () {
       const worn = BoardItem.hive(
-        bee: Bee(family: Family.common),
+        bee: Bee(family: Family.honeybee),
         remainingLife: 2,
       );
       final board = withBee(
-        const BoardItem.bee(family: Family.common),
+        const BoardItem.bee(family: Family.honeybee),
         worn,
       );
       const empty = BoardPosition(column: 5, row: 5);
@@ -816,17 +816,16 @@ void _hiveTests() {
     });
 
     test('gives a bee its whole lifespan when it goes in', () {
-      const bee = Bee(family: Family.common, level: 2);
+      const bee = Bee(family: Family.honeybee, level: 2);
       final board = withBee(bee);
 
-      expect(
-        board.drop(cell, hive)!.board.itemAt(hive),
-        BoardItem.hive(bee: bee, remainingLife: BeeLifespan.of(bee.family)),
-      );
+      final housed = board.drop(cell, hive)!.board.itemAt(hive)! as Hive;
+      expect(housed, const BoardItem.hive(bee: bee));
+      expect(housed.lifeLeft, BeeLifespan.of(bee.level));
     });
 
     test('keeps an occupied hive from being removed', () {
-      const held = Bee(family: Family.common);
+      const held = Bee(family: Family.honeybee);
       final board = Board(items: {hive: const BoardItem.hive(bee: held)});
 
       expect(board.remove(hive), isNull);

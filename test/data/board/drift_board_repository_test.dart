@@ -31,13 +31,13 @@ void main() {
     final board = Board(
       items: {
         Board.startingQueenPosition: const BoardItem.queen(
-          family: Family.common,
+          family: Family.honeybee,
         ),
         const BoardPosition(column: 0, row: 0): const BoardItem.larva(
-          family: Family.common,
+          family: Family.honeybee,
         ),
         const BoardPosition(column: 6, row: 8): const BoardItem.bee(
-          family: Family.common,
+          family: Family.honeybee,
           level: 3,
         ),
         Board.startingHivePosition: const BoardItem.hive(),
@@ -53,7 +53,7 @@ void main() {
     final board = Board(
       items: {
         Board.startingHivePosition: const BoardItem.hive(
-          bee: Bee(family: Family.common, level: 4),
+          bee: Bee(family: Family.honeybee, level: 4),
         ),
         const BoardPosition(column: 0, row: 0): const BoardItem.hive(),
       },
@@ -68,14 +68,15 @@ void main() {
     final board = Board(
       items: {
         const BoardPosition(column: 0, row: 0): const BoardItem.resource(
-          branch: ResourceBranch.comb,
+          branch: ResourceBranch.wax,
         ),
         const BoardPosition(column: 1, row: 0): const BoardItem.resource(
-          branch: ResourceBranch.comb,
-          tier: 2,
+          branch: ResourceBranch.wax,
+          tier: 4,
         ),
         const BoardPosition(column: 2, row: 0): const BoardItem.resource(
-          branch: ResourceBranch.pollen,
+          branch: ResourceBranch.honey,
+          tier: 3,
         ),
       },
     );
@@ -88,8 +89,8 @@ void main() {
   test('ignores a resource of an unknown branch or an unknown tier', () async {
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level) VALUES '
-      "(0, 0, 'resource', 'unknown', 1), (1, 0, 'resource', 'comb', 0), "
-      "(2, 0, 'resource', 'comb', 3), (3, 0, 'resource', 'pollen', 2)",
+      "(0, 0, 'resource', 'unknown', 1), (1, 0, 'resource', 'wax', 0), "
+      "(2, 0, 'resource', 'wax', 5), (3, 0, 'resource', 'honey', 9)",
     );
 
     expect((await repository.load())?.items ?? const {}, isEmpty);
@@ -99,7 +100,7 @@ void main() {
     final board = Board(
       items: {
         Board.startingHivePosition: const BoardItem.hive(
-          bee: Bee(family: Family.common, level: 2),
+          bee: Bee(family: Family.honeybee, level: 2),
           remainingLife: 2,
         ),
       },
@@ -113,19 +114,19 @@ void main() {
   test('caps the life left at the lifespan of the species', () async {
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level, '
-      "remaining_life) VALUES (0, 0, 'housed_hive', 'common', 1, 99)",
+      "remaining_life) VALUES (0, 0, 'housed_hive', 'honeybee', 1, 99)",
     );
 
     expect(
       (await repository.load())!.itemAt(const BoardPosition(column: 0, row: 0)),
-      const BoardItem.hive(bee: Bee(family: Family.common)),
+      const BoardItem.hive(bee: Bee(family: Family.honeybee)),
     );
   });
 
   test('empties a hive whose life left cannot be read', () async {
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level, '
-      "remaining_life) VALUES (0, 0, 'housed_hive', 'common', 1, 0)",
+      "remaining_life) VALUES (0, 0, 'housed_hive', 'honeybee', 1, 0)",
     );
 
     expect(
@@ -138,7 +139,7 @@ void main() {
     await repository.save(Board.initial());
     const moved = BoardPosition(column: 1, row: 1);
     final board = Board(
-      items: {moved: const BoardItem.queen(family: Family.common)},
+      items: {moved: const BoardItem.queen(family: Family.honeybee)},
     );
 
     await repository.save(board);
@@ -150,9 +151,9 @@ void main() {
     await repository.save(Board.initial());
     await database.customStatement(
       'INSERT INTO board_cells ("column", row, kind, family, level) VALUES '
-      "(0, 0, 'bee', 'common', 99), (1, 0, 'cocoon', 'common', 1), "
-      "(2, 0, 'larva', 'unknown', 1), (50, 0, 'larva', 'common', 1), "
-      "(3, 0, 'housed_hive', 'common', 99), "
+      "(0, 0, 'bee', 'honeybee', 99), (1, 0, 'cocoon', 'honeybee', 1), "
+      "(2, 0, 'larva', 'unknown', 1), (50, 0, 'larva', 'honeybee', 1), "
+      "(3, 0, 'housed_hive', 'honeybee', 99), "
       "(4, 0, 'housed_hive', 'unknown', 1)",
     );
 

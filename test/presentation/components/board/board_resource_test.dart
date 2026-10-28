@@ -42,7 +42,9 @@ void main() {
     const hive = Board.startingHivePosition;
     // The nearest free cell of the starting board: above the hive.
     const firstResource = BoardPosition(column: 3, row: 6);
-    const occupied = BoardItem.hive(bee: Bee(family: Family.common));
+    const bee = Bee(family: Family.honeybee);
+    const occupied = BoardItem.hive(bee: bee);
+    final lifespan = BeeLifespan.of(bee.level);
 
     ApiaryGame gameWith(Board board, {int seed = 0}) => ApiaryGame(
       boardRepository: _MemoryRepository(board),
@@ -68,14 +70,10 @@ void main() {
         await game.ready();
 
         final made = board.board.itemAt(firstResource);
-        expect(made, isA<Resource>());
-        expect((made! as Resource).tier, 1);
+        expect(ResourceCatalogue.madeBy(bee), contains(made));
         expect(
           board.board.itemAt(hive),
-          const BoardItem.hive(
-            bee: Bee(family: Family.common),
-            remainingLife: BeeLifespan.provisional - 1,
-          ),
+          BoardItem.hive(bee: bee, remainingLife: lifespan - 1),
         );
         expect(board.children.whereType<ResourceComponent>(), hasLength(1));
         expect(board.selection.value, hive);
@@ -93,14 +91,10 @@ void main() {
           tapCell(game, board, hive);
           await game.ready();
 
-          final branches = ResourceCatalogue.branchesMadeBy(
-            const Bee(family: Family.common),
-          );
+          final made = ResourceCatalogue.madeBy(bee);
           expect(
             board.board.itemAt(firstResource),
-            BoardItem.resource(
-              branch: branches[Random(seed).nextInt(branches.length)],
-            ),
+            made[Random(seed).nextInt(made.length)],
           );
         },
       );
@@ -128,7 +122,7 @@ void main() {
             for (var column = 0; column < Board.columns; column++)
               for (var row = 0; row < Board.rows; row++)
                 BoardPosition(column: column, row: row): const BoardItem.larva(
-                  family: Family.common,
+                  family: Family.honeybee,
                 ),
             hive: occupied,
           },
@@ -169,18 +163,12 @@ void main() {
         final made = board.board.itemAt(firstResource)! as Resource;
         expect(
           info.titleText,
-          made.branch == ResourceBranch.comb
-              ? 'Rayon · Palier 1'
-              : 'Pollen · Palier 1',
+          made.branch == ResourceBranch.wax
+              ? 'Goutte de cire · Palier 1'
+              : 'Nectar · Palier 1',
         );
-        // Only the comb has a tier above its first: pollen is already at its
-        // branch's last tier.
-        expect(
-          info.tipText,
-          made.branch == ResourceBranch.comb
-              ? 'FUSIONNEZ pour atteindre le niveau suivant.'
-              : 'Niveau maximal : cette ressource ne fusionne plus',
-        );
+        // Tier 1 is below the last tier of its branch.
+        expect(info.tipText, 'FUSIONNEZ pour atteindre le niveau suivant.');
       },
     );
 
@@ -215,7 +203,7 @@ void main() {
             .single;
 
         tapCell(game, board, hive);
-        for (var made = 0; made < BeeLifespan.provisional; made++) {
+        for (var made = 0; made < lifespan; made++) {
           tapCell(game, board, hive);
           await game.ready();
         }
@@ -224,7 +212,7 @@ void main() {
         expect(board.children.whereType<HiveComponent>().single.bee, isNull);
         expect(
           board.children.whereType<ResourceComponent>(),
-          hasLength(BeeLifespan.provisional),
+          hasLength(lifespan),
         );
         expect(info.titleText, 'Ruche vide');
         // An empty hive no longer makes anything.
@@ -232,7 +220,7 @@ void main() {
         await game.ready();
         expect(
           board.children.whereType<ResourceComponent>(),
-          hasLength(BeeLifespan.provisional),
+          hasLength(lifespan),
         );
       },
     );

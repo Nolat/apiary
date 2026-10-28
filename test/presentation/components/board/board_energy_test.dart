@@ -38,7 +38,7 @@ void main() {
 
   const queen = Board.startingQueenPosition;
   const hive = Board.startingHivePosition;
-  const bee = Bee(family: Family.common);
+  const bee = Bee(family: Family.honeybee);
 
   ApiaryGame gameWith(Board board, {Energy? saved}) => ApiaryGame(
     boardRepository: _MemoryRepository(board),
@@ -127,9 +127,9 @@ void main() {
             for (var column = 0; column < Board.columns; column++)
               for (var row = 0; row < Board.rows; row++)
                 BoardPosition(column: column, row: row): const BoardItem.larva(
-                  family: Family.common,
+                  family: Family.honeybee,
                 ),
-            queen: const BoardItem.queen(family: Family.common),
+            queen: const BoardItem.queen(family: Family.honeybee),
           },
         ),
       ),
@@ -161,9 +161,9 @@ void main() {
         expect(game.energyValue.value, 99);
         expect(
           board.board.itemAt(hive),
-          const BoardItem.hive(
+          BoardItem.hive(
             bee: bee,
-            remainingLife: BeeLifespan.provisional - 1,
+            remainingLife: BeeLifespan.of(bee.level) - 1,
           ),
         );
       },
@@ -210,12 +210,12 @@ void main() {
         final board = await boardOf(game);
 
         tapCell(game, board, hive);
-        for (var i = 0; i < BeeLifespan.provisional; i++) {
+        for (var i = 0; i < BeeLifespan.of(bee.level); i++) {
           tapCell(game, board, hive);
         }
         await game.ready();
 
-        expect(game.energyValue.value, 100 - BeeLifespan.provisional);
+        expect(game.energyValue.value, 100 - BeeLifespan.of(bee.level));
       },
     );
   });

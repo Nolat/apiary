@@ -71,7 +71,7 @@ void main() {
       await driver.tapCell(hive);
       expect(
         (driver.board.itemAt(hive)! as Hive).remainingLife,
-        BeeLifespan.provisional - 2,
+        BeeLifespan.of(1) - 2,
       );
       expect(energy(), Energy.maximum - 6);
 

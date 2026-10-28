@@ -25,15 +25,14 @@
     "missing": "Plus d'énergie !"
   },
   "family": {
-    "common": "commune"
+    "honeybee": "mellifère"
   },
   "species": {
-    "common": {
+    "honeybee": {
       "level_1": "Abeille commune",
-      "level_2": "Abeille cultivée",
-      "level_3": "Abeille domestique",
-      "level_4": "Abeille royale",
-      "level_5": "Abeille dorée"
+      "level_2": "Abeille ouvrière",
+      "level_3": "Abeille cirière",
+      "level_4": "Abeille dorée"
     }
   },
   "item": {
@@ -61,12 +60,17 @@
     }
   },
   "resource": {
-    "comb": {
-      "tier_1": "Rayon",
-      "tier_2": "Miel"
+    "wax": {
+      "tier_1": "Goutte de cire",
+      "tier_2": "Cire brute",
+      "tier_3": "Cire raffinée",
+      "tier_4": "Bougie"
     },
-    "pollen": {
-      "tier_1": "Pollen"
+    "honey": {
+      "tier_1": "Nectar",
+      "tier_2": "Miel clair",
+      "tier_3": "Miel ambré",
+      "tier_4": "Miel doré"
     }
   }
 }

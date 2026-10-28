@@ -94,7 +94,7 @@ void main() {
       'resources made',
       () => ApiaryGame(
         boardRepository: _MemoryRepository(
-          boardWithBeeInHive(const Bee(family: Family.common)),
+          boardWithBeeInHive(const Bee(family: Family.honeybee)),
         ),
       ),
       (game) async {

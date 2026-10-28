@@ -16,7 +16,7 @@ void main() {
   const hive = Board.startingHivePosition;
 
   group('Board.releaseBee', () {
-    const bee = Bee(family: Family.common, level: 3);
+    const bee = Bee(family: Family.honeybee, level: 3);
 
     test('puts a bee that made nothing on the nearest free cell', () {
       final board = boardWithBeeInHive(bee);
@@ -34,10 +34,8 @@ void main() {
 
       final again = result.board.drop(result.position, hive)!.board;
 
-      expect(
-        again.itemAt(hive),
-        BoardItem.hive(bee: bee, remainingLife: BeeLifespan.of(bee.family)),
-      );
+      expect(again.itemAt(hive), const BoardItem.hive(bee: bee));
+      expect((again.itemAt(hive)! as Hive).lifeLeft, BeeLifespan.of(3));
     });
 
     test('keeps the bee once it has made a resource', () {

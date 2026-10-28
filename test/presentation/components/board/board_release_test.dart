@@ -41,7 +41,7 @@ void main() {
     const hive = Board.startingHivePosition;
     // The nearest free cell of the starting board: above the hive.
     const popped = BoardPosition(column: 3, row: 6);
-    const bee = Bee(family: Family.common, level: 2);
+    const bee = Bee(family: Family.honeybee, level: 2);
 
     ApiaryGame gameWith(Board board) =>
         ApiaryGame(boardRepository: _MemoryRepository(board));
@@ -105,7 +105,7 @@ void main() {
             for (var column = 0; column < Board.columns; column++)
               for (var row = 0; row < Board.rows; row++)
                 BoardPosition(column: column, row: row): const BoardItem.larva(
-                  family: Family.common,
+                  family: Family.honeybee,
                 ),
             hive: const BoardItem.hive(bee: bee),
           },
@@ -148,7 +148,7 @@ void main() {
             ...Board.initial().items,
             hive: const BoardItem.hive(bee: bee, remainingLife: 2),
             const BoardPosition(column: 0, row: 0): const BoardItem.larva(
-              family: Family.common,
+              family: Family.honeybee,
             ),
           },
         ),

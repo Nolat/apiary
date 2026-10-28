@@ -16,6 +16,7 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/resources/resource_branch.dart';
+import 'package:apiary/domain/resources/resource_catalogue.dart';
 import 'package:apiary/presentation/components/board/hive_component.dart';
 import 'package:apiary/presentation/components/board/resource_component.dart';
 
@@ -34,8 +35,8 @@ void main() {
       final driver = BoardDriver($, game);
       final repository = getIt<BoardRepository>();
       const hive = Board.startingHivePosition;
-      const common = Family.common;
-      const lifespan = BeeLifespan.provisional;
+      const honeybee = Family.honeybee;
+      final lifespan = BeeLifespan.of(1);
 
       Hive hiveItem() => driver.board.itemAt(hive)! as Hive;
       Iterable<BoardPosition> resourcesOf(ResourceBranch branch, int tier) =>
@@ -71,11 +72,11 @@ void main() {
 
       // --- A bee dropped on the empty hive goes in (APY-12).
       final cell = await driver.raiseBee(1);
-      expect(driver.board.itemAt(cell), const BoardItem.bee(family: common));
+      expect(driver.board.itemAt(cell), const BoardItem.bee(family: honeybee));
       await driver.drag(cell, hive);
       expect(driver.board.itemAt(cell), isNull, reason: 'its cell is free');
-      expect(hiveItem().bee, const Bee(family: common));
-      expect(hiveItem().remainingLife, lifespan);
+      expect(hiveItem().bee, const Bee(family: honeybee));
+      expect(hiveItem().lifeLeft, lifespan);
       expect(driver.selection, hive);
       expect(
         driver.boardComponent.children.whereType<HiveComponent>().single.bee,
@@ -86,35 +87,41 @@ void main() {
       // A bee dropped on an occupied hive swaps with it.
       final other = await driver.raiseBee(1);
       await driver.drag(other, hive);
-      expect(driver.board.itemAt(hive), const BoardItem.bee(family: common));
+      expect(driver.board.itemAt(hive), const BoardItem.bee(family: honeybee));
       expect(driver.board.itemAt(other), isA<Hive>());
       await driver.drag(other, hive);
-      expect(hiveItem().bee, const Bee(family: common), reason: 'swapped back');
+      expect(
+        hiveItem().bee,
+        const Bee(family: honeybee),
+        reason: 'swapped back',
+      );
 
       // --- While it has made nothing, the bee can be taken back (APY-49).
       expect(driver.info.hasReleaseButton, isTrue);
       final freeCell = driver.board.nearestFreeCell(hive);
       await driver.tapButton(driver.info.releaseButton);
-      expect(driver.board.itemAt(freeCell!), const Bee(family: common));
+      expect(driver.board.itemAt(freeCell!), const Bee(family: honeybee));
       expect(driver.board.itemAt(hive), const BoardItem.hive());
       expect(driver.selection, hive);
       expect(driver.info.hasReleaseButton, isFalse);
       expect(await repository.load(), driver.board);
 
       await driver.drag(freeCell, hive);
-      expect(hiveItem().bee, const Bee(family: common));
-      expect(hiveItem().remainingLife, lifespan, reason: 'a whole lifespan');
+      expect(hiveItem().bee, const Bee(family: honeybee));
+      expect(hiveItem().lifeLeft, lifespan, reason: 'a whole lifespan');
 
       // --- A selected hive makes a resource on the nearest free cell (APY-13).
       final nearest = driver.board.nearestFreeCell(hive)!;
       await driver.tapCell(hive);
-      expect(driver.board.itemAt(nearest), isA<Resource>());
-      expect((driver.board.itemAt(nearest)! as Resource).tier, 1);
+      expect(
+        ResourceCatalogue.madeBy(const Bee(family: honeybee)),
+        contains(driver.board.itemAt(nearest)),
+      );
       expect(
         driver.boardComponent.children.whereType<ResourceComponent>(),
         hasLength(1),
       );
-      expect(hiveItem().bee, const Bee(family: common), reason: 'it stays');
+      expect(hiveItem().bee, const Bee(family: honeybee), reason: 'it stays');
       expect(driver.info.hasReleaseButton, isFalse, reason: 'it has worked');
 
       // --- The bee is spent a resource at a time (APY-14), and the life it
@@ -143,48 +150,39 @@ void main() {
       expect(driver.board, spent);
 
       // --- Two identical resources merge into the next tier (APY-15): bees
-      // go through the hive until two combs are on the board.
+      // go through the hive until two wax drops are on the board.
       for (
         var bees = 0;
-        resourcesOf(ResourceBranch.comb, 1).length < 2;
+        resourcesOf(ResourceBranch.wax, 1).length < 2;
         bees++
       ) {
-        expect(bees, lessThan(6), reason: 'no comb after many resources');
+        expect(bees, lessThan(6), reason: 'no wax drop after many resources');
         await houseNewBee();
         await spendBee();
       }
-      final [first, second, ...] = resourcesOf(ResourceBranch.comb, 1).toList();
+      final [first, second, ...] = resourcesOf(ResourceBranch.wax, 1).toList();
       final before = driver.board;
       await driver.drag(first, second);
 
       expect(driver.board.itemAt(first), isNull);
       expect(
         driver.board.itemAt(second),
-        const BoardItem.resource(branch: ResourceBranch.comb, tier: 2),
-        reason: 'honey, on the cell of the target',
+        const BoardItem.resource(branch: ResourceBranch.wax, tier: 2),
+        reason: 'raw wax, on the cell of the target',
       );
       expect(driver.board.items, hasLength(before.items.length - 1));
       expect(driver.selection, second);
       expect(await repository.load(), driver.board);
 
-      // Honey is the last tier of its branch: it no longer merges. A pollen,
-      // the only tier of its branch, neither.
-      final lastTier = [
-        ...resourcesOf(ResourceBranch.comb, 2),
-        ...resourcesOf(ResourceBranch.pollen, 1),
-      ];
-      final bySameKind = <Object, BoardPosition>{};
-      for (final position in lastTier) {
-        final item = driver.board.itemAt(position)! as Resource;
-        final twin = bySameKind[(item.branch, item.tier)];
-        if (twin != null) {
-          final beforeSwap = driver.board;
-          await driver.drag(twin, position);
-          expect(driver.board, beforeSwap, reason: 'identical, so unchanged');
-          break;
-        }
-        bySameKind[(item.branch, item.tier)] = position;
-      }
+      // Resources that differ do not merge: they trade places.
+      final rawWax = driver.board.itemAt(second);
+      final differing = driver
+          .cellsWhere((item) => item is Resource && item != rawWax)
+          .first;
+      final differingItem = driver.board.itemAt(differing);
+      await driver.drag(second, differing);
+      expect(driver.board.itemAt(differing), rawWax);
+      expect(driver.board.itemAt(second), differingItem);
 
       // --- Reopening the app restores everything (APY-8).
       final end = driver.board;

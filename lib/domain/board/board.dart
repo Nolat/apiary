@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 // 🌎 Project imports:
-import 'package:apiary/domain/bees/bee_lifespan.dart';
 import 'package:apiary/domain/bees/family.dart';
 import 'package:apiary/domain/board/bee_release.dart';
 import 'package:apiary/domain/board/board_drop.dart';
@@ -25,12 +24,12 @@ abstract class Board with _$Board {
     @Default({}) Map<BoardPosition, BoardItem> items,
   }) = _Board;
 
-  /// The board of a first game: a single Common queen on
+  /// The board of a first game: a single Honeybee queen on
   /// [startingQueenPosition] and an empty hive on [startingHivePosition].
   factory Board.initial() => Board(
     items: {
       startingQueenPosition: const BoardItem.queen(
-        family: Family.common,
+        family: Family.honeybee,
       ),
       startingHivePosition: const BoardItem.hive(),
     },
@@ -132,11 +131,11 @@ abstract class Board with _$Board {
     );
   }
 
-  /// What tapping the hive on [hive] does: a tier-1 resource of one of the
-  /// types its bee's species makes, picked with [random] when there are two,
-  /// on the nearest free cell, or nothing when the board is full. The bee
-  /// has one resource less to make, and the hive is empty again when that was
-  /// its last. [hive] must hold an occupied hive.
+  /// What tapping the hive on [hive] does: one of the resources its bee's
+  /// species makes, picked with [random] (all equally likely), on the nearest
+  /// free cell, or nothing when the board is full. The bee has one resource
+  /// less to make, and the hive is empty again when that was its last. [hive]
+  /// must hold an occupied hive.
   ResourceProduction produceResource(BoardPosition hive, Random random) {
     final item = itemAt(hive);
     assert(item is Hive && item.bee != null, 'No occupied hive on $hive');
@@ -144,17 +143,15 @@ abstract class Board with _$Board {
     if (item is! Hive || item.bee == null || cell == null) {
       return const ResourceProduction.boardFull();
     }
-    final branches = ResourceCatalogue.branchesMadeBy(item.bee!);
+    final made = ResourceCatalogue.madeBy(item.bee!);
     return ResourceProduction.created(
       board: copyWith(
         items: {
           ...items,
-          cell: BoardItem.resource(
-            branch: branches[random.nextInt(branches.length)],
-          ),
-          hive: item.remainingLife == 1
+          cell: made[random.nextInt(made.length)],
+          hive: item.lifeLeft == 1
               ? const BoardItem.hive()
-              : item.copyWith(remainingLife: item.remainingLife - 1),
+              : item.copyWith(remainingLife: item.lifeLeft - 1),
         },
       ),
       position: cell,
@@ -325,10 +322,7 @@ abstract class Board with _$Board {
     return _intoCell(
       from,
       onto,
-      BoardItem.hive(
-        bee: dragged,
-        remainingLife: BeeLifespan.of(dragged.family),
-      ),
+      BoardItem.hive(bee: dragged),
     );
   }
 

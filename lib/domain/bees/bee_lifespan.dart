@@ -1,16 +1,21 @@
-// 🌎 Project imports:
-import 'package:apiary/domain/bees/family.dart';
+// � Dart imports:
+
+// 🎯 Dart imports:
+import 'dart:math';
 
 /// How many resources a bee makes in a hive before it is spent (see "Règles
-/// de la ruche" in `docs/DESIGN.md`): the single table of lifespans.
+/// de la ruche" in `docs/DESIGN.md` and "Durée de vie des abeilles" in
+/// `docs/CONTENT.md`): the single table of lifespans.
 abstract final class BeeLifespan {
-  /// The lifespan every species has until they are designed (see "Chantiers
-  /// à part"): DESIGN.md's working hypothesis.
-  static const provisional = 5;
+  /// The lifespan of a level-1 bee.
+  static const baseLevelLifespan = 10;
 
-  /// How many resources a bee of [family] makes once placed in a hive. It
-  /// will take the level too once species differ.
-  static int of(Family family) => switch (family) {
-    Family.common => provisional,
-  };
+  /// How much longer each level lives than the one below it.
+  static const growthPerLevel = 1.5;
+
+  /// How many resources a bee of [level] makes once placed in a hive: 10, 15,
+  /// 23, 34… The ±20 % of luck of `docs/CONTENT.md` is not applied yet: this
+  /// is the average.
+  static int of(int level) =>
+      (baseLevelLifespan * pow(growthPerLevel, level - 1)).round();
 }

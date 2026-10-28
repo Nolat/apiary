@@ -62,10 +62,10 @@ void main() {
     final saved = Board(
       items: {
         const BoardPosition(column: 1, row: 2): const BoardItem.queen(
-          family: Family.common,
+          family: Family.honeybee,
         ),
         const BoardPosition(column: 5, row: 7): const BoardItem.bee(
-          family: Family.common,
+          family: Family.honeybee,
           level: 2,
         ),
       },

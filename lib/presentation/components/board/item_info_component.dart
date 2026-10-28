@@ -357,11 +357,10 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
       Larva(:final family) => 'item.larva.name'.tr(
         namedArgs: {'family': 'family.${family.name}'.tr()},
       ),
-      // Placeholder species names, until the game data defines the real ones.
       final Bee bee => _speciesOf(bee),
       Hive(bee: null) => 'item.hive.name'.tr(),
       Hive() => 'item.hive.name_occupied'.tr(),
-      // Each tier of a branch has its own name: the comb, then honey.
+      // Each tier of a branch has its own name: the wax drop, then raw wax.
       Resource(:final branch, :final tier) =>
         'resource.${branch.name}.tier_$tier'.tr(),
     };
@@ -380,7 +379,6 @@ class ItemInfoComponent extends PositionComponent with HasGameReference {
           );
   }
 
-  // Placeholder species names, until the game data defines the real ones.
   static String _speciesOf(Bee bee) =>
       'species.${bee.family.name}.level_${bee.level}'.tr();
 

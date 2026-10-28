@@ -39,7 +39,7 @@ void main() {
     const queen = Board.startingQueenPosition;
     const first = BoardPosition(column: 3, row: 3);
     const second = BoardPosition(column: 4, row: 3);
-    const larva = BoardItem.larva(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
 
     // Taps the queen twice, so the board holds her and two larvae.
     Future<BoardComponent> twoLarvae(ApiaryGame game) async {
@@ -68,7 +68,7 @@ void main() {
         expect(board.board.itemAt(first), isNull);
         expect(
           board.board.itemAt(second),
-          const BoardItem.bee(family: Family.common),
+          const BoardItem.bee(family: Family.honeybee),
         );
         expect(board.board.items, hasLength(3));
         expect(board.children.whereType<LarvaComponent>(), isEmpty);
@@ -178,7 +178,7 @@ void main() {
 
         expect(
           board.board.itemAt(second),
-          const BoardItem.bee(family: Family.common),
+          const BoardItem.bee(family: Family.honeybee),
         );
         expect(board.board.items, hasLength(3));
       },
@@ -188,7 +188,7 @@ void main() {
   group('Dragging the queen', () {
     const queen = Board.startingQueenPosition;
     const target = BoardPosition(column: 1, row: 1);
-    const larva = BoardItem.larva(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
 
     testWithGame<ApiaryGame>(
       'moves her, selects her and creates no larva',
@@ -206,7 +206,7 @@ void main() {
         expect(board.board.items, hasLength(2));
         expect(
           board.board.itemAt(target),
-          const BoardItem.queen(family: Family.common),
+          const BoardItem.queen(family: Family.honeybee),
         );
         expect(board.selection.value, target);
         expect(
@@ -262,8 +262,8 @@ void main() {
     const queen = Board.startingQueenPosition;
     const first = BoardPosition(column: 3, row: 3);
     const second = BoardPosition(column: 4, row: 3);
-    const larva = BoardItem.larva(family: Family.common);
-    const bee = BoardItem.bee(family: Family.common);
+    const larva = BoardItem.larva(family: Family.honeybee);
+    const bee = BoardItem.bee(family: Family.honeybee);
 
     // The board of the merge test, with one bee left on `second` and one
     // larva on `first`.
@@ -343,7 +343,7 @@ void main() {
 
         expect(
           board.board.itemAt(first),
-          const BoardItem.queen(family: Family.common),
+          const BoardItem.queen(family: Family.honeybee),
         );
         expect(board.board.itemAt(queen), larva);
         expect(
@@ -423,13 +423,13 @@ void main() {
     test('refuses a level beyond the last one of its family', () {
       expect(
         () => BeeComponent(
-          family: Family.common,
-          level: Family.common.maxLevel + 1,
+          family: Family.honeybee,
+          level: Family.honeybee.maxLevel + 1,
         ),
         throwsA(isA<AssertionError>()),
       );
       expect(
-        () => BeeComponent(family: Family.common, level: 0),
+        () => BeeComponent(family: Family.honeybee, level: 0),
         throwsA(isA<AssertionError>()),
       );
     });
@@ -442,7 +442,7 @@ void main() {
     // Replaces the scene's board by one holding two bees of [level].
     Future<BoardComponent> twoBees(ApiaryGame game, int level) async {
       final scene = await boardOf(game);
-      final bee = BoardItem.bee(family: Family.common, level: level);
+      final bee = BoardItem.bee(family: Family.honeybee, level: level);
       final board = BoardComponent(
         board: Board(items: {from: bee, onto: bee}),
         energy: game.energy,
@@ -469,7 +469,7 @@ void main() {
         expect(board.board.itemAt(from), isNull);
         expect(
           board.board.itemAt(onto),
-          const BoardItem.bee(family: Family.common, level: 2),
+          const BoardItem.bee(family: Family.honeybee, level: 2),
         );
         expect(board.board.items, hasLength(1));
         expect(board.children.whereType<BeeComponent>(), hasLength(1));
@@ -482,7 +482,7 @@ void main() {
       'goes back to its cell when both bees have the last level',
       ApiaryGame.new,
       (game) async {
-        final board = await twoBees(game, Family.common.maxLevel);
+        final board = await twoBees(game, Family.honeybee.maxLevel);
         final before = board.board;
 
         CellDrag(game, board)
@@ -555,7 +555,7 @@ void main() {
         expect(board.board.itemAt(first), isNull);
         expect(
           board.board.itemAt(second),
-          const BoardItem.bee(family: Family.common),
+          const BoardItem.bee(family: Family.honeybee),
         );
       },
     );
@@ -571,7 +571,7 @@ void main() {
               for (var r = 0; r < Board.rows; r++)
                 BoardPosition(column: c, row: r):
                     board.board.itemAt(BoardPosition(column: c, row: r)) ??
-                    const BoardItem.larva(family: Family.common),
+                    const BoardItem.larva(family: Family.honeybee),
           },
         );
         tapCell(game, board, queen);

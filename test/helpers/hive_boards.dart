@@ -18,7 +18,7 @@ Board fullBoardWithBeeInHive(Bee bee) => Board(
     for (var column = 0; column < Board.columns; column++)
       for (var row = 0; row < Board.rows; row++)
         BoardPosition(column: column, row: row): const BoardItem.larva(
-          family: Family.common,
+          family: Family.honeybee,
         ),
     Board.startingHivePosition: BoardItem.hive(bee: bee),
   },

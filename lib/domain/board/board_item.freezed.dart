@@ -129,7 +129,7 @@ return resource(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee,  int remainingLife)?  hive,TResult Function( ResourceBranch branch,  int tier)?  resource,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Family family)?  queen,TResult Function( Family family)?  larva,TResult Function( Family family,  int level)?  bee,TResult Function( Bee? bee,  int? remainingLife)?  hive,TResult Function( ResourceBranch branch,  int tier)?  resource,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
@@ -154,7 +154,7 @@ return resource(_that.branch,_that.tier);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee,  int remainingLife)  hive,required TResult Function( ResourceBranch branch,  int tier)  resource,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Family family)  queen,required TResult Function( Family family)  larva,required TResult Function( Family family,  int level)  bee,required TResult Function( Bee? bee,  int? remainingLife)  hive,required TResult Function( ResourceBranch branch,  int tier)  resource,}) {final _that = this;
 switch (_that) {
 case Queen():
 return queen(_that.family);case Larva():
@@ -175,7 +175,7 @@ return resource(_that.branch,_that.tier);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee,  int remainingLife)?  hive,TResult? Function( ResourceBranch branch,  int tier)?  resource,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Family family)?  queen,TResult? Function( Family family)?  larva,TResult? Function( Family family,  int level)?  bee,TResult? Function( Bee? bee,  int? remainingLife)?  hive,TResult? Function( ResourceBranch branch,  int tier)?  resource,}) {final _that = this;
 switch (_that) {
 case Queen() when queen != null:
 return queen(_that.family);case Larva() when larva != null:
@@ -400,11 +400,11 @@ as int,
 
 
 class Hive implements BoardItem {
-  const Hive({this.bee, this.remainingLife = BeeLifespan.provisional}): assert(remainingLife >= 1, 'remainingLife must be at least 1'),assert(bee != null || remainingLife == BeeLifespan.provisional, 'an empty hive keeps the default remainingLife');
+  const Hive({this.bee, this.remainingLife}): assert(remainingLife == null || remainingLife >= 1, 'remainingLife must be at least 1'),assert(bee != null || remainingLife == null, 'an empty hive has no remainingLife');
   
 
  final  Bee? bee;
-@JsonKey() final  int remainingLife;
+ final  int? remainingLife;
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
@@ -438,7 +438,7 @@ abstract mixin class $HiveCopyWith<$Res> implements $BoardItemCopyWith<$Res> {
   factory $HiveCopyWith(Hive value, $Res Function(Hive) _then) = _$HiveCopyWithImpl;
 @useResult
 $Res call({
- Bee? bee, int remainingLife
+ Bee? bee, int? remainingLife
 });
 
 
@@ -455,11 +455,11 @@ class _$HiveCopyWithImpl<$Res>
 
 /// Create a copy of BoardItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? bee = freezed,Object? remainingLife = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? bee = freezed,Object? remainingLife = freezed,}) {
   return _then(Hive(
 bee: freezed == bee ? _self.bee : bee // ignore: cast_nullable_to_non_nullable
-as Bee?,remainingLife: null == remainingLife ? _self.remainingLife : remainingLife // ignore: cast_nullable_to_non_nullable
-as int,
+as Bee?,remainingLife: freezed == remainingLife ? _self.remainingLife : remainingLife // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

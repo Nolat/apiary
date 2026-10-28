@@ -35,8 +35,8 @@ void main() {
   group('Dropping a resource on an identical one', () {
     const from = BoardPosition(column: 1, row: 1);
     const onto = BoardPosition(column: 2, row: 1);
-    const comb = BoardItem.resource(branch: ResourceBranch.comb);
-    const pollen = BoardItem.resource(branch: ResourceBranch.pollen);
+    const waxDrop = BoardItem.resource(branch: ResourceBranch.wax);
+    const candle = BoardItem.resource(branch: ResourceBranch.wax, tier: 4);
 
     ApiaryGame gameWith(Map<BoardPosition, BoardItem> items) => ApiaryGame(
       boardRepository: _MemoryRepository(Board(items: items)),
@@ -58,33 +58,33 @@ void main() {
         game.world.descendants().whereType<ItemInfoComponent>().single;
 
     testWithGame<ApiaryGame>(
-      'makes honey on the target cell, selected, and saves it',
-      () => gameWith({from: comb, onto: comb}),
+      'makes raw wax on the target cell, selected, and saves it',
+      () => gameWith({from: waxDrop, onto: waxDrop}),
       (game) async {
         final board = await boardOf(game);
 
         await drag(game, board);
 
-        const honey = BoardItem.resource(branch: ResourceBranch.comb, tier: 2);
-        expect(board.board.itemAt(onto), honey);
+        const rawWax = BoardItem.resource(branch: ResourceBranch.wax, tier: 2);
+        expect(board.board.itemAt(onto), rawWax);
         expect(board.board.itemAt(from), isNull);
         expect(board.selection.value, onto);
         expect(board.children.whereType<ResourceComponent>(), hasLength(1));
         expect(
           (game.boardRepository! as _MemoryRepository).saved?.itemAt(onto),
-          honey,
+          rawWax,
         );
-        expect(infoOf(game).titleText, 'Miel · Palier 2');
+        expect(infoOf(game).titleText, 'Cire brute · Palier 2');
         expect(
           infoOf(game).tipText,
-          'Niveau maximal : cette ressource ne fusionne plus',
+          'FUSIONNEZ pour atteindre le niveau suivant.',
         );
       },
     );
 
     testWithGame<ApiaryGame>(
-      'swaps two pollens, which are already at the last tier',
-      () => gameWith({from: pollen, onto: pollen}),
+      'swaps two candles, which are already at the last tier',
+      () => gameWith({from: candle, onto: candle}),
       (game) async {
         final board = await boardOf(game);
         final before = board.board;

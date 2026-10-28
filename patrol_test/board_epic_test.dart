@@ -42,7 +42,7 @@ void main() {
       final repository = getIt<BoardRepository>();
       const start = Board.startingQueenPosition;
       const hive = Board.startingHivePosition;
-      const common = Family.common;
+      const honeybee = Family.honeybee;
 
       // --- Empty state: a first game on the starting board (APY-1, APY-2).
       await getIt<AppDatabase>().reset();
@@ -97,7 +97,7 @@ void main() {
       );
       expect(
         driver.board.itemAt(const BoardPosition(column: 3, row: 3)),
-        const BoardItem.larva(family: common),
+        const BoardItem.larva(family: honeybee),
       );
       expect(await driver.newLarva(), const BoardPosition(column: 4, row: 3));
       expect(await driver.newLarva(), const BoardPosition(column: 4, row: 4));
@@ -140,7 +140,7 @@ void main() {
       await driver.drag(const BoardPosition(column: 4, row: 3), corner);
       expect(
         driver.board.itemAt(corner),
-        const BoardItem.larva(family: common),
+        const BoardItem.larva(family: honeybee),
       );
       expect(
         driver.board.itemAt(const BoardPosition(column: 4, row: 3)),
@@ -150,14 +150,17 @@ void main() {
 
       // --- Swapping two different items (APY-6): the larva and the queen.
       await driver.drag(corner, start);
-      expect(driver.board.itemAt(start), const BoardItem.larva(family: common));
+      expect(
+        driver.board.itemAt(start),
+        const BoardItem.larva(family: honeybee),
+      );
       expect(driver.queen, corner);
       expect(driver.board.items, hasLength(4));
       await driver.drag(corner, start);
       expect(driver.queen, start, reason: 'swapped back');
       expect(
         driver.board.itemAt(corner),
-        const BoardItem.larva(family: common),
+        const BoardItem.larva(family: honeybee),
       );
 
       // --- Merging two larvae into a bee (APY-4).
@@ -170,24 +173,24 @@ void main() {
       expect(driver.board.items, hasLength(3));
       expect(
         driver.board.itemAt(const BoardPosition(column: 3, row: 3)),
-        const BoardItem.bee(family: common),
+        const BoardItem.bee(family: honeybee),
       );
       expect(driver.selection, const BoardPosition(column: 3, row: 3));
 
       // A bee and a larva do not merge: they trade places.
       final larva = await driver.newLarva();
       await driver.drag(const BoardPosition(column: 3, row: 3), larva);
-      expect(driver.board.itemAt(larva), const BoardItem.bee(family: common));
+      expect(driver.board.itemAt(larva), const BoardItem.bee(family: honeybee));
       expect(
         driver.board.itemAt(const BoardPosition(column: 3, row: 3)),
-        const BoardItem.larva(family: common),
+        const BoardItem.larva(family: honeybee),
       );
 
       // --- Merging bees up to the family's last level (APY-7).
       final level2 = await driver.raiseBee(2);
       expect(
         driver.board.itemAt(level2),
-        const BoardItem.bee(family: common, level: 2),
+        const BoardItem.bee(family: honeybee, level: 2),
       );
       expect(await repository.load(), driver.board);
 
@@ -237,8 +240,8 @@ void main() {
         worth,
         reason: 'merging neither creates nor destroys anything',
       );
-      final topLevel = common.maxLevel;
-      final top = BoardItem.bee(family: common, level: topLevel);
+      final topLevel = honeybee.maxLevel;
+      final top = BoardItem.bee(family: honeybee, level: topLevel);
       expect(
         driver.board.items.values.whereType<Bee>().map((bee) => bee.level),
         contains(topLevel),

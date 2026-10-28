@@ -23,9 +23,10 @@ void main() {
     });
 
     test('name the tiers after the branch and the tier', () {
-      expect(ResourceBranch.comb.imageAt(1), 'resources/comb.png');
-      expect(ResourceBranch.comb.imageAt(2), 'resources/comb_2.png');
-      expect(ResourceBranch.pollen.imageAt(1), 'resources/pollen.png');
+      expect(ResourceBranch.wax.imageAt(1), 'resources/wax.png');
+      expect(ResourceBranch.wax.imageAt(4), 'resources/wax_4.png');
+      expect(ResourceBranch.honey.imageAt(1), 'resources/honey.png');
+      expect(ResourceBranch.honey.imageAt(2), 'resources/honey_2.png');
     });
   });
 }

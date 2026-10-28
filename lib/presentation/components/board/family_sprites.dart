@@ -20,12 +20,13 @@ extension FamilySprites on Family {
   /// the levels above 1 are recolors of the first one, until each species
   /// has its own art.
   String beeImageAt(int level) => switch (this) {
-    Family.common => level == 1 ? 'bees/common.png' : 'bees/common_$level.png',
+    Family.honeybee =>
+      level == 1 ? 'bees/honeybee.png' : 'bees/honeybee_$level.png',
   };
 
   /// The family's larva.
   String get larvaImage => switch (this) {
-    Family.common => 'larvae/common.png',
+    Family.honeybee => 'larvae/honeybee.png',
   };
 
   /// The outline sprite hugging a bee's silhouette, queen included: a queen
@@ -38,7 +39,7 @@ extension FamilySprites on Family {
   /// The color of the family's outline. Provisional, like the families'
   /// palette in `docs/DESIGN.md`.
   Color get borderColor => switch (this) {
-    Family.common => const Color(0xFFFBDA80),
+    Family.honeybee => const Color(0xFFFBDA80),
   };
 
   /// A paint drawing an outline sprite in [borderColor], nearest-neighbor so
