@@ -92,7 +92,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         await game.ready();
-        game.onGameResize(Vector2(140, 269));
+        game.onGameResize(Vector2(140, 285));
 
         final cards = _cards(game);
         for (final (i, card) in cards.indexed.skip(1)) {
@@ -119,7 +119,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         await game.ready();
-        game.onGameResize(Vector2(140, 269));
+        game.onGameResize(Vector2(140, 285));
         final strip = ordersOf(game);
         expect(strip.maxScroll, greaterThan(0));
         final first = _cards(game).first;
@@ -147,7 +147,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         await game.ready();
-        game.onGameResize(Vector2(140, 269));
+        game.onGameResize(Vector2(140, 285));
         final strip = ordersOf(game);
 
         for (var i = 0; i < 10; i++) {
@@ -179,7 +179,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         final board = await boardOf(game);
-        game.onGameResize(Vector2(140, 269));
+        game.onGameResize(Vector2(140, 285));
         board.selection.value = Board.startingQueenPosition;
         final before = board.board;
 
@@ -195,7 +195,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         final board = await boardOf(game);
-        game.onGameResize(Vector2(140, 269));
+        game.onGameResize(Vector2(140, 285));
         board.selection.value = Board.startingQueenPosition;
         final before = board.board;
         final energy = game.energyValue;

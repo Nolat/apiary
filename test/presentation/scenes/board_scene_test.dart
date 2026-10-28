@@ -121,7 +121,7 @@ void main() {
       ApiaryGame.new,
       (game) async {
         await game.ready();
-        // Wider than 140×248: the screen is more than 140 game pixels wide.
+        // Wider than 140×285: the screen is more than 140 game pixels wide.
         game.onGameResize(Vector2(600, 800));
 
         final decor = game.world
@@ -138,7 +138,7 @@ void main() {
     );
 
     for (final (name, screenSize) in [
-      ('the minimum screen', Vector2(140, 269)),
+      ('the minimum screen', Vector2(140, 285)),
       ('a tall phone', Vector2(393, 852)),
       ('a tablet', Vector2(1024, 1366)),
     ]) {

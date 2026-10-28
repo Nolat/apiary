@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:apiary/domain/energy/energy.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
+import 'package:apiary/presentation/game/screen_layout.dart';
 
 import '../../../helpers/energy_container.dart';
 import '../../../helpers/fake_trusted_clock.dart';
@@ -91,7 +92,11 @@ void main() {
 
     // A column through the panel, clear of the bolt, the badge and the text:
     // its three rings (white, shadow, light) are one game pixel each.
-    final rings = runsDown(14, 3).take(3);
+    // The panel starts under the screen's top padding: skip the backdrop.
+    final rings = runsDown(
+      14,
+      ScreenLayout.verticalPadding + 3,
+    ).skip(1).take(3);
 
     expect(
       rings,

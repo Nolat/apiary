@@ -30,7 +30,7 @@ DEVICES=(
 BUNDLE_ID="fr.nolat.apiary"
 APP="build/ios/iphonesimulator/Runner.app"
 OUT="build/screenshots/ios"
-# Max seconds for the app's first frame (a fresh simulator can take 30+ s).
+# Max seconds for the board scene to show (a fresh simulator can take 30+ s).
 LAUNCH_TIMEOUT="${LAUNCH_TIMEOUT:-90}"
 CHECK="python3 tool/screenshots/check_layout.py"
 
@@ -42,23 +42,48 @@ wanted() {
   return 1
 }
 
-# UDID of the first simulator of this type on this runtime, created if none.
-udid_for() {
+# UDIDs of the simulators of this type on this runtime, one per line, one
+# created if there is none. A simulator can be stuck on a black screen (the
+# iPhone Duo does): the caller moves on to the next one when it never shows.
+udids_for() {
   local name=$1 runtime=$2
-  local udid
-  udid=$(xcrun simctl list devices -j | python3 -c "
+  local udids
+  udids=$(xcrun simctl list devices -j | python3 -c "
 import json, sys
 name, runtime = sys.argv[1], sys.argv[2]
 devices = json.load(sys.stdin)['devices'].get(
     'com.apple.CoreSimulator.SimRuntime.' + runtime, [])
-print(next((d['udid'] for d in devices
-            if d['name'] == name and d['isAvailable']), ''))
+print('\\n'.join(d['udid'] for d in devices
+                 if d['name'] == name and d['isAvailable']))
 " "$name" "$runtime")
-  if [[ -z "$udid" ]]; then
-    udid=$(xcrun simctl create "$name" "$name" \
+  if [[ -z "$udids" ]]; then
+    udids=$(xcrun simctl create "$name" "$name" \
       "com.apple.CoreSimulator.SimRuntime.$runtime")
   fi
-  echo "$udid"
+  echo "$udids"
+}
+
+# Launches the app on simulator $1 and screenshots it into $2 once the board
+# scene is up (the splash screen shows the test card too) and has stopped
+# moving: two identical screenshots in a row. Fails after LAUNCH_TIMEOUT.
+screenshot_when_ready() {
+  local udid=$1 file=$2
+  local previous="$file.previous"
+  xcrun simctl terminate "$udid" "$BUNDLE_ID" 2>/dev/null || true
+  xcrun simctl install "$udid" "$APP"
+  xcrun simctl launch "$udid" "$BUNDLE_ID" >/dev/null
+  rm -f "$previous"
+  local deadline=$((SECONDS + LAUNCH_TIMEOUT))
+  until xcrun simctl io "$udid" screenshot "$file" >/dev/null 2>&1 \
+      && $CHECK --ready "$file" "$previous"; do
+    if ((SECONDS > deadline)); then
+      rm -f "$previous"
+      return 1
+    fi
+    cp "$file" "$previous" 2>/dev/null || true
+    sleep 2
+  done
+  rm -f "$previous"
 }
 
 echo "▶ Building $APP"
@@ -75,31 +100,23 @@ for entry in "${DEVICES[@]}"; do
   IFS='|' read -r name runtime flags <<<"$entry"
   wanted "$name" "$@" || continue
 
-  udid=$(udid_for "$name" "$runtime")
-  if ! xcrun simctl list devices booted | grep -q "$udid"; then
-    xcrun simctl boot "$udid"
-    booted_here+=("$udid")
-  fi
-  xcrun simctl bootstatus "$udid" -b >/dev/null
-
-  xcrun simctl terminate "$udid" "$BUNDLE_ID" 2>/dev/null || true
-  xcrun simctl install "$udid" "$APP"
-  xcrun simctl launch "$udid" "$BUNDLE_ID" >/dev/null
-
-  # Screenshot as soon as the test card is drawn, then once more a moment
-  # later so the first frames' layout has settled.
   file="$OUT/$(echo "$name" | tr -c 'A-Za-z0-9\n' '_' | tr -s '_' | sed 's/_$//').png"
-  deadline=$((SECONDS + LAUNCH_TIMEOUT))
-  until xcrun simctl io "$udid" screenshot "$file" >/dev/null 2>&1 \
-      && $CHECK --ready "$file"; do
-    if ((SECONDS > deadline)); then
-      echo "✘ $name: no frame after ${LAUNCH_TIMEOUT}s" >&2
+  shown=false
+  while read -r udid <&3; do
+    if ! xcrun simctl list devices booted | grep -q "$udid"; then
+      xcrun simctl boot "$udid"
+      booted_here+=("$udid")
+    fi
+    xcrun simctl bootstatus "$udid" -b >/dev/null
+    if screenshot_when_ready "$udid" "$file"; then
+      shown=true
       break
     fi
-    sleep 2
-  done
-  sleep 2
-  xcrun simctl io "$udid" screenshot "$file" >/dev/null 2>&1
+    echo "⚠ $name ($udid): board scene not ready after ${LAUNCH_TIMEOUT}s" >&2
+  done 3< <(udids_for "$name" "$runtime")
+  if ! $shown; then
+    echo "✘ $name: no simulator showed the board scene" >&2
+  fi
   echo "📸 $name → $file"
   [[ "$flags" == *downsampled* ]] && check_args+=("--downsampled=$file")
   [[ "$flags" == *centered* ]] && check_args+=("--centered=$file")

@@ -88,7 +88,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
   DevTools? get devTools => _devTools;
 
   /// The smallest safe area the game lays out in, in game pixels: 140 wide
-  /// (the board's width, see `docs/DESIGN.md`), the height varying above.
+  /// (the board's), 285 tall (see `docs/DESIGN.md`).
   static final Vector2 minimumSize = Vector2(
     ScreenLayout.minimumSafeSize.width,
     ScreenLayout.minimumSafeSize.height,

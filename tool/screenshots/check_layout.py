@@ -4,10 +4,10 @@ Measures the LayoutDebugOverlay test card (lib/presentation/game/
 layout_debug_overlay.dart) on each screenshot, for a scale s (physical
 pixels per game pixel, usually fractional), and checks that:
 - the board is 140s x 180s physical pixels;
-- on an iPhone it spans the full width, edge to edge; on the screens given
-  with --centered=shot.png (tablets, foldables: the height limits) it is
-  centered instead — off center is only a warning there, the safe area may
-  require it (a camera hole on one side);
+- the board is centered, with a few game pixels of margin each side on an
+  iPhone (the scale fits the height); on the screens given with
+  --centered=shot.png (tablets, foldables) off center is only a warning, the
+  safe area may require it (a camera hole on one side);
 - scanned top to bottom, the band outlines come in order — hud, orders,
   board, bottom bar — with none overlapping;
 - every game pixel inside the checkerboard (an image, drawn like a sprite) is
@@ -19,7 +19,9 @@ Screens that iOS downsamples (iPhone mini, "Plus" models: the app renders at
 them with --downsampled=shot.png, their checkerboard checks become warnings.
 
     python3 check_layout.py shot.png...          # check, exit 1 on failure
-    python3 check_layout.py --ready shot.png     # exit 0 once the card shows
+    python3 check_layout.py --ready shot.png [previous.png]
+        # exit 0 once the board scene shows (not the splash screen, which the
+        # card is drawn over too) and, given previous.png, nothing moved since
 """
 
 import math
@@ -33,6 +35,9 @@ CHECKERBOARD_SIZE = 16
 HONEY = (0xF2, 0xC1, 0x4E)  # AppColors.honey: board outline
 ACCENT = (0xE5, 0x9A, 0x1F)  # AppColors.accent: other bands, checkerboard
 TOLERANCE = 12
+WOOD = (0x24, 0x14, 0x0D)  # the board scene's backdrop (the splash is darker)
+WOOD_TOLERANCE = 3
+WOOD_SHARE = 0.05  # of the screen, at least, once the board scene is up
 
 
 def close(pixel, color):
@@ -76,13 +81,57 @@ def lines(pixels):
     return found
 
 
+def outline_box(image):
+    """Bounding box of the board's outline: the honey lines that run across
+    most of the screen, which leaves out the honey of other sprites (the
+    energy bolt, the coins), or the blends of them that a downsampled screen
+    has."""
+    honey = mask(image, HONEY)
+    width, height = image.size
+    columns = honey.resize((width, 1), Image.BOX).tobytes()
+    rows = honey.resize((1, height), Image.BOX).tobytes()
+    # The outline's sides are the board's height, its top and bottom the
+    # board's width: at least 40 % of the screen's in all cases.
+    xs = [x for x, v in enumerate(columns) if v >= 0.4 * 255]
+    ys = [y for y, v in enumerate(rows) if v >= 0.4 * 255]
+    if not xs or not ys:
+        return None
+    return xs[0], ys[0], xs[-1] + 1, ys[-1] + 1
+
+
+def ready(path, previous=None):
+    """Whether the board scene is up in the screenshot, and still."""
+    image = Image.open(path).convert("RGB")
+    if outline_box(image) is None:
+        return False
+    # The test card is drawn over the splash screen too: tell them apart by
+    # the wooden backdrop, which only the board scene has.
+    bands = [
+        band.point(lambda v, c=c: 255 if abs(v - c) <= WOOD_TOLERANCE else 0)
+        for band, c in zip(image.split(), WOOD)
+    ]
+    wood = ImageChops.multiply(ImageChops.multiply(bands[0], bands[1]), bands[2])
+    share = wood.histogram()[255] / (image.width * image.height)
+    if share < WOOD_SHARE:
+        return False
+    if previous is None:
+        return True
+    try:
+        before = Image.open(previous).convert("RGB")
+    except FileNotFoundError:
+        return False
+    return before.size == image.size and not ImageChops.difference(
+        image, before
+    ).getbbox()
+
+
 def check(path, downsampled=False, centered=False):
     """Returns (summary, failures, warnings)."""
     image = Image.open(path).convert("RGB")
     width, height = image.size
     pixels = image.load()
 
-    box = mask(image, HONEY).getbbox()
+    box = outline_box(image)
     if box is None:
         return "no test card", ["board outline not found"], []
     # The outline is drawn 1 game pixel inside the board.
@@ -96,15 +145,16 @@ def check(path, downsampled=False, centered=False):
         failures.append(f"board is {board_width}x{board_height}, not 140s x 180s")
 
     if centered:
-        # The board's left edge is rounded to a whole game pixel.
-        if abs(left - (width - right)) > scale + 1:
+        # The board's left edge is rounded down to a whole game pixel, and the
+        # screen's right edge to the nearest: 1.5 game pixels at most.
+        if abs(left - (width - right)) > 1.5 * scale + 1:
             warnings.append(
                 f"board not centered: {left} px left, {width - right} px right "
                 f"(fine if the safe area requires it)"
             )
-    elif left > 1 or width - right > 1:
+    elif abs(left - (width - right)) > 1.5 * scale + 1:
         failures.append(
-            f"board doesn't span the width: {left} px left, {width - right} px right"
+            f"board not centered: {left} px left, {width - right} px right"
         )
 
     # A column inside the board's right edge, clear of the label and the
@@ -159,8 +209,7 @@ def check(path, downsampled=False, centered=False):
 
 def main(args):
     if args and args[0] == "--ready":
-        image = Image.open(args[1]).convert("RGB")
-        return 0 if mask(image, HONEY).getbbox() else 1
+        return 0 if ready(*args[1:]) else 1
 
     def flagged(flag):
         return {a.split("=", 1)[1] for a in args if a.startswith(f"--{flag}=")}

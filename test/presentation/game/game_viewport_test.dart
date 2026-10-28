@@ -42,48 +42,52 @@ void main() {
       'maps one game pixel to one pixel at the minimum size',
       gameWith(devicePixelRatio: 1),
       (game) async {
-        game.onGameResize(Vector2(140, 269));
+        game.onGameResize(Vector2(140, 285));
         final viewport = viewportFor(game);
 
         expect(viewport.pixelScale, 1);
-        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 269));
-        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 269));
+        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 285));
+        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 285));
       },
     );
 
     testWithGame<FlameGame>(
-      'is exactly 140 game pixels wide on an iPhone, its height varying',
+      'is exactly 285 game pixels tall in the safe area of an iPhone, its '
+      'width following',
       iPhonePro,
       (game) async {
         game.onGameResize(iPhoneProSize);
         final viewport = viewportFor(game);
 
-        // min(1206 / 140, 2334 / 269): the width limits, ×8.614.
-        const scale = 1206 / 140;
+        // min(1206 / 140, 2334 / 285): the height limits, ×8.19.
+        const scale = 2334 / 285;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.scale.x, closeTo(scale / 3, 1e-6));
-        expect(viewport.visibleArea.width, closeTo(140, 1e-4));
+        expect(viewport.safeArea.height, closeTo(285, 1e-4));
+        expect(viewport.visibleArea.width, closeTo(1206 / scale, 1e-4));
         expect(viewport.visibleArea.height, closeTo(2622 / scale, 1e-4));
         expect(viewport.safeArea.top, closeTo(186 / scale, 1e-4));
         expect(viewport.safeArea.bottom, closeTo(2520 / scale, 1e-4));
+        // A little wider than the board.
+        expect(viewport.visibleArea.width, greaterThan(140));
+        expect(viewport.visibleArea.width, lessThan(150));
       },
     );
 
     testWithGame<FlameGame>(
-      'fills the width of a short iPhone too',
-      // iPhone 13 mini: 375×812 logical, DPR 3, notch and home indicator.
-      gameWith(
-        devicePixelRatio: 3,
-        safePadding: const EdgeInsets.only(top: 50, bottom: 34),
-      ),
+      'is wider on the iPhone SE, whose screen is shorter for its width',
+      // iPhone SE: 375×667 logical, DPR 2, 16:9.
+      gameWith(devicePixelRatio: 2),
       (game) async {
-        game.onGameResize(Vector2(375, 812));
+        game.onGameResize(Vector2(375, 667));
         final viewport = viewportFor(game);
 
-        // min(1125 / 140, 2184 / 269): still the width.
-        expect(viewport.pixelScale, closeTo(1125 / 140, 1e-6));
-        expect(viewport.visibleArea.width, closeTo(140, 1e-4));
-        expect(viewport.safeArea.height, greaterThanOrEqualTo(269));
+        // min(750 / 140, 1334 / 285): the height limits, ×4.68.
+        const scale = 1334 / 285;
+        expect(viewport.pixelScale, closeTo(scale, 1e-6));
+        expect(viewport.safeArea.height, closeTo(285, 1e-4));
+        expect(viewport.visibleArea.width, closeTo(750 / scale, 1e-4));
+        expect(viewport.visibleArea.width, closeTo(160.2, 0.1));
       },
     );
 
@@ -99,10 +103,10 @@ void main() {
         game.onGameResize(Vector2(1032, 1376));
         final viewport = viewportFor(game);
 
-        // min(2064 / 140, 2664 / 269) = 10.09: 191 game pixels wide.
-        const scale = 2664 / 269;
+        // min(2064 / 140, 2664 / 285) = 9.35: 221 game pixels wide.
+        const scale = 2664 / 285;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
-        expect(viewport.safeArea.height, closeTo(269, 1e-4));
+        expect(viewport.safeArea.height, closeTo(285, 1e-4));
         expect(viewport.visibleArea.width, closeTo(2064 / scale, 1e-4));
       },
     );
@@ -118,12 +122,12 @@ void main() {
         game.onGameResize(Vector2(466, 780));
         final viewport = viewportFor(game);
 
-        // min(1146 / 140, 2340 / 269): the width limits, just.
+        // min(1146 / 140, 2340 / 285): the width limits, just.
         const scale = 1146 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.safeArea.left, 0);
         expect(viewport.safeArea.width, closeTo(140, 1e-4));
-        expect(viewport.safeArea.height, greaterThanOrEqualTo(269));
+        expect(viewport.safeArea.height, greaterThanOrEqualTo(285));
       },
     );
 
@@ -136,8 +140,8 @@ void main() {
 
         final screenPoint = game.camera.localToGlobal(worldPoint);
 
-        // 30 × 8.614 / 3 and 270 × 8.614 / 3 logical pixels.
-        const scale = 1206 / 140;
+        // 30 × 8.19 / 3 and 270 × 8.19 / 3 logical pixels.
+        const scale = 2334 / 285;
         expect(screenPoint.x, closeTo(30 * scale / 3, 1e-3));
         expect(screenPoint.y, closeTo(270 * scale / 3, 1e-3));
         final back = game.camera.globalToLocal(screenPoint);

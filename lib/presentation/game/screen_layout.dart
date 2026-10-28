@@ -8,32 +8,38 @@ import 'package:flutter/foundation.dart' show immutable;
 import 'package:apiary/domain/board/board.dart';
 
 /// Where each band of the game screen goes, in game pixels, Flambé-style:
-/// fixed-size bands pinned to the top and bottom of the safe area, and a
-/// [spacer] absorbing the height that varies from one device to another.
+/// fixed-size bands pinned to the top and bottom of the safe area, and the
+/// height left over, which varies from one device to another, shared between
+/// the room above the orders and the [spacer] under them.
 ///
 /// ```text
 /// ┌─ safe area ─────────────┐  decor ([screen]) extends under the system UI
+/// │ padding        4 fixed  │
 /// │ hud           14 fixed  │  ← pinned to the top
+/// │ ordersGap    ≥ 4 flex   │  ← half of the room left over
 /// │ orders        35 fixed  │
-/// │ spacer       ≥ 0 flex   │  ← 0 from 269 up (the iPhone SE, 249, is short)
+/// │ spacer       ≥ 4 flex   │  ← the other half; 8 in all from 285 up
 /// │ board    140×180 fixed  │  ← 7×9 cells of 20, centered
 /// │ bottomBar     40 fixed  │  ← pinned to the bottom (panel 38, padded 2)
+/// │ padding        4 fixed  │
 /// └─────────────────────────┘
 /// ```
 ///
-/// The board is as wide as the minimum safe area, so on every iPhone — where
-/// the screen is exactly that wide — it fills the width, edge to edge; on
-/// tablets and foldables, where the height limits the scale, it is as large
-/// as the height allows, centered. The other bands span the safe area's width
-/// (140 on iPhones, up to ~190 on iPads, where panels widen through
+/// The scale is set by the height: a phone's safe area is 285 game pixels
+/// tall, which fits the fixed bands and [minimumSpacerHeight] of room, and its
+/// width follows from its shape (143 on an iPhone 18 Pro, 156 on an iPhone
+/// SE), the 140-pixel board centered with a margin of wood on each side. On
+/// tablets and foldables the screen is wider still. The other bands span the
+/// safe area's width (up to ~215 on iPads, where panels widen through
 /// 9-slices). Edges are whole pixels. Pure: a scene recomputes it from
-/// `ApiaryGame.layout` in `onGameResize`. Band heights other than the
-/// board's are placeholders until the HUD and orders are designed.
+/// `ApiaryGame.layout` in `onGameResize`. Band heights other than the board's
+/// are placeholders until the HUD and orders are designed.
 @immutable
 class ScreenLayout {
   const ScreenLayout._({
     required this.screen,
     required this.hud,
+    required this.ordersGap,
     required this.orders,
     required this.spacer,
     required this.board,
@@ -47,21 +53,17 @@ class ScreenLayout {
     required Rect safeArea,
   }) {
     // Whole pixels, rounded to the nearest: the bands overflow the safe
-    // area by less than half a game pixel at most, but a 140-wide safe area
-    // always holds the 140-wide board.
+    // area by less than half a game pixel at most, but a safe area at least
+    // [minimumSafeSize] wide always holds the 140-wide board.
     final left = safeArea.left.roundToDouble();
-    final top = safeArea.top.roundToDouble();
+    // Short of the screen's edges, which an iPhone SE has no inset to keep
+    // the bands off.
+    final top = safeArea.top.roundToDouble() + verticalPadding;
     final right = safeArea.right.roundToDouble();
     // Floored, so the bottom bar never dips under the home indicator.
-    final bottom = safeArea.bottom.floorToDouble();
+    final bottom = safeArea.bottom.floorToDouble() - verticalPadding;
 
     final hud = Rect.fromLTRB(left, top, right, top + hudHeight);
-    final orders = Rect.fromLTRB(
-      left,
-      hud.bottom,
-      right,
-      hud.bottom + ordersHeight,
-    );
     final bottomBar = Rect.fromLTRB(
       left,
       bottom - bottomBarHeight,
@@ -74,15 +76,29 @@ class ScreenLayout {
       boardSize.width,
       boardSize.height,
     );
+    // The room left between the HUD and the board, minus the orders, is shared
+    // in two: the orders sit in the middle of it.
+    final room = board.top - hud.bottom - ordersHeight;
+    final orders = Rect.fromLTWH(
+      left,
+      hud.bottom + (room / 2).floorToDouble(),
+      right - left,
+      ordersHeight,
+    );
     return ScreenLayout._(
       screen: screen,
       hud: hud,
+      ordersGap: Rect.fromLTRB(left, hud.bottom, right, orders.top),
       orders: orders,
       spacer: Rect.fromLTRB(left, orders.bottom, right, board.top),
       board: board,
       bottomBar: bottomBar,
     );
   }
+
+  /// The room kept at the top and at the bottom of the safe area, so that the
+  /// bands never touch the edge of a screen without insets.
+  static const verticalPadding = 4.0;
 
   /// The HUD is as tall as the energy gauge's panel; the countdown pill
   /// under it hangs over the orders band.
@@ -113,13 +129,19 @@ class ScreenLayout {
 
   /// Height of the fixed bands, stacked.
   static const double fixedHeight =
-      hudHeight + ordersHeight + Board.rows * cellSize + bottomBarHeight;
+      2 * verticalPadding +
+      hudHeight +
+      ordersHeight +
+      Board.rows * cellSize +
+      bottomBarHeight;
 
-  static const minimumSpacerHeight = 0.0;
+  /// The room left over, above and under the orders together.
+  static const minimumSpacerHeight = 8.0;
 
-  /// The smallest safe area the layout fits: the board's width, and the
-  /// fixed bands' height plus the minimum spacer — 269. The iPhone SE (249.0)
-  /// is short of it until the layout is reworked for small screens.
+  /// The smallest safe area the layout fits: as wide as the board, and as
+  /// tall as the fixed bands plus the minimum room, 285. The viewport scales
+  /// the game so that a phone's safe area is just this tall, hence a little
+  /// wider than the board.
   static const minimumSafeSize = Size(
     Board.columns * cellSize,
     fixedHeight + minimumSpacerHeight,
@@ -131,10 +153,15 @@ class ScreenLayout {
   /// Resources: day, energy, Apidex, shop.
   final Rect hud;
 
+  /// Room between the HUD and the orders, which the energy gauge's "+" and
+  /// countdown pill overhang.
+  final Rect ordersGap;
+
   /// The day's customers and their orders.
   final Rect orders;
 
-  /// Room between the orders and the board, at least [minimumSpacerHeight].
+  /// Room between the orders and the board; with [ordersGap], at least
+  /// [minimumSpacerHeight].
   final Rect spacer;
 
   /// The 7×9 grid.
@@ -144,13 +171,14 @@ class ScreenLayout {
   final Rect bottomBar;
 
   /// Every band but the screen, top to bottom.
-  List<Rect> get bands => [hud, orders, spacer, board, bottomBar];
+  List<Rect> get bands => [hud, ordersGap, orders, spacer, board, bottomBar];
 
   @override
   bool operator ==(Object other) =>
       other is ScreenLayout &&
       other.screen == screen &&
       other.hud == hud &&
+      other.ordersGap == ordersGap &&
       other.orders == orders &&
       other.spacer == spacer &&
       other.board == board &&
@@ -158,10 +186,10 @@ class ScreenLayout {
 
   @override
   int get hashCode =>
-      Object.hash(screen, hud, orders, spacer, board, bottomBar);
+      Object.hash(screen, hud, ordersGap, orders, spacer, board, bottomBar);
 
   @override
   String toString() =>
-      'ScreenLayout(screen: $screen, hud: $hud, orders: $orders, '
-      'spacer: $spacer, board: $board, bottomBar: $bottomBar)';
+      'ScreenLayout(screen: $screen, hud: $hud, ordersGap: $ordersGap, '
+      'orders: $orders, spacer: $spacer, board: $board, bottomBar: $bottomBar)';
 }

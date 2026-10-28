@@ -2,7 +2,7 @@
 import 'package:flutter/services.dart';
 
 /// Full-screen, portrait-only display: the game is a portrait pixel-art
-/// canvas, 140 game pixels wide (see docs/DESIGN.md), so the OS status and
+/// canvas, 285 game pixels tall (see docs/DESIGN.md), so the OS status and
 /// navigation bars are hidden. In sticky immersive mode a swipe from an edge
 /// reveals them for a moment, then they hide again on their own.
 ///
