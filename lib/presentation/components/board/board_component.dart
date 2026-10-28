@@ -27,6 +27,7 @@ import 'package:apiary/presentation/components/board/board_banner_component.dart
 import 'package:apiary/presentation/components/board/bounce_effect.dart';
 import 'package:apiary/presentation/components/board/centered_scale_effect.dart';
 import 'package:apiary/presentation/components/board/hive_component.dart';
+import 'package:apiary/presentation/components/board/item_marks_component.dart';
 import 'package:apiary/presentation/components/board/larva_component.dart';
 import 'package:apiary/presentation/components/board/queen_component.dart';
 import 'package:apiary/presentation/components/board/resource_component.dart';
@@ -61,11 +62,12 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 class BoardComponent extends PositionComponent
     with HasGameReference, TapCallbacks, DragCallbacks {
   BoardComponent({
-    required this.board,
+    required Board board,
     required this.energy,
     this.onChanged,
     Random? random,
-  }) : _random = random ?? Random(),
+  }) : changes = ValueNotifier(board),
+       _random = random ?? Random(),
        super(
          size: Vector2(
            ScreenLayout.boardSize.width,
@@ -80,8 +82,12 @@ class BoardComponent extends PositionComponent
   final EnergyNotifier energy;
 
   /// What to draw on the grid. The component replaces it as the player acts;
-  /// nothing else observes it yet.
-  Board board;
+  /// [changes] tells whoever shows something that depends on it.
+  Board get board => changes.value;
+  set board(Board board) => changes.value = board;
+
+  /// The board as it is now; notifies each time an action replaces it.
+  final ValueNotifier<Board> changes;
 
   /// Told of the new [board] each time an action changes it (a larva born, a
   /// move, a swap, a merge), as soon as it is done and not when its animation
@@ -122,8 +128,14 @@ class BoardComponent extends PositionComponent
   }
 
   late final SpriteComponent _selectionFrame;
+  final _marks = ItemMarksComponent();
   late final BoardBannerComponent _fullBanner;
   late final BoardBannerComponent _missingEnergyBanner;
+
+  /// The cells wearing a check badge: those whose resource an order counts.
+  /// Set by whoever knows the orders; the board only draws them.
+  Set<BoardPosition> get marked => _marks.marked;
+  set marked(Set<BoardPosition> cells) => _marks.marked = cells;
 
   /// The banner of a tap that finds the board full.
   BoardBannerComponent get fullBanner => _fullBanner;
@@ -238,6 +250,9 @@ class BoardComponent extends PositionComponent
       size: Vector2.all(ScreenLayout.cellSize),
     )..opacity = 0;
     await add(_selectionFrame);
+    // Above the items; the item a finger holds is above it.
+    _marks.priority = 1;
+    await add(_marks);
     // Invisible until the board is full and tapped.
     await add(
       _fullBanner = BoardBannerComponent(message: 'board.full'.tr()),
@@ -261,6 +276,7 @@ class BoardComponent extends PositionComponent
     removal.dispose();
     itemChanged.dispose();
     energyMissing.dispose();
+    changes.dispose();
     super.onRemove();
   }
 
@@ -310,6 +326,7 @@ class BoardComponent extends PositionComponent
       return;
     }
     _dragged = cell;
+    _marks.hidden = cell;
     _dragPointer = event.pointerId;
     _finger = event.localPosition.clone();
     // A queen grabbed while shaking would carry the swing along.
@@ -370,6 +387,7 @@ class BoardComponent extends PositionComponent
   (BoardPosition, PositionComponent)? _release() {
     final from = _dragged;
     _dragged = null;
+    _marks.hidden = null;
     _dragPointer = null;
     _finger = null;
     if (from == null) {

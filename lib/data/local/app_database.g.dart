@@ -974,8 +974,26 @@ class $DayOrderResourcesTable extends DayOrderResources
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
   @override
-  List<GeneratedColumn> get $columns => [orderPosition, slot, branch, tier];
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    orderPosition,
+    slot,
+    branch,
+    tier,
+    quantity,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1023,6 +1041,12 @@ class $DayOrderResourcesTable extends DayOrderResources
     } else if (isInserting) {
       context.missing(_tierMeta);
     }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
     return context;
   }
 
@@ -1048,6 +1072,10 @@ class $DayOrderResourcesTable extends DayOrderResources
         DriftSqlType.int,
         data['${effectivePrefix}tier'],
       )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
     );
   }
 
@@ -1065,11 +1093,15 @@ class DayOrderResource extends DataClass
   /// A `ResourceBranch` name.
   final String branch;
   final int tier;
+
+  /// How many of it the order asks for.
+  final int quantity;
   const DayOrderResource({
     required this.orderPosition,
     required this.slot,
     required this.branch,
     required this.tier,
+    required this.quantity,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1078,6 +1110,7 @@ class DayOrderResource extends DataClass
     map['slot'] = Variable<int>(slot);
     map['branch'] = Variable<String>(branch);
     map['tier'] = Variable<int>(tier);
+    map['quantity'] = Variable<int>(quantity);
     return map;
   }
 
@@ -1087,6 +1120,7 @@ class DayOrderResource extends DataClass
       slot: Value(slot),
       branch: Value(branch),
       tier: Value(tier),
+      quantity: Value(quantity),
     );
   }
 
@@ -1100,6 +1134,7 @@ class DayOrderResource extends DataClass
       slot: serializer.fromJson<int>(json['slot']),
       branch: serializer.fromJson<String>(json['branch']),
       tier: serializer.fromJson<int>(json['tier']),
+      quantity: serializer.fromJson<int>(json['quantity']),
     );
   }
   @override
@@ -1110,6 +1145,7 @@ class DayOrderResource extends DataClass
       'slot': serializer.toJson<int>(slot),
       'branch': serializer.toJson<String>(branch),
       'tier': serializer.toJson<int>(tier),
+      'quantity': serializer.toJson<int>(quantity),
     };
   }
 
@@ -1118,11 +1154,13 @@ class DayOrderResource extends DataClass
     int? slot,
     String? branch,
     int? tier,
+    int? quantity,
   }) => DayOrderResource(
     orderPosition: orderPosition ?? this.orderPosition,
     slot: slot ?? this.slot,
     branch: branch ?? this.branch,
     tier: tier ?? this.tier,
+    quantity: quantity ?? this.quantity,
   );
   DayOrderResource copyWithCompanion(DayOrderResourcesCompanion data) {
     return DayOrderResource(
@@ -1132,6 +1170,7 @@ class DayOrderResource extends DataClass
       slot: data.slot.present ? data.slot.value : this.slot,
       branch: data.branch.present ? data.branch.value : this.branch,
       tier: data.tier.present ? data.tier.value : this.tier,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
     );
   }
 
@@ -1141,13 +1180,14 @@ class DayOrderResource extends DataClass
           ..write('orderPosition: $orderPosition, ')
           ..write('slot: $slot, ')
           ..write('branch: $branch, ')
-          ..write('tier: $tier')
+          ..write('tier: $tier, ')
+          ..write('quantity: $quantity')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(orderPosition, slot, branch, tier);
+  int get hashCode => Object.hash(orderPosition, slot, branch, tier, quantity);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1155,7 +1195,8 @@ class DayOrderResource extends DataClass
           other.orderPosition == this.orderPosition &&
           other.slot == this.slot &&
           other.branch == this.branch &&
-          other.tier == this.tier);
+          other.tier == this.tier &&
+          other.quantity == this.quantity);
 }
 
 class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
@@ -1163,12 +1204,14 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
   final Value<int> slot;
   final Value<String> branch;
   final Value<int> tier;
+  final Value<int> quantity;
   final Value<int> rowid;
   const DayOrderResourcesCompanion({
     this.orderPosition = const Value.absent(),
     this.slot = const Value.absent(),
     this.branch = const Value.absent(),
     this.tier = const Value.absent(),
+    this.quantity = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DayOrderResourcesCompanion.insert({
@@ -1176,6 +1219,7 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
     required int slot,
     required String branch,
     required int tier,
+    this.quantity = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : orderPosition = Value(orderPosition),
        slot = Value(slot),
@@ -1186,6 +1230,7 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
     Expression<int>? slot,
     Expression<String>? branch,
     Expression<int>? tier,
+    Expression<int>? quantity,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1193,6 +1238,7 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
       if (slot != null) 'slot': slot,
       if (branch != null) 'branch': branch,
       if (tier != null) 'tier': tier,
+      if (quantity != null) 'quantity': quantity,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1202,6 +1248,7 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
     Value<int>? slot,
     Value<String>? branch,
     Value<int>? tier,
+    Value<int>? quantity,
     Value<int>? rowid,
   }) {
     return DayOrderResourcesCompanion(
@@ -1209,6 +1256,7 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
       slot: slot ?? this.slot,
       branch: branch ?? this.branch,
       tier: tier ?? this.tier,
+      quantity: quantity ?? this.quantity,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1228,6 +1276,9 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
     if (tier.present) {
       map['tier'] = Variable<int>(tier.value);
     }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1241,6 +1292,7 @@ class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
           ..write('slot: $slot, ')
           ..write('branch: $branch, ')
           ..write('tier: $tier, ')
+          ..write('quantity: $quantity, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1822,6 +1874,7 @@ typedef $$DayOrderResourcesTableCreateCompanionBuilder =
       required int slot,
       required String branch,
       required int tier,
+      Value<int> quantity,
       Value<int> rowid,
     });
 typedef $$DayOrderResourcesTableUpdateCompanionBuilder =
@@ -1830,6 +1883,7 @@ typedef $$DayOrderResourcesTableUpdateCompanionBuilder =
       Value<int> slot,
       Value<String> branch,
       Value<int> tier,
+      Value<int> quantity,
       Value<int> rowid,
     });
 
@@ -1859,6 +1913,11 @@ class $$DayOrderResourcesTableFilterComposer
 
   ColumnFilters<int> get tier => $composableBuilder(
     column: $table.tier,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1891,6 +1950,11 @@ class $$DayOrderResourcesTableOrderingComposer
     column: $table.tier,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DayOrderResourcesTableAnnotationComposer
@@ -1915,6 +1979,9 @@ class $$DayOrderResourcesTableAnnotationComposer
 
   GeneratedColumn<int> get tier =>
       $composableBuilder(column: $table.tier, builder: (column) => column);
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
 }
 
 class $$DayOrderResourcesTableTableManager
@@ -1961,12 +2028,14 @@ class $$DayOrderResourcesTableTableManager
                 Value<int> slot = const Value.absent(),
                 Value<String> branch = const Value.absent(),
                 Value<int> tier = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayOrderResourcesCompanion(
                 orderPosition: orderPosition,
                 slot: slot,
                 branch: branch,
                 tier: tier,
+                quantity: quantity,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1975,12 +2044,14 @@ class $$DayOrderResourcesTableTableManager
                 required int slot,
                 required String branch,
                 required int tier,
+                Value<int> quantity = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayOrderResourcesCompanion.insert(
                 orderPosition: orderPosition,
                 slot: slot,
                 branch: branch,
                 tier: tier,
+                quantity: quantity,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

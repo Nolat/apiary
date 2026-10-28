@@ -20,7 +20,7 @@ void main() {
     final result = await database.customSelect('SELECT 1 AS one').getSingle();
 
     expect(result.read<int>('one'), 1);
-    expect(database.schemaVersion, 5);
+    expect(database.schemaVersion, 6);
   });
 
   test('upgrades a version 1 database with every table', () async {

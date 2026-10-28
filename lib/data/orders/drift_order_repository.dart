@@ -73,6 +73,7 @@ class DriftOrderRepository implements OrderRepository {
                 slot: slot,
                 branch: resource.branch.name,
                 tier: resource.tier,
+                quantity: Value(order.quantityOf(resource)),
               ),
           ]);
       }
@@ -87,18 +88,30 @@ class DriftOrderRepository implements OrderRepository {
     final resources = [
       for (final resource in resourceRows) _resourceOf(resource),
     ];
+    final quantities = [
+      for (final resource in resourceRows) resource.quantity,
+    ];
     // One unreadable resource makes the whole order unreadable: a card
     // missing one would ask for less than it pays for.
     if (customer == null ||
         row.coins < 0 ||
         resources.isEmpty ||
         resources.length > 2 ||
-        resources.contains(null)) {
+        resources.contains(null) ||
+        quantities.any((quantity) => quantity < 1)) {
       return null;
     }
     final known = resources.whereType<Resource>().toList();
     return known.toSet().length == known.length
-        ? Order(customer: customer, resources: known, coins: row.coins)
+        ? Order(
+            customer: customer,
+            resources: known,
+            coins: row.coins,
+            quantities: {
+              for (final (slot, resource) in known.indexed)
+                if (quantities[slot] > 1) resource: quantities[slot],
+            },
+          )
         : null;
   }
 

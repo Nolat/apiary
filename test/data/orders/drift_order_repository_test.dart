@@ -127,10 +127,38 @@ void main() {
   test('drops an order asking for more than two resources', () async {
     await repository.save(saved);
     await database.customStatement(
-      "INSERT INTO day_order_resources VALUES (2, 1, 'honey', 1), "
-      "(2, 2, 'honey', 2)",
+      "INSERT INTO day_order_resources VALUES (2, 1, 'honey', 1, 1), "
+      "(2, 2, 'honey', 2, 1)",
     );
 
     expect(await repository.load(), saved.sublist(0, 2));
+  });
+
+  test('gives back what an order asks for more than once', () async {
+    final orders = [
+      Order(
+        customer: Customer.baker,
+        resources: const [wax, honey],
+        coins: 10,
+        quantities: {honey: 3},
+      ),
+    ];
+
+    await repository.save(orders);
+
+    final [loaded] = (await repository.load())!;
+    expect(loaded, orders.single);
+    expect(loaded.quantityOf(wax), 1);
+    expect(loaded.quantityOf(honey), 3);
+  });
+
+  test('drops an order asking for none of a resource', () async {
+    await repository.save(saved);
+    await database.customStatement(
+      'UPDATE day_order_resources SET quantity = 0 '
+      'WHERE order_position = 0 AND slot = 1',
+    );
+
+    expect(await repository.load(), saved.sublist(1));
   });
 }

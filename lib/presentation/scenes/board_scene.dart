@@ -11,6 +11,7 @@ import 'package:apiary/core/logging/talker_service.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/orders/order.dart';
+import 'package:apiary/domain/orders/order_progress.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
@@ -35,10 +36,12 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
              ? null
              : (board) => _save(repository, board),
        ),
-       _orders = OrdersComponent(orders: orders);
+       _orders = OrdersComponent(orders: orders),
+       _orderList = orders;
 
   static const routeName = 'board';
 
+  final List<Order> _orderList;
   final _decor = DecorComponent();
   final BoardComponent _board;
   final OrdersComponent _orders;
@@ -48,6 +51,8 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
   @override
   Future<void> onLoad() async {
     await addAll([_decor, _board, _orders, _info, _gauge]);
+    _showOrderProgress();
+    _board.changes.addListener(_showOrderProgress);
     _board.selection.addListener(_showSelectedItem);
     _board.removal.addListener(_showSelectedItem);
     _board.itemChanged.addListener(_showSelectedItem);
@@ -60,6 +65,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
 
   @override
   void onRemove() {
+    _board.changes.removeListener(_showOrderProgress);
     _board.selection.removeListener(_showSelectedItem);
     _board.removal.removeListener(_showSelectedItem);
     _board.itemChanged.removeListener(_showSelectedItem);
@@ -77,6 +83,13 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
               talker.handle(error, stackTrace, 'Saving the board failed'),
         ),
   );
+
+  // The cards and the board show what the board holds of each order.
+  void _showOrderProgress() {
+    final progress = OrderProgress.allOf(_orderList, _board.board);
+    _orders.progress = progress;
+    _board.marked = {for (final order in progress) ...order.marked};
+  }
 
   void _showSelectedItem() => _info.show(
     _board.selectedItem,

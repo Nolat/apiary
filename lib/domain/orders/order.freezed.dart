@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Order {
 
- Customer get customer; List<Resource> get resources; int get coins;
+ Customer get customer; List<Resource> get resources; int get coins;/// How many of a resource the order asks for, when it is not just one.
+ Map<Resource, int> get quantities;
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +28,20 @@ $OrderCopyWith<Order> get copyWith => _$OrderCopyWithImpl<Order>(this as Order, 
 @override
 bool operator ==(Object other) {
   final _this = this as Order;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Order&&(identical(other.customer, _this.customer) || other.customer == _this.customer)&&const DeepCollectionEquality().equals(other.resources, _this.resources)&&(identical(other.coins, _this.coins) || other.coins == _this.coins));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Order&&(identical(other.customer, _this.customer) || other.customer == _this.customer)&&const DeepCollectionEquality().equals(other.resources, _this.resources)&&(identical(other.coins, _this.coins) || other.coins == _this.coins)&&const DeepCollectionEquality().equals(other.quantities, _this.quantities));
 }
 
 
 @override
 int get hashCode {
   final _this = this as Order;
-  return Object.hash(runtimeType,_this.customer,const DeepCollectionEquality().hash(_this.resources),_this.coins);
+  return Object.hash(runtimeType,_this.customer,const DeepCollectionEquality().hash(_this.resources),_this.coins,const DeepCollectionEquality().hash(_this.quantities));
 }
 
 @override
 String toString() {
   final _this = this as Order;
-  return 'Order(customer: ${_this.customer}, resources: ${_this.resources}, coins: ${_this.coins})';
+  return 'Order(customer: ${_this.customer}, resources: ${_this.resources}, coins: ${_this.coins}, quantities: ${_this.quantities})';
 }
 
 
@@ -51,7 +52,7 @@ abstract mixin class $OrderCopyWith<$Res>  {
   factory $OrderCopyWith(Order value, $Res Function(Order) _then) = _$OrderCopyWithImpl;
 @useResult
 $Res call({
- Customer customer, List<Resource> resources, int coins
+ Customer customer, List<Resource> resources, int coins, Map<Resource, int> quantities
 });
 
 
@@ -68,12 +69,13 @@ class _$OrderCopyWithImpl<$Res>
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? customer = null,Object? resources = null,Object? coins = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? customer = null,Object? resources = null,Object? coins = null,Object? quantities = null,}) {
   return _then(Order(
 customer: null == customer ? _self.customer : customer // ignore: cast_nullable_to_non_nullable
 as Customer,resources: null == resources ? _self.resources : resources // ignore: cast_nullable_to_non_nullable
 as List<Resource>,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
-as int,
+as int,quantities: null == quantities ? _self.quantities : quantities // ignore: cast_nullable_to_non_nullable
+as Map<Resource, int>,
   ));
 }
 
@@ -158,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Customer customer,  List<Resource> resources,  int coins)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Customer customer,  List<Resource> resources,  int coins,  Map<Resource, int> quantities)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Order() when $default != null:
-return $default(_that.customer,_that.resources,_that.coins);case _:
+return $default(_that.customer,_that.resources,_that.coins,_that.quantities);case _:
   return orElse();
 
 }
@@ -179,10 +181,10 @@ return $default(_that.customer,_that.resources,_that.coins);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Customer customer,  List<Resource> resources,  int coins)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Customer customer,  List<Resource> resources,  int coins,  Map<Resource, int> quantities)  $default,) {final _that = this;
 switch (_that) {
 case _Order():
-return $default(_that.customer,_that.resources,_that.coins);case _:
+return $default(_that.customer,_that.resources,_that.coins,_that.quantities);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +201,10 @@ return $default(_that.customer,_that.resources,_that.coins);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Customer customer,  List<Resource> resources,  int coins)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Customer customer,  List<Resource> resources,  int coins,  Map<Resource, int> quantities)?  $default,) {final _that = this;
 switch (_that) {
 case _Order() when $default != null:
-return $default(_that.customer,_that.resources,_that.coins);case _:
+return $default(_that.customer,_that.resources,_that.coins,_that.quantities);case _:
   return null;
 
 }
@@ -213,8 +215,8 @@ return $default(_that.customer,_that.resources,_that.coins);case _:
 /// @nodoc
 
 
-class _Order implements Order {
-   _Order({required this.customer, required  List<Resource> resources, required this.coins}): assert(resources.length >= 1 && resources.length <= 2, 'an order asks for one or two resources'),assert(resources.toSet().length == resources.length, 'an order never asks for the same resource twice'),assert(coins >= 0, 'coins cannot be negative'),_resources = resources;
+class _Order extends Order {
+   _Order({required this.customer, required  List<Resource> resources, required this.coins,  Map<Resource, int> quantities = const {}}): assert(resources.length >= 1 && resources.length <= 2, 'an order asks for one or two resources'),assert(resources.toSet().length == resources.length, 'an order never asks for the same resource twice'),assert(quantities.keys.every(resources.contains), 'a quantity belongs to a resource the order asks for'),assert(quantities.values.every((quantity) => quantity >= 1), 'an order asks for at least one of each resource'),assert(coins >= 0, 'coins cannot be negative'),_resources = resources,_quantities = quantities,super._();
   
 
 @override final  Customer customer;
@@ -226,6 +228,15 @@ class _Order implements Order {
 }
 
 @override final  int coins;
+/// How many of a resource the order asks for, when it is not just one.
+ final  Map<Resource, int> _quantities;
+/// How many of a resource the order asks for, when it is not just one.
+@override@JsonKey() Map<Resource, int> get quantities {
+  if (_quantities is EqualUnmodifiableMapView) return _quantities;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_quantities);
+}
+
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
@@ -237,18 +248,18 @@ _$OrderCopyWith<_Order> get copyWith => __$OrderCopyWithImpl<_Order>(this, _$ide
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Order&&(identical(other.customer, customer) || other.customer == customer)&&const DeepCollectionEquality().equals(other.resources, _resources)&&(identical(other.coins, coins) || other.coins == coins));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Order&&(identical(other.customer, customer) || other.customer == customer)&&const DeepCollectionEquality().equals(other.resources, _resources)&&(identical(other.coins, coins) || other.coins == coins)&&const DeepCollectionEquality().equals(other.quantities, _quantities));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,customer,const DeepCollectionEquality().hash(_resources),coins);
+    return Object.hash(runtimeType,customer,const DeepCollectionEquality().hash(_resources),coins,const DeepCollectionEquality().hash(_quantities));
 }
 
 @override
 String toString() {
-    return 'Order(customer: $customer, resources: $resources, coins: $coins)';
+    return 'Order(customer: $customer, resources: $resources, coins: $coins, quantities: $quantities)';
 }
 
 
@@ -259,7 +270,7 @@ abstract mixin class _$OrderCopyWith<$Res> implements $OrderCopyWith<$Res> {
   factory _$OrderCopyWith(_Order value, $Res Function(_Order) _then) = __$OrderCopyWithImpl;
 @override @useResult
 $Res call({
- Customer customer, List<Resource> resources, int coins
+ Customer customer, List<Resource> resources, int coins, Map<Resource, int> quantities
 });
 
 
@@ -276,12 +287,13 @@ class __$OrderCopyWithImpl<$Res>
 
 /// Create a copy of Order
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? customer = null,Object? resources = null,Object? coins = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? customer = null,Object? resources = null,Object? coins = null,Object? quantities = null,}) {
   return _then(_Order(
 customer: null == customer ? _self.customer : customer // ignore: cast_nullable_to_non_nullable
 as Customer,resources: null == resources ? _self._resources : resources // ignore: cast_nullable_to_non_nullable
 as List<Resource>,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
-as int,
+as int,quantities: null == quantities ? _self._quantities : quantities // ignore: cast_nullable_to_non_nullable
+as Map<Resource, int>,
   ));
 }
 

@@ -13,6 +13,7 @@ import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
+import 'generated/schema_v6.dart' as v6;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -180,6 +181,56 @@ void main() {
         );
         expect(await newDb.select(newDb.dayOrders).get(), isEmpty);
         expect(await newDb.select(newDb.dayOrderResources).get(), isEmpty);
+      },
+    );
+  });
+
+  // A saved order keeps what it asks for, once of each.
+  test('migration from v5 to v6 gives saved orders a quantity of 1', () async {
+    await verifier.testWithDataIntegrity(
+      oldVersion: 5,
+      newVersion: 6,
+      createOld: v5.DatabaseAtV5.new,
+      createNew: v6.DatabaseAtV6.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch
+          ..insert(
+            oldDb.dayOrders,
+            const v5.DayOrdersData(position: 0, customer: 'baker', coins: 10),
+          )
+          ..insertAll(oldDb.dayOrderResources, const [
+            v5.DayOrderResourcesData(
+              orderPosition: 0,
+              slot: 0,
+              branch: 'honey',
+              tier: 2,
+            ),
+            v5.DayOrderResourcesData(
+              orderPosition: 0,
+              slot: 1,
+              branch: 'wax',
+              tier: 1,
+            ),
+          ]);
+      },
+      validateItems: (newDb) async {
+        expect(await newDb.select(newDb.dayOrderResources).get(), const [
+          v6.DayOrderResourcesData(
+            orderPosition: 0,
+            slot: 0,
+            branch: 'honey',
+            tier: 2,
+            quantity: 1,
+          ),
+          v6.DayOrderResourcesData(
+            orderPosition: 0,
+            slot: 1,
+            branch: 'wax',
+            tier: 1,
+            quantity: 1,
+          ),
+        ]);
       },
     );
   });

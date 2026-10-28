@@ -21,7 +21,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -59,6 +59,12 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(schema.dayOrders);
           await m.createTable(schema.dayOrderResources);
         },
+        // An order that was saved asked for one of each resource: the new
+        // column's default.
+        from5To6: (m, schema) => m.addColumn(
+          schema.dayOrderResources,
+          schema.dayOrderResources.quantity,
+        ),
       )(m, from, to);
     },
   );

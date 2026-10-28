@@ -8,6 +8,7 @@ import 'package:flame/events.dart';
 
 // 🌎 Project imports:
 import 'package:apiary/domain/orders/order.dart';
+import 'package:apiary/domain/orders/order_progress.dart';
 import 'package:apiary/presentation/components/orders/order_card_component.dart';
 
 /// The orders band: one [OrderCardComponent] per order of the day, side by
@@ -31,6 +32,15 @@ class OrdersComponent extends PositionComponent with DragCallbacks {
 
   /// The cards, in the order of [orders], whether or not they are in view.
   final cards = <OrderCardComponent>[];
+
+  /// Shows what the board holds of each order, one entry per order in the
+  /// order of [orders].
+  // ignore: avoid_setters_without_getters
+  set progress(List<OrderProgress> progress) {
+    for (final (i, card) in cards.indexed) {
+      card.progress = progress[i];
+    }
+  }
 
   /// The room between two cards.
   static const gap = 2.0;

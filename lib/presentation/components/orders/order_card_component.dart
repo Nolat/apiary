@@ -11,6 +11,7 @@ import 'package:flame/components.dart';
 // 🌎 Project imports:
 import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/domain/orders/order.dart';
+import 'package:apiary/domain/orders/order_progress.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/components/board/resource_component.dart';
 import 'package:apiary/presentation/components/orders/customer_sprites.dart';
@@ -26,6 +27,10 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 /// order cell of the board's size. The card is as wide as its content needs,
 /// and its size is known right away, for the strip to lay the cards out.
 /// Tapping it does nothing yet.
+///
+/// What the board already holds of the order shows on its [progress]: the cell
+/// of a resource turns green once the board holds all that is asked of it, and
+/// a resource asked for more than once also reads "n/N" on its cell.
 class OrderCardComponent extends PositionComponent with HasGameReference {
   OrderCardComponent(this.order)
     : super(size: Vector2(widthOf(order), cardHeight));
@@ -34,6 +39,7 @@ class OrderCardComponent extends PositionComponent with HasGameReference {
 
   static const String panelImage = ItemInfoComponent.panelImage;
   static const cellImage = 'ui/order_cell.png';
+  static const readyCellImage = 'ui/order_cell_ready.png';
   static const coinImage = 'ui/coin.png';
 
   static const double cardHeight = ScreenLayout.ordersHeight;
@@ -79,6 +85,11 @@ class OrderCardComponent extends PositionComponent with HasGameReference {
   );
 
   static final TextPaint _coinsText = _renderer(AppColors.white);
+  static final TextPaint _countText = _renderer(AppColors.white);
+  static final TextPaint _countShadowText = _renderer(AppColors.background);
+
+  /// The digits of a count sit 2 px under the top of their line.
+  static const _countShift = 2.0;
 
   static double _measure(TextPaint paint, String text) =>
       paint.getLineMetrics(text).width.ceilToDouble();
@@ -102,25 +113,62 @@ class OrderCardComponent extends PositionComponent with HasGameReference {
 
   late final TextComponent _coins;
 
+  late final Sprite _cellSprite;
+  late final Sprite _readySprite;
+
+  // One per resource asked, in order; the count only when asked for more than
+  // once.
+  final _cells = <SpriteComponent>[];
+  final _counts = <_CountComponent?>[];
+  var _loaded = false;
+  OrderProgress? _progress;
+
+  /// How much of the order the board holds; `null` until it is known, which
+  /// shows nothing ready.
+  OrderProgress? get progress => _progress;
+
+  set progress(OrderProgress? value) {
+    _progress = value;
+    if (_loaded) {
+      _showProgress();
+    }
+  }
+
+  /// Whether the cell of each resource asked is green, in the order asked.
+  List<bool> get readyCells => [
+    for (final cell in _cells) cell.sprite == _readySprite,
+  ];
+
+  /// What the count on the cell of each resource asked reads, in the order
+  /// asked; `null` for a resource asked for once, which has none.
+  List<String?> get counts => [for (final count in _counts) count?.text];
+
   /// What the coins read.
   String get coinsText => _coins.text;
 
+  void _showProgress() {
+    final progress = _progress;
+    for (final (i, resource) in order.resources.indexed) {
+      final entry = progress?.resources[i];
+      _cells[i].sprite = entry != null && entry.ready
+          ? _readySprite
+          : _cellSprite;
+      _counts[i]?.text = '${entry?.have ?? 0}/${order.quantityOf(resource)}';
+    }
+  }
+
   @override
   Future<void> onLoad() async {
-    final [panel, cell, coin, portrait] = await game.images.loadAll([
+    final [panel, cell, ready, coin, portrait] = await game.images.loadAll([
       panelImage,
       cellImage,
+      readyCellImage,
       coinImage,
       order.customer.image,
     ]);
     final paint = pixelPaint();
-    final cells = Sprite(cell);
-    SpriteComponent cellAt(double left) => SpriteComponent(
-      sprite: cells,
-      paint: paint,
-      position: Vector2(left, _padding),
-      size: Vector2.all(_cell),
-    );
+    _cellSprite = Sprite(cell);
+    _readySprite = Sprite(ready);
     await addAll([
       OrderPanelComponent(panel, size: size, ring: _ring),
       OrderPanelComponent(
@@ -138,13 +186,30 @@ class OrderCardComponent extends PositionComponent with HasGameReference {
     ]);
     var left = _contentLeft;
     for (final resource in order.resources) {
+      final cellComponent = SpriteComponent(
+        sprite: _cellSprite,
+        paint: paint,
+        position: Vector2(left, _padding),
+        size: Vector2.all(_cell),
+      );
+      _cells.add(cellComponent);
+      final count = order.quantityOf(resource) > 1
+          ? _CountComponent(
+              Vector2(
+                left + _cell - _cellRing,
+                _padding + _cell - _cellRing + _countShift,
+              ),
+            )
+          : null;
+      _counts.add(count);
       await addAll([
-        cellAt(left),
+        cellComponent,
         ResourceComponent(
           branch: resource.branch,
           tier: resource.tier,
           position: Vector2(left + _margin, _padding + _margin),
         ),
+        ?count,
       ]);
       left += _cell + _gap;
     }
@@ -167,5 +232,33 @@ class OrderCardComponent extends PositionComponent with HasGameReference {
       ),
       _coins,
     ]);
+    _loaded = true;
+    _showProgress();
   }
+}
+
+/// What a cell of the card counts, "n/N", white on a dark shadow so that it
+/// reads over the resource. Placed by its bottom-right corner.
+class _CountComponent extends PositionComponent {
+  _CountComponent(Vector2 corner) : super(position: corner);
+
+  final TextComponent _shadow = TextComponent(
+    textRenderer: OrderCardComponent._countShadowText,
+    anchor: Anchor.bottomRight,
+    position: Vector2.all(1),
+  );
+  final TextComponent _text = TextComponent(
+    textRenderer: OrderCardComponent._countText,
+    anchor: Anchor.bottomRight,
+  );
+
+  String get text => _text.text;
+
+  set text(String value) {
+    _text.text = value;
+    _shadow.text = value;
+  }
+
+  @override
+  Future<void> onLoad() => addAll([_shadow, _text]);
 }

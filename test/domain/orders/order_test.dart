@@ -47,6 +47,49 @@ void main() {
         throwsA(isA<AssertionError>()),
       );
     });
+
+    test('asks for one of each resource unless told otherwise', () {
+      final asked = order(const [wax, honey]);
+
+      expect(asked.quantityOf(wax), 1);
+      expect(asked.quantityOf(honey), 1);
+    });
+
+    test('asks for the quantity it is given', () {
+      final asked = Order(
+        customer: Customer.baker,
+        resources: const [wax, honey],
+        coins: 10,
+        quantities: {honey: 3},
+      );
+
+      expect(asked.quantityOf(wax), 1);
+      expect(asked.quantityOf(honey), 3);
+    });
+
+    test('asks for at least one of each resource', () {
+      expect(
+        () => Order(
+          customer: Customer.baker,
+          resources: const [wax],
+          coins: 10,
+          quantities: {wax: 0},
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('gives a quantity only to a resource it asks for', () {
+      expect(
+        () => Order(
+          customer: Customer.baker,
+          resources: const [wax],
+          coins: 10,
+          quantities: {honey: 2},
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
   });
 
   group('FirstDayOrders', () {

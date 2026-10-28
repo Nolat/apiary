@@ -12,6 +12,9 @@ class DayOrderResources extends Table {
 
   IntColumn get tier => integer()();
 
+  /// How many of it the order asks for.
+  IntColumn get quantity => integer().withDefault(const Constant(1))();
+
   @override
   Set<Column> get primaryKey => {orderPosition, slot};
 }
