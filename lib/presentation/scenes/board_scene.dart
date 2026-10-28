@@ -10,10 +10,12 @@ import 'package:flame/components.dart';
 import 'package:apiary/core/logging/talker_service.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_repository.dart';
+import 'package:apiary/domain/orders/order.dart';
 import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/components/board/item_info_component.dart';
 import 'package:apiary/presentation/components/hud/energy_gauge_component.dart';
+import 'package:apiary/presentation/components/orders/orders_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
@@ -21,6 +23,7 @@ import 'package:apiary/presentation/game/screen_layout.dart';
 class BoardScene extends Component with HasGameReference<ApiaryGame> {
   BoardScene({
     required Board board,
+    required List<Order> orders,
     required EnergyNotifier energy,
     BoardRepository? repository,
     Random? random,
@@ -31,18 +34,20 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
          onChanged: repository == null
              ? null
              : (board) => _save(repository, board),
-       );
+       ),
+       _orders = OrdersComponent(orders: orders);
 
   static const routeName = 'board';
 
   final _decor = DecorComponent();
   final BoardComponent _board;
+  final OrdersComponent _orders;
   final _info = ItemInfoComponent();
   final _gauge = EnergyGaugeComponent();
 
   @override
   Future<void> onLoad() async {
-    await addAll([_decor, _board, _info, _gauge]);
+    await addAll([_decor, _board, _orders, _info, _gauge]);
     _board.selection.addListener(_showSelectedItem);
     _board.removal.addListener(_showSelectedItem);
     _board.itemChanged.addListener(_showSelectedItem);
@@ -90,6 +95,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
       layout.hud.top,
     );
     final bar = layout.bottomBar;
+    _orders.place(layout.orders);
     _info.place(
       Rect.fromLTRB(
         bar.left + ScreenLayout.bottomBarPadding,

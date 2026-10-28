@@ -21,6 +21,9 @@ import 'package:apiary/core/theme/app_colors.dart';
 import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/energy/energy.dart';
+import 'package:apiary/domain/orders/first_day_orders.dart';
+import 'package:apiary/domain/orders/order.dart';
+import 'package:apiary/domain/orders/order_repository.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/game_viewport.dart';
 import 'package:apiary/presentation/game/layout_debug_overlay.dart';
@@ -32,6 +35,7 @@ import 'package:apiary/presentation/scenes/splash_scene.dart';
 class ApiaryGame extends FlameGame with KeyboardEvents {
   ApiaryGame({
     this._boardRepository,
+    this._orderRepository,
     this._devTools,
     this.startup,
     this._random,
@@ -68,11 +72,16 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
   final Random? _random;
 
   BoardRepository? _boardRepository;
+  OrderRepository? _orderRepository;
   DevTools? _devTools;
 
   /// Where the board is saved and restored; `null` plays on the starting
   /// board without saving, as in most tests.
   BoardRepository? get boardRepository => _boardRepository;
+
+  /// Where the orders of the day are saved and restored; `null` plays on the
+  /// first day's orders without saving, as in most tests.
+  OrderRepository? get orderRepository => _orderRepository;
 
   /// What the dev screen does and what opens it; `null` has no dev screen
   /// (most tests).
@@ -102,6 +111,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
 
   // What the board scene opens on, set before it is shown.
   Board _board = Board.initial();
+  List<Order> _orders = FirstDayOrders.orders;
 
   @override
   Color backgroundColor() => AppColors.background;
@@ -118,6 +128,27 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
     }
   }
 
+  // A first game gets the first day's orders, saved from then on so that the
+  // day keeps them. A broken database must not keep the game from opening.
+  Future<List<Order>> _loadOrders() async {
+    final repository = orderRepository;
+    if (repository == null) {
+      return FirstDayOrders.orders;
+    }
+    try {
+      final saved = await repository.load();
+      if (saved != null) {
+        return saved;
+      }
+      await repository.save(FirstDayOrders.orders);
+      // Any failure of the storage, whatever its type, falls back the same way.
+      // ignore: avoid_catches_without_on_clauses
+    } catch (error, stackTrace) {
+      talker.handle(error, stackTrace, 'Loading the orders failed');
+    }
+    return FirstDayOrders.orders;
+  }
+
   Future<void> _mountRouter({required String initialRoute}) async {
     await world.add(
       router = RouterComponent(
@@ -126,6 +157,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
           BoardScene.routeName: Route(
             () => BoardScene(
               board: _board,
+              orders: _orders,
               repository: _boardRepository,
               random: _random,
               energy: energy,
@@ -154,10 +186,12 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
     try {
       final services = await startup.run();
       _boardRepository = services.boardRepository;
+      _orderRepository = services.orderRepository;
       _devTools = services.devTools;
       _listenToShakes();
       startup.step.value = StartupStep.board;
       _board = await _loadBoard() ?? Board.initial();
+      _orders = await _loadOrders();
       _energyReady = true;
       await energy.load();
       // The trusted time can take a while (or never come, offline): the game
@@ -186,6 +220,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
     } else {
       // Only a first game starts on the starting board.
       _board = await _loadBoard() ?? Board.initial();
+      _orders = await _loadOrders();
       _energyReady = true;
       await energy.load();
       unawaited(energy.sync());
@@ -244,6 +279,7 @@ class ApiaryGame extends FlameGame with KeyboardEvents {
   Future<void> restartFromScratch() async {
     router.removeFromParent();
     _board = Board.initial();
+    _orders = FirstDayOrders.orders;
     energy.reset();
     await _mountRouter(initialRoute: BoardScene.routeName);
   }

@@ -12,10 +12,12 @@ import 'package:apiary/core/logging/talker_service.dart';
 import 'package:apiary/data/board/drift_board_repository.dart';
 import 'package:apiary/data/energy/drift_energy_repository.dart';
 import 'package:apiary/data/local/app_database.dart';
+import 'package:apiary/data/orders/drift_order_repository.dart';
 import 'package:apiary/data/time/firestore_trusted_clock.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/energy/energy_repository.dart';
 import 'package:apiary/domain/energy/trusted_clock.dart';
+import 'package:apiary/domain/orders/order_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -30,6 +32,10 @@ void configureDependencies() {
 
   getIt.registerLazySingleton<EnergyRepository>(
     () => DriftEnergyRepository(getIt<AppDatabase>()),
+  );
+
+  getIt.registerLazySingleton<OrderRepository>(
+    () => DriftOrderRepository(getIt<AppDatabase>(), getIt<Talker>()),
   );
 
   getIt.registerLazySingleton<FirebaseFirestore>(

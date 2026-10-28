@@ -679,11 +679,582 @@ class EnergyStatesCompanion extends UpdateCompanion<EnergyState> {
   }
 }
 
+class $DayOrdersTable extends DayOrders
+    with TableInfo<$DayOrdersTable, DayOrder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DayOrdersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customerMeta = const VerificationMeta(
+    'customer',
+  );
+  @override
+  late final GeneratedColumn<String> customer = GeneratedColumn<String>(
+    'customer',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _coinsMeta = const VerificationMeta('coins');
+  @override
+  late final GeneratedColumn<int> coins = GeneratedColumn<int>(
+    'coins',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [position, customer, coins];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'day_orders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DayOrder> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('customer')) {
+      context.handle(
+        _customerMeta,
+        customer.isAcceptableOrUnknown(data['customer']!, _customerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_customerMeta);
+    }
+    if (data.containsKey('coins')) {
+      context.handle(
+        _coinsMeta,
+        coins.isAcceptableOrUnknown(data['coins']!, _coinsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_coinsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {position};
+  @override
+  DayOrder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DayOrder(
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      customer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer'],
+      )!,
+      coins: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}coins'],
+      )!,
+    );
+  }
+
+  @override
+  $DayOrdersTable createAlias(String alias) {
+    return $DayOrdersTable(attachedDatabase, alias);
+  }
+}
+
+class DayOrder extends DataClass implements Insertable<DayOrder> {
+  final int position;
+
+  /// A `Customer` name.
+  final String customer;
+  final int coins;
+  const DayOrder({
+    required this.position,
+    required this.customer,
+    required this.coins,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['position'] = Variable<int>(position);
+    map['customer'] = Variable<String>(customer);
+    map['coins'] = Variable<int>(coins);
+    return map;
+  }
+
+  DayOrdersCompanion toCompanion(bool nullToAbsent) {
+    return DayOrdersCompanion(
+      position: Value(position),
+      customer: Value(customer),
+      coins: Value(coins),
+    );
+  }
+
+  factory DayOrder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DayOrder(
+      position: serializer.fromJson<int>(json['position']),
+      customer: serializer.fromJson<String>(json['customer']),
+      coins: serializer.fromJson<int>(json['coins']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'position': serializer.toJson<int>(position),
+      'customer': serializer.toJson<String>(customer),
+      'coins': serializer.toJson<int>(coins),
+    };
+  }
+
+  DayOrder copyWith({int? position, String? customer, int? coins}) => DayOrder(
+    position: position ?? this.position,
+    customer: customer ?? this.customer,
+    coins: coins ?? this.coins,
+  );
+  DayOrder copyWithCompanion(DayOrdersCompanion data) {
+    return DayOrder(
+      position: data.position.present ? data.position.value : this.position,
+      customer: data.customer.present ? data.customer.value : this.customer,
+      coins: data.coins.present ? data.coins.value : this.coins,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DayOrder(')
+          ..write('position: $position, ')
+          ..write('customer: $customer, ')
+          ..write('coins: $coins')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(position, customer, coins);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DayOrder &&
+          other.position == this.position &&
+          other.customer == this.customer &&
+          other.coins == this.coins);
+}
+
+class DayOrdersCompanion extends UpdateCompanion<DayOrder> {
+  final Value<int> position;
+  final Value<String> customer;
+  final Value<int> coins;
+  const DayOrdersCompanion({
+    this.position = const Value.absent(),
+    this.customer = const Value.absent(),
+    this.coins = const Value.absent(),
+  });
+  DayOrdersCompanion.insert({
+    this.position = const Value.absent(),
+    required String customer,
+    required int coins,
+  }) : customer = Value(customer),
+       coins = Value(coins);
+  static Insertable<DayOrder> custom({
+    Expression<int>? position,
+    Expression<String>? customer,
+    Expression<int>? coins,
+  }) {
+    return RawValuesInsertable({
+      if (position != null) 'position': position,
+      if (customer != null) 'customer': customer,
+      if (coins != null) 'coins': coins,
+    });
+  }
+
+  DayOrdersCompanion copyWith({
+    Value<int>? position,
+    Value<String>? customer,
+    Value<int>? coins,
+  }) {
+    return DayOrdersCompanion(
+      position: position ?? this.position,
+      customer: customer ?? this.customer,
+      coins: coins ?? this.coins,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (customer.present) {
+      map['customer'] = Variable<String>(customer.value);
+    }
+    if (coins.present) {
+      map['coins'] = Variable<int>(coins.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DayOrdersCompanion(')
+          ..write('position: $position, ')
+          ..write('customer: $customer, ')
+          ..write('coins: $coins')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DayOrderResourcesTable extends DayOrderResources
+    with TableInfo<$DayOrderResourcesTable, DayOrderResource> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DayOrderResourcesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _orderPositionMeta = const VerificationMeta(
+    'orderPosition',
+  );
+  @override
+  late final GeneratedColumn<int> orderPosition = GeneratedColumn<int>(
+    'order_position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _slotMeta = const VerificationMeta('slot');
+  @override
+  late final GeneratedColumn<int> slot = GeneratedColumn<int>(
+    'slot',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _branchMeta = const VerificationMeta('branch');
+  @override
+  late final GeneratedColumn<String> branch = GeneratedColumn<String>(
+    'branch',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tierMeta = const VerificationMeta('tier');
+  @override
+  late final GeneratedColumn<int> tier = GeneratedColumn<int>(
+    'tier',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [orderPosition, slot, branch, tier];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'day_order_resources';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DayOrderResource> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('order_position')) {
+      context.handle(
+        _orderPositionMeta,
+        orderPosition.isAcceptableOrUnknown(
+          data['order_position']!,
+          _orderPositionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_orderPositionMeta);
+    }
+    if (data.containsKey('slot')) {
+      context.handle(
+        _slotMeta,
+        slot.isAcceptableOrUnknown(data['slot']!, _slotMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_slotMeta);
+    }
+    if (data.containsKey('branch')) {
+      context.handle(
+        _branchMeta,
+        branch.isAcceptableOrUnknown(data['branch']!, _branchMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_branchMeta);
+    }
+    if (data.containsKey('tier')) {
+      context.handle(
+        _tierMeta,
+        tier.isAcceptableOrUnknown(data['tier']!, _tierMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tierMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {orderPosition, slot};
+  @override
+  DayOrderResource map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DayOrderResource(
+      orderPosition: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order_position'],
+      )!,
+      slot: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}slot'],
+      )!,
+      branch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch'],
+      )!,
+      tier: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tier'],
+      )!,
+    );
+  }
+
+  @override
+  $DayOrderResourcesTable createAlias(String alias) {
+    return $DayOrderResourcesTable(attachedDatabase, alias);
+  }
+}
+
+class DayOrderResource extends DataClass
+    implements Insertable<DayOrderResource> {
+  final int orderPosition;
+  final int slot;
+
+  /// A `ResourceBranch` name.
+  final String branch;
+  final int tier;
+  const DayOrderResource({
+    required this.orderPosition,
+    required this.slot,
+    required this.branch,
+    required this.tier,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['order_position'] = Variable<int>(orderPosition);
+    map['slot'] = Variable<int>(slot);
+    map['branch'] = Variable<String>(branch);
+    map['tier'] = Variable<int>(tier);
+    return map;
+  }
+
+  DayOrderResourcesCompanion toCompanion(bool nullToAbsent) {
+    return DayOrderResourcesCompanion(
+      orderPosition: Value(orderPosition),
+      slot: Value(slot),
+      branch: Value(branch),
+      tier: Value(tier),
+    );
+  }
+
+  factory DayOrderResource.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DayOrderResource(
+      orderPosition: serializer.fromJson<int>(json['orderPosition']),
+      slot: serializer.fromJson<int>(json['slot']),
+      branch: serializer.fromJson<String>(json['branch']),
+      tier: serializer.fromJson<int>(json['tier']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'orderPosition': serializer.toJson<int>(orderPosition),
+      'slot': serializer.toJson<int>(slot),
+      'branch': serializer.toJson<String>(branch),
+      'tier': serializer.toJson<int>(tier),
+    };
+  }
+
+  DayOrderResource copyWith({
+    int? orderPosition,
+    int? slot,
+    String? branch,
+    int? tier,
+  }) => DayOrderResource(
+    orderPosition: orderPosition ?? this.orderPosition,
+    slot: slot ?? this.slot,
+    branch: branch ?? this.branch,
+    tier: tier ?? this.tier,
+  );
+  DayOrderResource copyWithCompanion(DayOrderResourcesCompanion data) {
+    return DayOrderResource(
+      orderPosition: data.orderPosition.present
+          ? data.orderPosition.value
+          : this.orderPosition,
+      slot: data.slot.present ? data.slot.value : this.slot,
+      branch: data.branch.present ? data.branch.value : this.branch,
+      tier: data.tier.present ? data.tier.value : this.tier,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DayOrderResource(')
+          ..write('orderPosition: $orderPosition, ')
+          ..write('slot: $slot, ')
+          ..write('branch: $branch, ')
+          ..write('tier: $tier')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(orderPosition, slot, branch, tier);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DayOrderResource &&
+          other.orderPosition == this.orderPosition &&
+          other.slot == this.slot &&
+          other.branch == this.branch &&
+          other.tier == this.tier);
+}
+
+class DayOrderResourcesCompanion extends UpdateCompanion<DayOrderResource> {
+  final Value<int> orderPosition;
+  final Value<int> slot;
+  final Value<String> branch;
+  final Value<int> tier;
+  final Value<int> rowid;
+  const DayOrderResourcesCompanion({
+    this.orderPosition = const Value.absent(),
+    this.slot = const Value.absent(),
+    this.branch = const Value.absent(),
+    this.tier = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DayOrderResourcesCompanion.insert({
+    required int orderPosition,
+    required int slot,
+    required String branch,
+    required int tier,
+    this.rowid = const Value.absent(),
+  }) : orderPosition = Value(orderPosition),
+       slot = Value(slot),
+       branch = Value(branch),
+       tier = Value(tier);
+  static Insertable<DayOrderResource> custom({
+    Expression<int>? orderPosition,
+    Expression<int>? slot,
+    Expression<String>? branch,
+    Expression<int>? tier,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (orderPosition != null) 'order_position': orderPosition,
+      if (slot != null) 'slot': slot,
+      if (branch != null) 'branch': branch,
+      if (tier != null) 'tier': tier,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DayOrderResourcesCompanion copyWith({
+    Value<int>? orderPosition,
+    Value<int>? slot,
+    Value<String>? branch,
+    Value<int>? tier,
+    Value<int>? rowid,
+  }) {
+    return DayOrderResourcesCompanion(
+      orderPosition: orderPosition ?? this.orderPosition,
+      slot: slot ?? this.slot,
+      branch: branch ?? this.branch,
+      tier: tier ?? this.tier,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (orderPosition.present) {
+      map['order_position'] = Variable<int>(orderPosition.value);
+    }
+    if (slot.present) {
+      map['slot'] = Variable<int>(slot.value);
+    }
+    if (branch.present) {
+      map['branch'] = Variable<String>(branch.value);
+    }
+    if (tier.present) {
+      map['tier'] = Variable<int>(tier.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DayOrderResourcesCompanion(')
+          ..write('orderPosition: $orderPosition, ')
+          ..write('slot: $slot, ')
+          ..write('branch: $branch, ')
+          ..write('tier: $tier, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $BoardCellsTable boardCells = $BoardCellsTable(this);
   late final $EnergyStatesTable energyStates = $EnergyStatesTable(this);
+  late final $DayOrdersTable dayOrders = $DayOrdersTable(this);
+  late final $DayOrderResourcesTable dayOrderResources =
+      $DayOrderResourcesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -691,6 +1262,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     boardCells,
     energyStates,
+    dayOrders,
+    dayOrderResources,
   ];
 }
 
@@ -1086,6 +1659,368 @@ typedef $$EnergyStatesTableProcessedTableManager =
       EnergyState,
       PrefetchHooks Function()
     >;
+typedef $$DayOrdersTableCreateCompanionBuilder = DayOrdersCompanion Function({
+  Value<int> position,
+  required String customer,
+  required int coins,
+});
+typedef $$DayOrdersTableUpdateCompanionBuilder = DayOrdersCompanion Function({
+  Value<int> position,
+  Value<String> customer,
+  Value<int> coins,
+});
+
+class $$DayOrdersTableFilterComposer
+    extends Composer<_$AppDatabase, $DayOrdersTable> {
+  $$DayOrdersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customer => $composableBuilder(
+    column: $table.customer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get coins => $composableBuilder(
+    column: $table.coins,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DayOrdersTableOrderingComposer
+    extends Composer<_$AppDatabase, $DayOrdersTable> {
+  $$DayOrdersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customer => $composableBuilder(
+    column: $table.customer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get coins => $composableBuilder(
+    column: $table.coins,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DayOrdersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DayOrdersTable> {
+  $$DayOrdersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<String> get customer =>
+      $composableBuilder(column: $table.customer, builder: (column) => column);
+
+  GeneratedColumn<int> get coins =>
+      $composableBuilder(column: $table.coins, builder: (column) => column);
+}
+
+class $$DayOrdersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DayOrdersTable,
+          DayOrder,
+          $$DayOrdersTableFilterComposer,
+          $$DayOrdersTableOrderingComposer,
+          $$DayOrdersTableAnnotationComposer,
+          $$DayOrdersTableCreateCompanionBuilder,
+          $$DayOrdersTableUpdateCompanionBuilder,
+          (DayOrder, BaseReferences<_$AppDatabase, $DayOrdersTable, DayOrder>),
+          DayOrder,
+          PrefetchHooks Function()
+        > {
+  $$DayOrdersTableTableManager(_$AppDatabase db, $DayOrdersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DayOrdersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DayOrdersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DayOrdersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> position = const Value.absent(),
+                Value<String> customer = const Value.absent(),
+                Value<int> coins = const Value.absent(),
+              }) => DayOrdersCompanion(
+                position: position,
+                customer: customer,
+                coins: coins,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> position = const Value.absent(),
+                required String customer,
+                required int coins,
+              }) => DayOrdersCompanion.insert(
+                position: position,
+                customer: customer,
+                coins: coins,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DayOrdersTable, DayOrder>(table),
+                  BaseReferences<_$AppDatabase, $DayOrdersTable, DayOrder>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DayOrdersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DayOrdersTable,
+      DayOrder,
+      $$DayOrdersTableFilterComposer,
+      $$DayOrdersTableOrderingComposer,
+      $$DayOrdersTableAnnotationComposer,
+      $$DayOrdersTableCreateCompanionBuilder,
+      $$DayOrdersTableUpdateCompanionBuilder,
+      (DayOrder, BaseReferences<_$AppDatabase, $DayOrdersTable, DayOrder>),
+      DayOrder,
+      PrefetchHooks Function()
+    >;
+typedef $$DayOrderResourcesTableCreateCompanionBuilder =
+    DayOrderResourcesCompanion Function({
+      required int orderPosition,
+      required int slot,
+      required String branch,
+      required int tier,
+      Value<int> rowid,
+    });
+typedef $$DayOrderResourcesTableUpdateCompanionBuilder =
+    DayOrderResourcesCompanion Function({
+      Value<int> orderPosition,
+      Value<int> slot,
+      Value<String> branch,
+      Value<int> tier,
+      Value<int> rowid,
+    });
+
+class $$DayOrderResourcesTableFilterComposer
+    extends Composer<_$AppDatabase, $DayOrderResourcesTable> {
+  $$DayOrderResourcesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get orderPosition => $composableBuilder(
+    column: $table.orderPosition,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branch => $composableBuilder(
+    column: $table.branch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tier => $composableBuilder(
+    column: $table.tier,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DayOrderResourcesTableOrderingComposer
+    extends Composer<_$AppDatabase, $DayOrderResourcesTable> {
+  $$DayOrderResourcesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get orderPosition => $composableBuilder(
+    column: $table.orderPosition,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branch => $composableBuilder(
+    column: $table.branch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tier => $composableBuilder(
+    column: $table.tier,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DayOrderResourcesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DayOrderResourcesTable> {
+  $$DayOrderResourcesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get orderPosition => $composableBuilder(
+    column: $table.orderPosition,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get slot =>
+      $composableBuilder(column: $table.slot, builder: (column) => column);
+
+  GeneratedColumn<String> get branch =>
+      $composableBuilder(column: $table.branch, builder: (column) => column);
+
+  GeneratedColumn<int> get tier =>
+      $composableBuilder(column: $table.tier, builder: (column) => column);
+}
+
+class $$DayOrderResourcesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DayOrderResourcesTable,
+          DayOrderResource,
+          $$DayOrderResourcesTableFilterComposer,
+          $$DayOrderResourcesTableOrderingComposer,
+          $$DayOrderResourcesTableAnnotationComposer,
+          $$DayOrderResourcesTableCreateCompanionBuilder,
+          $$DayOrderResourcesTableUpdateCompanionBuilder,
+          (
+            DayOrderResource,
+            BaseReferences<
+              _$AppDatabase,
+              $DayOrderResourcesTable,
+              DayOrderResource
+            >,
+          ),
+          DayOrderResource,
+          PrefetchHooks Function()
+        > {
+  $$DayOrderResourcesTableTableManager(
+    _$AppDatabase db,
+    $DayOrderResourcesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DayOrderResourcesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DayOrderResourcesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DayOrderResourcesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> orderPosition = const Value.absent(),
+                Value<int> slot = const Value.absent(),
+                Value<String> branch = const Value.absent(),
+                Value<int> tier = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DayOrderResourcesCompanion(
+                orderPosition: orderPosition,
+                slot: slot,
+                branch: branch,
+                tier: tier,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int orderPosition,
+                required int slot,
+                required String branch,
+                required int tier,
+                Value<int> rowid = const Value.absent(),
+              }) => DayOrderResourcesCompanion.insert(
+                orderPosition: orderPosition,
+                slot: slot,
+                branch: branch,
+                tier: tier,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DayOrderResourcesTable, DayOrderResource>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DayOrderResourcesTable,
+                    DayOrderResource
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DayOrderResourcesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DayOrderResourcesTable,
+      DayOrderResource,
+      $$DayOrderResourcesTableFilterComposer,
+      $$DayOrderResourcesTableOrderingComposer,
+      $$DayOrderResourcesTableAnnotationComposer,
+      $$DayOrderResourcesTableCreateCompanionBuilder,
+      $$DayOrderResourcesTableUpdateCompanionBuilder,
+      (
+        DayOrderResource,
+        BaseReferences<
+          _$AppDatabase,
+          $DayOrderResourcesTable,
+          DayOrderResource
+        >,
+      ),
+      DayOrderResource,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1094,4 +2029,8 @@ class $AppDatabaseManager {
       $$BoardCellsTableTableManager(_db, _db.boardCells);
   $$EnergyStatesTableTableManager get energyStates =>
       $$EnergyStatesTableTableManager(_db, _db.energyStates);
+  $$DayOrdersTableTableManager get dayOrders =>
+      $$DayOrdersTableTableManager(_db, _db.dayOrders);
+  $$DayOrderResourcesTableTableManager get dayOrderResources =>
+      $$DayOrderResourcesTableTableManager(_db, _db.dayOrderResources);
 }

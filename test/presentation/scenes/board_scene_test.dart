@@ -17,6 +17,7 @@ import '../../helpers/board_tap.dart';
 import '../../helpers/energy_container.dart';
 import '../../helpers/fake_trusted_clock.dart';
 import '../../helpers/game_golden.dart';
+import '../../helpers/orders_drag.dart';
 
 void main() {
   group('BoardScene', () {
@@ -40,6 +41,15 @@ void main() {
       },
       arrange: (game, tester) async =>
           game.update(EnergyNotifier.refreshInterval),
+    );
+
+    testGameGolden(
+      'renders the orders band scrolled to its last card',
+      goldenFile: 'goldens/board_scene_orders_scrolled.png',
+      arrange: (game, tester) async {
+        await game.ready();
+        dragOrders(game, -1000);
+      },
     );
 
     testGameGolden(
@@ -128,7 +138,7 @@ void main() {
     );
 
     for (final (name, screenSize) in [
-      ('the minimum screen', Vector2(140, 248)),
+      ('the minimum screen', Vector2(140, 269)),
       ('a tall phone', Vector2(393, 852)),
       ('a tablet', Vector2(1024, 1366)),
     ]) {

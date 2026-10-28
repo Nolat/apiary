@@ -27,6 +27,7 @@ import 'package:apiary/data/local/app_database.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/energy/energy_repository.dart';
 import 'package:apiary/domain/energy/trusted_clock.dart';
+import 'package:apiary/domain/orders/order_repository.dart';
 import 'package:apiary/firebase_options.dart';
 import 'package:apiary/presentation/game/energy_repository_provider.dart';
 import 'package:apiary/presentation/game/trusted_clock_provider.dart';
@@ -85,6 +86,7 @@ Future<GameServices> _startServices(ValueNotifier<StartupStep> step) async {
 
   return GameServices(
     boardRepository: getIt<BoardRepository>(),
+    orderRepository: getIt<OrderRepository>(),
     // Also in release builds, for now (see docs/STACK.md).
     devTools: DevTools(
       resetDatabase: getIt<AppDatabase>().reset,

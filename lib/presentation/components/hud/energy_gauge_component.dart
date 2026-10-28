@@ -27,9 +27,9 @@ import 'package:apiary/presentation/game/energy_notifier.dart';
 /// bottom edge; nothing else moves when it comes or goes. The "+" does nothing
 /// yet: buying energy comes with the gems.
 ///
-/// The panel sticks out of the HUD band by 2 px and the pill hangs below it,
-/// over the top of the orders band, which is still empty. To rethink when the orders
-/// are designed. Its parent places it at the top left of the HUD band.
+/// The panel is as tall as the HUD band and the pill hangs below it, over the
+/// top left of the orders band, above its cards. Its parent places it at the
+/// top left of the HUD band.
 class EnergyGaugeComponent extends PositionComponent
     with HasGameReference<ApiaryGame> {
   EnergyGaugeComponent({super.position})

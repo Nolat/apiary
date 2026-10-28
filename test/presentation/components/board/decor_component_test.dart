@@ -13,7 +13,7 @@ void main() {
 
   group('DecorComponent', () {
     for (final (name, screenSize) in [
-      ('the minimum screen', Vector2(140, 248)),
+      ('the minimum screen', Vector2(140, 269)),
       ('a tablet', Vector2(1024, 1366)),
     ]) {
       testWithGame<ApiaryGame>(

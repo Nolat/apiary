@@ -25,11 +25,13 @@ typedef _Device = ({
 
 const _devices = <_Device>[
   (
+    // Short of the minimum height until the layout is reworked for small
+    // screens: the height limits the scale, as on a tablet.
     name: 'iPhone SE (3rd generation)',
     size: Size(375, 667),
     pixelRatio: 2,
     insets: EdgeInsets.zero,
-    fillsWidth: true,
+    fillsWidth: false,
   ),
   (
     name: 'iPhone 13 mini',
@@ -138,7 +140,7 @@ void main() {
 
     test('fits every safe area from the minimum size up', () {
       for (var width = 140.0; width <= 330; width += 7.3) {
-        for (var height = 248.0; height <= 600; height += 13.7) {
+        for (var height = 269.0; height <= 600; height += 13.7) {
           final safeArea = Rect.fromLTWH(0.4, 9.1, width, height);
           final layout = ScreenLayout.compute(
             screen: Rect.fromLTWH(0, 0, width + 1, height + 20),
@@ -162,7 +164,7 @@ void main() {
       expect(layout.board, const Rect.fromLTWH(0, 292 - 40 - 180, 140, 180));
       expect(layout.hud.top, 22);
       expect(layout.bottomBar.bottom, 292);
-      expect(layout.spacer.height, (292 - 40 - 180) - (22 + 12 + 16));
+      expect(layout.spacer.height, (292 - 40 - 180) - (22 + 14 + 35));
     });
   });
 }

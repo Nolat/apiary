@@ -71,6 +71,7 @@ flutter:
   assets:
     - assets/images/bees/
     - assets/images/board/
+    - assets/images/customers/
     - assets/images/hives/
     - assets/images/larvae/
     - assets/images/queens/

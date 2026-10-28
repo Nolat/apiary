@@ -12,6 +12,7 @@ import 'generated/schema.dart';
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
+import 'generated/schema_v5.dart' as v5;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -136,6 +137,49 @@ void main() {
           await newDb.select(newDb.boardCells).get(),
         );
         expect(await newDb.select(newDb.energyStates).get(), isEmpty);
+      },
+    );
+  });
+
+  // The board survives the new order tables, which start empty.
+  test('migration from v4 to v5 keeps the board and adds the orders', () async {
+    final oldBoardCellsData = <v4.BoardCellsData>[
+      const v4.BoardCellsData(
+        column: 3,
+        row: 4,
+        kind: 'queen',
+        family: 'honeybee',
+        level: 1,
+        remainingLife: 1,
+      ),
+    ];
+    final expectedNewBoardCellsData = <v5.BoardCellsData>[
+      const v5.BoardCellsData(
+        column: 3,
+        row: 4,
+        kind: 'queen',
+        family: 'honeybee',
+        level: 1,
+        remainingLife: 1,
+      ),
+    ];
+
+    await verifier.testWithDataIntegrity(
+      oldVersion: 4,
+      newVersion: 5,
+      createOld: v4.DatabaseAtV4.new,
+      createNew: v5.DatabaseAtV5.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch.insertAll(oldDb.boardCells, oldBoardCellsData);
+      },
+      validateItems: (newDb) async {
+        expect(
+          expectedNewBoardCellsData,
+          await newDb.select(newDb.boardCells).get(),
+        );
+        expect(await newDb.select(newDb.dayOrders).get(), isEmpty);
+        expect(await newDb.select(newDb.dayOrderResources).get(), isEmpty);
       },
     );
   });

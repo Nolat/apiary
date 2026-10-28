@@ -42,12 +42,12 @@ void main() {
       'maps one game pixel to one pixel at the minimum size',
       gameWith(devicePixelRatio: 1),
       (game) async {
-        game.onGameResize(Vector2(140, 248));
+        game.onGameResize(Vector2(140, 269));
         final viewport = viewportFor(game);
 
         expect(viewport.pixelScale, 1);
-        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 248));
-        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 248));
+        expect(viewport.visibleArea, const Rect.fromLTWH(0, 0, 140, 269));
+        expect(viewport.safeArea, const Rect.fromLTWH(0, 0, 140, 269));
       },
     );
 
@@ -58,7 +58,7 @@ void main() {
         game.onGameResize(iPhoneProSize);
         final viewport = viewportFor(game);
 
-        // min(1206 / 140, 2334 / 248): the width limits, ×8.614.
+        // min(1206 / 140, 2334 / 269): the width limits, ×8.614.
         const scale = 1206 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.scale.x, closeTo(scale / 3, 1e-6));
@@ -70,17 +70,20 @@ void main() {
     );
 
     testWithGame<FlameGame>(
-      'fills the width of the shortest iPhone too',
-      // iPhone SE: 375×667 logical, DPR 2, 16:9.
-      gameWith(devicePixelRatio: 2),
+      'fills the width of a short iPhone too',
+      // iPhone 13 mini: 375×812 logical, DPR 3, notch and home indicator.
+      gameWith(
+        devicePixelRatio: 3,
+        safePadding: const EdgeInsets.only(top: 50, bottom: 34),
+      ),
       (game) async {
-        game.onGameResize(Vector2(375, 667));
+        game.onGameResize(Vector2(375, 812));
         final viewport = viewportFor(game);
 
-        // min(750 / 140, 1334 / 248): still the width, 140×249.
-        expect(viewport.pixelScale, closeTo(750 / 140, 1e-6));
+        // min(1125 / 140, 2184 / 269): still the width.
+        expect(viewport.pixelScale, closeTo(1125 / 140, 1e-6));
         expect(viewport.visibleArea.width, closeTo(140, 1e-4));
-        expect(viewport.visibleArea.height, greaterThanOrEqualTo(248));
+        expect(viewport.safeArea.height, greaterThanOrEqualTo(269));
       },
     );
 
@@ -96,31 +99,31 @@ void main() {
         game.onGameResize(Vector2(1032, 1376));
         final viewport = viewportFor(game);
 
-        // min(2064 / 140, 2664 / 248) = 10.83: 191 game pixels wide.
-        const scale = 2664 / 248;
+        // min(2064 / 140, 2664 / 269) = 10.09: 191 game pixels wide.
+        const scale = 2664 / 269;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
-        expect(viewport.safeArea.height, closeTo(248, 1e-4));
+        expect(viewport.safeArea.height, closeTo(269, 1e-4));
         expect(viewport.visibleArea.width, closeTo(2064 / scale, 1e-4));
       },
     );
 
     testWithGame<FlameGame>(
       'keeps the minimum width clear of a camera hole on the side',
-      // iPhone Duo-like: 1398×2034 physical, camera hole on the right side.
+      // iPhone Duo-like: 1398×2340 physical, camera hole on the right side.
       gameWith(
         devicePixelRatio: 3,
         safePadding: const EdgeInsets.only(right: 84),
       ),
       (game) async {
-        game.onGameResize(Vector2(466, 678));
+        game.onGameResize(Vector2(466, 780));
         final viewport = viewportFor(game);
 
-        // min(1146 / 140, 2034 / 248): the width limits, just.
+        // min(1146 / 140, 2340 / 269): the width limits, just.
         const scale = 1146 / 140;
         expect(viewport.pixelScale, closeTo(scale, 1e-6));
         expect(viewport.safeArea.left, 0);
         expect(viewport.safeArea.width, closeTo(140, 1e-4));
-        expect(viewport.safeArea.height, greaterThanOrEqualTo(248));
+        expect(viewport.safeArea.height, greaterThanOrEqualTo(269));
       },
     );
 

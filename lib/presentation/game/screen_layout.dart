@@ -13,9 +13,9 @@ import 'package:apiary/domain/board/board.dart';
 ///
 /// ```text
 /// ┌─ safe area ─────────────┐  decor ([screen]) extends under the system UI
-/// │ hud           12 fixed  │  ← pinned to the top
-/// │ orders        16 fixed  │
-/// │ spacer       ≥ 0 flex   │  ← 1 (iPhone SE) to ~42 (iPhone Pro Max)
+/// │ hud           14 fixed  │  ← pinned to the top
+/// │ orders        35 fixed  │
+/// │ spacer       ≥ 0 flex   │  ← 0 from 269 up (the iPhone SE, 249, is short)
 /// │ board    140×180 fixed  │  ← 7×9 cells of 20, centered
 /// │ bottomBar     40 fixed  │  ← pinned to the bottom (panel 38, padded 2)
 /// └─────────────────────────┘
@@ -84,8 +84,10 @@ class ScreenLayout {
     );
   }
 
-  static const hudHeight = 12.0;
-  static const ordersHeight = 16.0;
+  /// The HUD is as tall as the energy gauge's panel; the countdown pill
+  /// under it hangs over the orders band.
+  static const hudHeight = 14.0;
+  static const ordersHeight = 35.0;
 
   /// How far from the safe area's left edge the HUD's content starts, which
   /// keeps it off the rounded screen corners.
@@ -116,8 +118,8 @@ class ScreenLayout {
   static const minimumSpacerHeight = 0.0;
 
   /// The smallest safe area the layout fits: the board's width, and the
-  /// fixed bands' height plus the minimum spacer — 248, which the iPhone SE,
-  /// the tightest screen, just meets (249.0, a 1 px spacer).
+  /// fixed bands' height plus the minimum spacer — 269. The iPhone SE (249.0)
+  /// is short of it until the layout is reworked for small screens.
   static const minimumSafeSize = Size(
     Board.columns * cellSize,
     fixedHeight + minimumSpacerHeight,

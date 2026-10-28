@@ -92,10 +92,10 @@ void main() {
 
         expect(board.selection.value, first);
         expect(selectionFrame(board).opacity, 0);
-        expect(
-          component.position,
-          BoardComponent.itemPosition(first) - Vector2(60, 60),
-        );
+        // The screen's scale is not a round number: whole pixels, to 1e-4.
+        final moved = BoardComponent.itemPosition(first) - Vector2(60, 60);
+        expect(component.position.x, closeTo(moved.x, 1e-4));
+        expect(component.position.y, closeTo(moved.y, 1e-4));
         drag.end();
         expect(selectionFrame(board).opacity, 1);
       },
