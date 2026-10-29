@@ -14,7 +14,6 @@ import 'package:apiary/domain/energy/energy.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/screen_layout.dart';
-
 import '../../../helpers/energy_container.dart';
 import '../../../helpers/fake_trusted_clock.dart';
 import '../../../helpers/game_text.dart';

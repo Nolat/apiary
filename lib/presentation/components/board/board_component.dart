@@ -326,7 +326,7 @@ class BoardComponent extends PositionComponent
       return;
     }
     _dragged = cell;
-    _marks.hidden = cell;
+    _marks.hold(cell);
     _dragPointer = event.pointerId;
     _finger = event.localPosition.clone();
     // A queen grabbed while shaking would carry the swing along.
@@ -387,12 +387,12 @@ class BoardComponent extends PositionComponent
   (BoardPosition, PositionComponent)? _release() {
     final from = _dragged;
     _dragged = null;
-    _marks.hidden = null;
     _dragPointer = null;
     _finger = null;
     if (from == null) {
       return null;
     }
+    _marks.release(from);
     final item = _itemComponents[from]!..priority = 0;
     _stopEffects(item);
     // Shown again before the selection moves on, in the same frame.
@@ -429,6 +429,7 @@ class BoardComponent extends PositionComponent
           ..[from] = other
           ..[onto] = item;
         // The item that was not dragged slides to the cell left free.
+        _marks.hold(from, seconds: slideDuration);
         other.position.setFrom(itemPosition(onto));
         unawaited(_slide(other, itemPosition(from)));
         item.position.setFrom(itemPosition(onto));
@@ -452,12 +453,14 @@ class BoardComponent extends PositionComponent
     PositionComponent item,
   ) async {
     _itemComponents.remove(from);
+    _marks.hold(onto);
     await _land(item, itemPosition(onto));
     unawaited(HapticFeedback.mediumImpact());
     item.removeFromParent();
     _itemComponents[onto]?.removeFromParent();
     final replacement = _componentFor(onto, board.itemAt(onto)!);
     await add(replacement);
+    _marks.release(onto);
     unawaited(_popIn(replacement));
     // The frame grows on its own; the item has just popped in.
     _bouncedAlready = onto;

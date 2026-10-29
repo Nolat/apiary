@@ -9,7 +9,6 @@ import 'package:apiary/domain/board/board.dart';
 import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/resource_production.dart';
-
 import '../../helpers/hive_boards.dart';
 
 void main() {

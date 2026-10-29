@@ -14,7 +14,6 @@ import 'package:apiary/domain/board/board_position.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/energy/energy.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../../helpers/board_tap.dart';
 import '../../../helpers/energy_container.dart';
 import '../../../helpers/game_text.dart';

@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:apiary/domain/energy/energy.dart';
 import 'package:apiary/presentation/game/energy_countdown.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
-
 import '../../helpers/energy_container.dart';
 import '../../helpers/fake_trusted_clock.dart';
 import '../../helpers/memory_energy_repository.dart';

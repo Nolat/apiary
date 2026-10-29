@@ -12,7 +12,6 @@ import 'package:apiary/presentation/components/board/board_component.dart';
 import 'package:apiary/presentation/components/board/decor_component.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
-
 import '../../helpers/board_tap.dart';
 import '../../helpers/energy_container.dart';
 import '../../helpers/fake_trusted_clock.dart';

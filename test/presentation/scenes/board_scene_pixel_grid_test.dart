@@ -10,7 +10,6 @@ import 'package:apiary/domain/board/board_item.dart';
 import 'package:apiary/domain/board/board_repository.dart';
 import 'package:apiary/domain/energy/energy.dart';
 import 'package:apiary/presentation/game/apiary_game.dart';
-
 import '../../helpers/board_tap.dart';
 import '../../helpers/energy_container.dart';
 import '../../helpers/fake_trusted_clock.dart';

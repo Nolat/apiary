@@ -56,8 +56,8 @@ class ScreenLayout {
     // area by less than half a game pixel at most, but a safe area at least
     // [minimumSafeSize] wide always holds the 140-wide board.
     final left = safeArea.left.roundToDouble();
-    // Short of the screen's edges, which an iPhone SE has no inset to keep
-    // the bands off.
+    // Always kept off the edges, on top of the insets: an iPhone SE has none,
+    // and the corners of other screens are rounded.
     final top = safeArea.top.roundToDouble() + verticalPadding;
     final right = safeArea.right.roundToDouble();
     // Floored, so the bottom bar never dips under the home indicator.

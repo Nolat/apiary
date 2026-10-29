@@ -88,9 +88,11 @@ class DriftOrderRepository implements OrderRepository {
     final resources = [
       for (final resource in resourceRows) _resourceOf(resource),
     ];
-    final quantities = [
-      for (final resource in resourceRows) resource.quantity,
-    ];
+    final quantities = {
+      for (final row in resourceRows)
+        if (_resourceOf(row) case final resource? when row.quantity > 1)
+          resource: row.quantity,
+    };
     // One unreadable resource makes the whole order unreadable: a card
     // missing one would ask for less than it pays for.
     if (customer == null ||
@@ -98,7 +100,7 @@ class DriftOrderRepository implements OrderRepository {
         resources.isEmpty ||
         resources.length > 2 ||
         resources.contains(null) ||
-        quantities.any((quantity) => quantity < 1)) {
+        resourceRows.any((resource) => resource.quantity < 1)) {
       return null;
     }
     final known = resources.whereType<Resource>().toList();
@@ -107,10 +109,7 @@ class DriftOrderRepository implements OrderRepository {
             customer: customer,
             resources: known,
             coins: row.coins,
-            quantities: {
-              for (final (slot, resource) in known.indexed)
-                if (quantities[slot] > 1) resource: quantities[slot],
-            },
+            quantities: quantities,
           )
         : null;
   }

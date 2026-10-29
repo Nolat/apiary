@@ -94,6 +94,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 booted_here=()
 check_args=()
+failed=false
 trap 'for u in "${booted_here[@]:-}"; do [[ -n "$u" ]] && xcrun simctl shutdown "$u" 2>/dev/null; done' EXIT
 
 for entry in "${DEVICES[@]}"; do
@@ -116,6 +117,8 @@ for entry in "${DEVICES[@]}"; do
   done 3< <(udids_for "$name" "$runtime")
   if ! $shown; then
     echo "✘ $name: no simulator showed the board scene" >&2
+    failed=true
+    continue
   fi
   echo "📸 $name → $file"
   [[ "$flags" == *downsampled* ]] && check_args+=("--downsampled=$file")
@@ -124,4 +127,9 @@ for entry in "${DEVICES[@]}"; do
 done
 
 echo "▶ Checking the layout"
-$CHECK "${check_args[@]}"
+if ((${#check_args[@]})); then
+  $CHECK "${check_args[@]}" || failed=true
+fi
+if $failed; then
+  exit 1
+fi

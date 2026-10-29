@@ -16,10 +16,10 @@ import 'package:flame/extensions.dart';
 /// notches, Dynamic Island, camera holes and home indicator.
 ///
 /// [pixelScale] (physical pixels per game pixel) is the largest at which the
-/// safe area still holds [minimumSize]: on every iPhone the width limits, so
-/// the screen is exactly [minimumSize]`.x` game pixels wide and its height
-/// varies; on shorter screens (iPad, foldables) the height limits and the
-/// screen gets wider instead. Scenes lay out in bands within these bounds
+/// safe area still holds [minimumSize]: on every iPhone the height limits, so
+/// the safe area is exactly [minimumSize]`.y` game pixels tall and its width
+/// follows the phone's shape; on wider screens (iPad, foldables) the width
+/// limits and the safe area gets taller instead. Scenes lay out in bands within these bounds
 /// (see `ScreenLayout`) and extend their decor over the whole [visibleArea].
 ///
 /// The scale is usually fractional and art is drawn nearest-neighbor, so a

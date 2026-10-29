@@ -37,6 +37,10 @@ class OrdersComponent extends PositionComponent with DragCallbacks {
   /// order of [orders].
   // ignore: avoid_setters_without_getters
   set progress(List<OrderProgress> progress) {
+    assert(
+      progress.length == cards.length,
+      'one progress per order',
+    );
     for (final (i, card) in cards.indexed) {
       card.progress = progress[i];
     }

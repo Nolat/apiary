@@ -36,12 +36,10 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
              ? null
              : (board) => _save(repository, board),
        ),
-       _orders = OrdersComponent(orders: orders),
-       _orderList = orders;
+       _orders = OrdersComponent(orders: orders);
 
   static const routeName = 'board';
 
-  final List<Order> _orderList;
   final _decor = DecorComponent();
   final BoardComponent _board;
   final OrdersComponent _orders;
@@ -86,7 +84,7 @@ class BoardScene extends Component with HasGameReference<ApiaryGame> {
 
   // The cards and the board show what the board holds of each order.
   void _showOrderProgress() {
-    final progress = OrderProgress.allOf(_orderList, _board.board);
+    final progress = OrderProgress.allOf(_orders.orders, _board.board);
     _orders.progress = progress;
     _board.marked = {for (final order in progress) ...order.marked};
   }

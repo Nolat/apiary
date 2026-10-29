@@ -128,6 +128,10 @@ class OrderCardComponent extends PositionComponent with HasGameReference {
   OrderProgress? get progress => _progress;
 
   set progress(OrderProgress? value) {
+    assert(
+      value == null || value.resources.length == order.resources.length,
+      'the progress is of this order',
+    );
     _progress = value;
     if (_loaded) {
       _showProgress();

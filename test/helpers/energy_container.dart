@@ -9,7 +9,6 @@ import 'package:apiary/domain/energy/trusted_clock.dart';
 import 'package:apiary/presentation/game/energy_notifier.dart';
 import 'package:apiary/presentation/game/energy_repository_provider.dart';
 import 'package:apiary/presentation/game/trusted_clock_provider.dart';
-
 import 'memory_energy_repository.dart';
 
 /// A container whose energy is saved in [repository] (in memory by default,

@@ -21,7 +21,7 @@ class ItemMarksComponent extends Component with HasGameReference {
   Sprite? _sprite;
   final Paint _paint = pixelPaint();
   var _rects = <BoardPosition, Rect>{};
-  BoardPosition? _hidden;
+  final _held = <BoardPosition, double>{};
 
   /// The cells wearing a badge.
   Set<BoardPosition> get marked => _rects.keys.toSet();
@@ -30,10 +30,13 @@ class ItemMarksComponent extends Component with HasGameReference {
     _rects = {for (final cell in cells) cell: _rectOf(cell)};
   }
 
-  /// A cell whose badge is not drawn for now, the one of an item the finger
-  /// holds: the badge would stay behind on the cell it left.
-  // ignore: avoid_setters_without_getters
-  set hidden(BoardPosition? cell) => _hidden = cell;
+  /// Keeps the badge of [cell] from being drawn, for [seconds] or until
+  /// [release]: while an item moves or lands there, the badge would show
+  /// before it.
+  void hold(BoardPosition cell, {double seconds = double.infinity}) =>
+      _held[cell] = seconds;
+
+  void release(BoardPosition cell) => _held.remove(cell);
 
   static Rect _rectOf(BoardPosition cell) => Rect.fromLTWH(
     (cell.column + 1) * ScreenLayout.cellSize - markSize,
@@ -48,13 +51,22 @@ class ItemMarksComponent extends Component with HasGameReference {
   }
 
   @override
+  void update(double dt) {
+    if (_held.isNotEmpty) {
+      _held
+        ..updateAll((_, left) => left - dt)
+        ..removeWhere((_, left) => left <= 0);
+    }
+  }
+
+  @override
   void render(Canvas canvas) {
     final sprite = _sprite;
     if (sprite == null) {
       return;
     }
     for (final MapEntry(key: cell, value: rect) in _rects.entries) {
-      if (cell != _hidden) {
+      if (!_held.containsKey(cell)) {
         sprite.renderRect(canvas, rect, overridePaint: _paint);
       }
     }
